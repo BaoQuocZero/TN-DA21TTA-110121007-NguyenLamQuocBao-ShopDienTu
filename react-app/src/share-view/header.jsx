@@ -58,7 +58,7 @@ const Header = () => {
             dispatch(setUserInfo(response.data.DT));
           }
 
-          console.log("response", response.data);
+          // console.log("response", response.data);
         } catch (error) {
           console.log(error);
         }
