@@ -13,7 +13,7 @@ const pool = require("../config/database");
 const dangky_new_taikhoan = async (req, res) => {
   try {
     const dataTaiKhoan = req.body;
-
+    // console.log("body: ", dataTaiKhoan)
     let results = await Dangky_TaiKhoan(dataTaiKhoan);
     return res.status(200).json({
       EM: results.EM,
@@ -32,10 +32,11 @@ const dangky_new_taikhoan = async (req, res) => {
 
 const dangnhap_taikhoan = async (req, res) => {
   try {
-    const TEN_DANG_NHAP = req.body.email;
-    const MAT_KHAU = req.body.password;
+    const EMAIL = req.body.email;
+    const PASSWORD = req.body.password;
 
-    let results = await LoginTaikhoan(TEN_DANG_NHAP, MAT_KHAU);
+    console.log("req.body:", req.body)
+    let results = await LoginTaikhoan(EMAIL, PASSWORD);
     return res.status(200).json({
       EM: results.EM,
       EC: results.EC,
@@ -53,11 +54,9 @@ const dangnhap_taikhoan = async (req, res) => {
 
 const dangnhap_taikhoanGOOGLE = async (req, res) => {
   try {
-    const TEN_DANG_NHAP = req.body.TEN_DANG_NHAP;
-    const TEN_KHACH_HANG = req.body.TEN_KHACH_HANG;
-    // console.log("TEN_DANG_NHAP: ", TEN_DANG_NHAP)
-    // console.log("TEN_KHACH_HANG: ", TEN_KHACH_HANG)
-    let results = await LoginTaikhoanwithGOOGLE(TEN_DANG_NHAP, TEN_KHACH_HANG);
+    const EMAIL = req.body.TEN_DANG_NHAP;
+    const PASSWORD = req.body.TEN_KHACH_HANG;
+    let results = await LoginTaikhoanwithGOOGLE(EMAIL, PASSWORD);
     return res.status(200).json({
       EM: results.EM,
       EC: results.EC,
@@ -287,9 +286,9 @@ const getAll_taikhoanuser = async (req, res) => {
   try {
     let [results1, fields1] = await pool.execute(
       `
-      SELECT khachhang.*, phan_quyen.*
-      FROM khachhang
-      JOIN phan_quyen ON phan_quyen.MA_PHAN_QUYEN = khachhang.MA_PHAN_QUYEN
+      SELECT user.*, role.*
+      FROM user
+      JOIN role ON role.ID_ROLE  = user.ID_ROLE 
       `
     );
     return res.status(200).json({
@@ -308,7 +307,7 @@ const getAll_taikhoanuser = async (req, res) => {
 
 const selectAll_PhanQuyen = async (req, res) => {
   try {
-    const [results, fields] = await pool.execute("SELECT * FROM phan_quyen");
+    const [results, fields] = await pool.execute("SELECT * FROM role");
 
     return res.status(200).json({
       EM: "Kiểm tra thành công !!!",

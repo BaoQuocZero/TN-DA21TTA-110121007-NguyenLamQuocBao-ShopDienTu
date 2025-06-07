@@ -56,7 +56,6 @@ const LoginPage = () => {
             `${process.env.REACT_APP_URL_SERVER}/api/v1/admin/taikhoan/dangnhapgoogle`,
             { TEN_DANG_NHAP: user.email, TEN_KHACH_HANG: user.name }
           );
-          console.log("check token =>", response.data);
 
           if (response.data.EC === 200) {
             // localStorage.setItem("THEMES", response.data.DT.userInfo.THEMES);
@@ -108,7 +107,7 @@ const LoginPage = () => {
 
       if (response.data.EC === 1) {
         Cookies.remove("accessToken");
-        const accessToken = response.data.DT.accessToken;
+        const accessToken = response.data.DT.access_token;
         Cookies.set("accessToken", accessToken, { expires: 7 });
         // localStorage.setItem("THEMES", response.data.DT.userInfo.THEMES);
 
@@ -160,16 +159,16 @@ const LoginPage = () => {
           boxShadow: 3,
         }}
       >
-        <img
-          src={`https://upload.wikimedia.org/wikipedia/commons/3/31/Epic_Games_logo.svg`}
-          alt="Epic Games Logo"
-          style={{
-            marginBottom: 20,
-            maxWidth: "60px",
-            height: "auto",
-            // filter: "drop-shadow(1px 4px 3.5px rgb(38, 187, 255,0.9))",
-          }}
-        />
+        <h1 style={{ marginBottom: 20 }}>
+          <i
+            className="fas fa-laptop"
+            style={{
+              fontSize: "50px",
+              color: "#26bbff",
+              filter: "drop-shadow(1px 4px 3.5px rgba(38, 187, 255, 0.9))",
+            }}
+          ></i>
+        </h1>
 
         <Typography variant="h5" sx={{ marginBottom: 3 }}>
           Sign In

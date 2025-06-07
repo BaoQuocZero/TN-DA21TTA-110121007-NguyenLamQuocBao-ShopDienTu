@@ -30,10 +30,14 @@ const isValidEmail2 = (email) => {
 
 const Dangky_TaiKhoan = async (dataTaiKhoan) => {
   dataTaiKhoan = dataTaiKhoan.infoUser;
-  const GHI_CHU_KH = 1; // ở đây là 1 mới đúng nha
-  const MA_PHAN_QUYEN = 2;
+
+  const CODEADDRESS = 0;
+  const ISDELETE = false;
+  const ID_ROLE = 2;
+
   try {
-    const checkmail = isValidEmail(dataTaiKhoan.TEN_DANG_NHAP);
+    // Kiểm tra định dạng email
+    const checkmail = isValidEmail(dataTaiKhoan.EMAIL);
     if (!checkmail) {
       return {
         EM: "Định dạng mail không đúng",
@@ -42,29 +46,37 @@ const Dangky_TaiKhoan = async (dataTaiKhoan) => {
       };
     }
 
-    const [results_tendangnhap, fields_tendangnhap] = await pool.execute(
-      "SELECT * FROM `khachhang` WHERE `TEN_DANG_NHAP` = ?",
-      [dataTaiKhoan.TEN_DANG_NHAP]
+    // Kiểm tra email đã tồn tại chưa
+    const [results_tendangnhap] = await pool.execute(
+      "SELECT * FROM `user` WHERE `EMAIL` = ?",
+      [dataTaiKhoan.EMAIL]
     );
 
     if (results_tendangnhap.length > 0) {
       return {
-        EM: "Tài khoản đã tồn tại không thể tạo thêm",
+        EM: "Tài khoản đã tồn tại, không thể tạo thêm",
         EC: 0,
         DT: [],
       };
     }
 
-    let hashpass = await hashPassword(dataTaiKhoan.MAT_KHAU);
+    // Mã hóa mật khẩu
+    let hashpass = await hashPassword(dataTaiKhoan.PASSWORD);
 
-    let [results, fields] = await pool.execute(
-      `INSERT INTO khachhang (MA_PHAN_QUYEN, TEN_DANG_NHAP, TEN_KHACH_HANG, MAT_KHAU ,GHI_CHU_KH) VALUES (?, ?, ?, ?, ?)`,
+    // Thêm vào bảng user
+    const [results] = await pool.execute(
+      `INSERT INTO user (ID_ROLE, EMAIL, FIRSTNAME, LASTNAME, PHONENUMBER, CODEADDRESS, ADDRESS, PASSWORD, ISDELETE)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        MA_PHAN_QUYEN,
-        dataTaiKhoan.TEN_DANG_NHAP,
-        dataTaiKhoan.TEN_KHACH_HANG,
+        ID_ROLE,
+        dataTaiKhoan.EMAIL,
+        dataTaiKhoan.FIRSTNAME,
+        dataTaiKhoan.LASTNAME,
+        dataTaiKhoan.PHONENUMBER,
+        CODEADDRESS,
+        dataTaiKhoan.ADDRESS,
         hashpass,
-        GHI_CHU_KH,
+        ISDELETE,
       ]
     );
 
@@ -76,22 +88,22 @@ const Dangky_TaiKhoan = async (dataTaiKhoan) => {
   } catch (error) {
     console.log("error: ", error);
     return {
-      EM: "lỗi services createTaiKhoan01",
-      EC: 1,
+      EM: "Lỗi hệ thống khi tạo tài khoản",
+      EC: -1,
       DT: [],
     };
   }
 };
 
 //đăng nhập
-const LoginTaikhoan = async (TEN_DANG_NHAP, MAT_KHAU) => {
+const LoginTaikhoan = async (EMAIL, PASSWORD) => {
   try {
     const [results] = await pool.execute(
-      "SELECT * FROM khachhang WHERE TEN_DANG_NHAP = ?",
-      [TEN_DANG_NHAP]
+      "SELECT * FROM user WHERE EMAIL = ?",
+      [EMAIL]
     );
 
-    console.log("TEN_DANG_NHAP: ", TEN_DANG_NHAP);
+    console.log("EMAIL: ", EMAIL);
     console.log("Query results: ", results);
 
     if (results.length === 0) {
@@ -106,10 +118,10 @@ const LoginTaikhoan = async (TEN_DANG_NHAP, MAT_KHAU) => {
 
     // Kiểm tra trạng thái tài khoản
     if (
-      user.GHI_CHU_KH === 0 ||
-      user.GHI_CHU_KH === "" ||
-      user.GHI_CHU_KH === null ||
-      user.GHI_CHU_KH === "0"
+      user.ISDELETE === 1 ||
+      user.ISDELETE === "" ||
+      user.ISDELETE === null ||
+      user.ISDELETE === "1"
     ) {
       return {
         EM: "Tài khoản bị khóa",
@@ -118,22 +130,24 @@ const LoginTaikhoan = async (TEN_DANG_NHAP, MAT_KHAU) => {
       };
     }
 
-    // Kiểm tra nếu MAT_KHAU không tồn tại
-    if (!user.MAT_KHAU) {
+    if (!user.PASSWORD) {
       return {
-        EM: "Lỗi: Không tìm thấy mật khẩu trong database",
+        EM: "Tài khoản chưa đặt mật khẩu vui lòng đăng nhập bằng Google",
         EC: -1,
         DT: [],
       };
     }
 
     // Kiểm tra mật khẩu
-    const isCorrectPass = await bcrypt.compare(MAT_KHAU, user.MAT_KHAU);
+    const isCorrectPass = await bcrypt.compare(PASSWORD, user.PASSWORD);
 
     if (isCorrectPass) {
       let payload = {
-        taikhoan: user.TEN_DANG_NHAP,
-        tenkhachhang: user.TEN_KHACH_HANG,
+        taikhoan: user.EMAIL,
+        tenkhachhang: user.FIRSTNAME,
+        LASTNAME: user.LASTNAME,
+        PHONENUMBER: user.PHONENUMBER,
+        ADDRESS: user.ADDRESS,
       };
       let token = createJWT(payload);
       return {
@@ -146,7 +160,7 @@ const LoginTaikhoan = async (TEN_DANG_NHAP, MAT_KHAU) => {
       };
     } else {
       return {
-        EM: "Đăng nhập thất bại, mật khẩu không đúng",
+        EM: "Đăng nhập thất bại, Email hoặc mật khẩu không đúng",
         EC: 0,
         DT: [],
       };
@@ -162,9 +176,9 @@ const LoginTaikhoan = async (TEN_DANG_NHAP, MAT_KHAU) => {
 };
 
 //đăng nhập google
-const LoginTaikhoanwithGOOGLE = async (TEN_DANG_NHAP, TEN_KHACH_HANG) => {
+const LoginTaikhoanwithGOOGLE = async (EMAIL, PASSWORD) => {
   try {
-    if (!TEN_DANG_NHAP) {
+    if (!EMAIL) {
       return {
         EM: "Email is required",
         EC: 400,
@@ -174,45 +188,34 @@ const LoginTaikhoanwithGOOGLE = async (TEN_DANG_NHAP, TEN_KHACH_HANG) => {
 
     // Kiểm tra tài khoản trong database
     const [results] = await pool.query(
-      "SELECT * FROM `khachhang` WHERE `TEN_DANG_NHAP` = ?",
-      [TEN_DANG_NHAP]
+      "SELECT * FROM `user` WHERE `EMAIL` = ?",
+      [EMAIL]
     );
 
     if (results.length > 0) {
       // Kiểm tra trạng thái người dùng
       const user = results[0];
-
-      console.log("user", user);
-      // Kiểm tra nếu tài khoản bị khóa
       if (
-        user.GHI_CHU_KH === 0 ||
-        user.GHI_CHU_KH === "" ||
-        user.GHI_CHU_KH === null ||
-        user.GHI_CHU_KH === "0"
+        user.ISDELETE === 1 ||
+        user.ISDELETE === "" ||
+        user.ISDELETE === null ||
+        user.ISDELETE === "1"
       ) {
         return {
-          EM: "Tài khoản đã bị khóa, không thể đăng nhập",
+          EM: "Tài khoản bị khóa",
           EC: 0,
-          DT: "Account is disabled",
+          DT: [],
         };
       }
 
-      const token = createJWT({
-        MA_KH: user.MA_KH,
-        MA_PHAN_QUYEN: user.MA_PHAN_QUYEN,
-        DIA_CHI: user.DIA_CHI,
-        SDT_KH: user.SDT_KH,
-        GHI_CHU_KH: user.GHI_CHU_KH,
-        DIA_CHI_Provinces: user.DIA_CHI_Provinces,
-        DIA_CHI_Wards: user.DIA_CHI_Wards,
-        DIA_CHI_STREETNAME: user.DIA_CHI_STREETNAME,
-        DIA_CHI_Districts: user.DIA_CHI_Districts,
-        TEN_DANG_NHAP: user.TEN_DANG_NHAP,
-        TEN_KHACH_HANG: user.TEN_KHACH_HANG,
-        AVATAR: user.AVATAR,
-        NGAY_SINH: user.NGAY_SINH,
-        TRANG_THAI_NGUOI_DUNG: user.TRANG_THAI_NGUOI_DUNG,
-      });
+      let payload = {
+        taikhoan: user.EMAIL,
+        tenkhachhang: user.FIRSTNAME,
+        LASTNAME: user.LASTNAME,
+        PHONENUMBER: user.PHONENUMBER,
+        ADDRESS: user.ADDRESS,
+      };
+      let token = createJWT(payload);
 
       return {
         EM: "Đăng nhập thành công",
@@ -223,35 +226,29 @@ const LoginTaikhoanwithGOOGLE = async (TEN_DANG_NHAP, TEN_KHACH_HANG) => {
         },
       };
     } else {
-      // console.log("TRANG_THAI_NGUOI_DUNG: ", TRANG_THAI_NGUOI_DUNG)
-      const MA_PHAN_QUYEN = 2;
-      const GHI_CHU_KH = 1;
+
+      const CODEADDRESS = 0;
+      const ISDELETE = false;
+      const ID_ROLE = 2;
+
       const [insertResult] = await pool.query(
-        "INSERT INTO `khachhang` (MA_PHAN_QUYEN, TEN_DANG_NHAP, TEN_KHACH_HANG, GHI_CHU_KH) VALUES (?, ?, ?, ?)",
-        [MA_PHAN_QUYEN, TEN_DANG_NHAP, TEN_KHACH_HANG, GHI_CHU_KH]
+        "INSERT INTO `user` (ID_ROLE, EMAIL, CODEADDRESS, ISDELETE) VALUES (?, ?, ?, ?)",
+        [ID_ROLE, EMAIL, CODEADDRESS, ISDELETE]
       );
 
       const [newUser] = await pool.query(
-        "SELECT * FROM `khachhang` WHERE `MA_KH` = ?",
+        "SELECT * FROM `user` WHERE `ID_USER` = ?",
         [insertResult.insertId]
       );
 
-      const token = createJWT({
-        MA_KH: newUser[0].MA_KH,
-        MA_PHAN_QUYEN: newUser[0].MA_PHAN_QUYEN,
-        DIA_CHI: newUser[0].DIA_CHI,
-        SDT_KH: newUser[0].SDT_KH,
-        GHI_CHU_KH: newUser[0].GHI_CHU_KH,
-        DIA_CHI_Provinces: newUser[0].DIA_CHI_Provinces,
-        DIA_CHI_Wards: newUser[0].DIA_CHI_Wards,
-        DIA_CHI_STREETNAME: newUser[0].DIA_CHI_STREETNAME,
-        DIA_CHI_Districts: newUser[0].DIA_CHI_Districts,
-        TEN_DANG_NHAP: newUser[0].TEN_DANG_NHAP,
-        TEN_KHACH_HANG: newUser[0].TEN_KHACH_HANG,
-        AVATAR: newUser[0].AVATAR,
-        NGAY_SINH: newUser[0].NGAY_SINH,
-        TRANG_THAI_NGUOI_DUNG: newUser[0].TRANG_THAI_NGUOI_DUNG,
-      });
+      let payload = {
+        taikhoan: newUser[0].EMAIL,
+        tenkhachhang: newUser[0].FIRSTNAME,
+        LASTNAME: newUser[0].LASTNAME,
+        PHONENUMBER: newUser[0].PHONENUMBER,
+        ADDRESS: newUser[0].ADDRESS,
+      };
+      let token = createJWT(payload);
 
       return {
         EM: "Tài khoản mới được tạo và đăng nhập thành công",
@@ -394,18 +391,18 @@ const verify_adminService = async (token) => {
     // Giải mã token để lấy thông tin tài khoản
     const decoded = jwt.verify(token.token, process.env.SECRETKEYADMIN);
     console.log("decoded", decoded);
-    const TEN_DANG_NHAP = decoded.TEN_DANG_NHAP;
+    const taikhoan = decoded.taikhoan;
 
     // Truy vấn cơ sở dữ liệu để lấy thông tin người dùng
     const [results, fields] = await pool.execute(
-      "SELECT * FROM `khachhang` WHERE `TEN_DANG_NHAP` = ?",
-      [TEN_DANG_NHAP]
+      "SELECT * FROM `user` WHERE `EMAIL` = ?",
+      [taikhoan]
     );
 
     if (results.length > 0) {
       const user = results[0];
       // Kiểm tra quyền Admin
-      if (user.MA_PHAN_QUYEN === 1) {
+      if (user.ID_ROLE === 1) {
         return {
           EM: "Kiểm tra thành công !!!",
           EC: 1,
