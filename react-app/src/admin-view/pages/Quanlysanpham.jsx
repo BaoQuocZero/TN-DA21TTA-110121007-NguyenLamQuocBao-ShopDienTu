@@ -212,13 +212,13 @@ const ProductManagement = () => {
                 <TableCell sx={{ color: "#c9d1d9" }}>{product.ID_PRODUCTDETAILS}</TableCell>
                 <TableCell sx={{ color: "#c9d1d9" }}>{product.NAME_PRODUCTDETAILS}</TableCell>
                 <TableCell sx={{ color: "#c9d1d9" }}>
-                  {product.TENTL || "N/A"}
+                  {product.NAME_CATEGORY || "N/A"}
                 </TableCell>
                 <TableCell sx={{ color: "#c9d1d9" }}>
                   {product.PRICE_PRODUCTDETAILS ? product.PRICE_PRODUCTDETAILS.toLocaleString() : "N/A"}₫
                 </TableCell>
                 <TableCell sx={{ color: "#c9d1d9" }}>
-                  {product.NHA_SAN_XUAT || "N/A"}
+                  {product.BRAND_NAME || "N/A"}
                 </TableCell>
                 <TableCell sx={{ color: "#c9d1d9" }}>
                   <img

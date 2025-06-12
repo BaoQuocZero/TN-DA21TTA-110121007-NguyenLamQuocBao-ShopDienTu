@@ -89,7 +89,14 @@ const xem_tatca_sanpham = async () => {
   try {
     let [results1, fields1] = await pool.execute(
       `
-      SELECT * FROM product_details
+      SELECT 
+        product_details.*, 
+        brand.NAME AS BRAND_NAME, 
+        category.NAME_CATEGORY
+      FROM product_details
+      JOIN product ON product_details.ID_PRODUCT = product.ID_PRODUCT
+      JOIN brand ON product.ID_BRAND = brand.ID_BRAND
+      JOIN category ON product.ID_CATEGORY = category.ID_CATEGORY;
       `
     );
 

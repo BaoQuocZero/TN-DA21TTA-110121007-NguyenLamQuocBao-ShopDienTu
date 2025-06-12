@@ -15,6 +15,7 @@ import LanguageIcon from "@mui/icons-material/Language";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useTheme } from "@mui/material/styles";
 import { Link } from "react-router-dom";
+import logo from "../../../public/logo.png"
 
 const HeaderAdmin = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -200,11 +201,11 @@ const HeaderAdmin = () => {
       style={{ backgroundColor: "#101014", zIndex: 20 }}
     >
       <Toolbar>
-        {/* <img
-          src="https://upload.wikimedia.org/wikipedia/commons/3/31/Epic_Games_logo.svg"
+        <img
+          src={logo}
           alt="Epic Games"
           style={{ height: 30, marginRight: 16 }}
-        /> */}
+        />
         <Typography
           variant="h6"
           component="div"
