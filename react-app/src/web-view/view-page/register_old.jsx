@@ -104,11 +104,12 @@ const RegistrationForm = () => {
           ref={scrollRef} // Gán ref cho phần tử này
         >
           {" "}
-          <img
+          {/* <img
             src="https://upload.wikimedia.org/wikipedia/commons/3/31/Epic_Games_logo.svg"
             alt="Epic Games"
             style={{ marginBottom: 16, width: "50px", height: "50px" }}
-          />{" "}
+          /> */}
+          {" "}
           {isOpenThongTinUser ? (
             <>
               <Typography variant="h6" component="h1" gutterBottom>

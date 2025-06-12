@@ -191,13 +191,6 @@ const HeaderAdmin = () => {
           Minurte1
         </Typography>
       </Box>
-      {/* <Button
-        variant="contained"
-        href="https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi?trackingId=aebf7d1fc5764a45acab1b551038bebf"
-        style={{ backgroundColor: "#00aaff", marginLeft: 16 }}
-      >
-        Download
-      </Button> */}
     </>
   );
 
@@ -207,11 +200,11 @@ const HeaderAdmin = () => {
       style={{ backgroundColor: "#101014", zIndex: 20 }}
     >
       <Toolbar>
-        <img
+        {/* <img
           src="https://upload.wikimedia.org/wikipedia/commons/3/31/Epic_Games_logo.svg"
           alt="Epic Games"
           style={{ height: 30, marginRight: 16 }}
-        />
+        /> */}
         <Typography
           variant="h6"
           component="div"

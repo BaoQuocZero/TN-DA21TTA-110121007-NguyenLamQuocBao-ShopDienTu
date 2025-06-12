@@ -89,24 +89,8 @@ const xem_tatca_sanpham = async () => {
   try {
     let [results1, fields1] = await pool.execute(
       `
-      SELECT 
-        sanpham.MASP,
-        sanpham.TENSP,
-        sanpham.DON_GIA,
-        sanpham.NHA_SAN_XUAT,
-        sanpham.ANH_SP,
-        sanpham.GHI_CHU_SP,
-        sanpham.TRANG_THAI_SAN_PHAM,
-        sanpham.NGAY_CAP_NHAT,
-        sanpham.NGAY_RA_MAT,
-        GROUP_CONCAT(DISTINCT theloai.TENTL) AS TENTL,
-        GROUP_CONCAT(DISTINCT theloai.MATL) AS MATL_ARRAY
-      FROM sanpham
-      LEFT JOIN thuoc_loai ON sanpham.MASP = thuoc_loai.MASP
-      LEFT JOIN theloai ON theloai.MATL = thuoc_loai.MATL
-      GROUP BY sanpham.MASP
-      ORDER BY sanpham.NGAY_CAP_NHAT DESC;
-      ` // Sắp xếp theo ngày cập nhật mới nhất
+      SELECT * FROM product_details
+      `
     );
 
     return {

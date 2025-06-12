@@ -9,20 +9,17 @@ const updateUserByAdmin = async (req, res) => {
 
   // Danh sách các trường cho phép cập nhật
   const allowedFields = [
-    "MA_PHAN_QUYEN",
-    "TEN_DANG_NHAP",
-    "MAT_KHAU",
-    "TEN_KHACH_HANG",
-    "DIA_CHI",
-    "SDT_KH",
-    "GHI_CHU_KH",
-    "DIA_CHI_Provinces",
-    "DIA_CHI_Wards",
-    "DIA_CHI_STREETNAME",
-    "DIA_CHI_Districts",
-    "NGAY_SINH",
-    "AVATAR",
-    "TRANG_THAI_NGUOI_DUNG",
+    "ID_ROLE",
+    "EMAIL",
+    "FIRSTNAME",
+    "LASTNAME",
+    "PHONENUMBER",
+    "CODEADDRESS",
+    "ADDRESS",
+    "PASSWORD",
+    "CREATEAT",
+    "UPDATEAT",
+    "ISDELETE",
   ];
 
   // Lấy danh sách trường cần cập nhật
@@ -45,9 +42,9 @@ const updateUserByAdmin = async (req, res) => {
 
   try {
     const query = `
-        UPDATE khachhang
+        UPDATE user
         SET ${updates.join(", ")}
-        WHERE MA_KH = ?
+        WHERE ID_USER = ?
       `;
     values.push(userId); // Thêm userId vào cuối giá trị để dùng trong WHERE
 

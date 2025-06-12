@@ -66,9 +66,6 @@ const DanhSachNguoiDungAdmin = () => {
 
     // Hàm mở dialog và hiển thị thông tin người dùng
     const handleEditClick = (user) => {
-        // setSelectedProvince(user.DIA_CHI_Provinces);
-        // setSelectedDistrict(user.DIA_CHI_Districts);
-        // setSelectedWards(user.DIA_CHI_Wards);
         setSelectedUser(user);
         console.log("user: ", user)
         setIsDialogOpen(true);
@@ -79,31 +76,16 @@ const DanhSachNguoiDungAdmin = () => {
         console.log("selectedUser trước khi cập nhật:", selectedUser);
 
         // Cập nhật địa chỉ vào selectedUser
-        const updatedUser = {
-            ...selectedUser,
-            DIA_CHI_Provinces: selectedProvince?.full_name || "",
-            DIA_CHI_Districts: selectedDistrict?.full_name || "",
-            DIA_CHI_Wards: selectedWards?.full_name || "",
-            DIA_CHI:
-                selectedUser?.DIA_CHI_STREETNAME &&
-                    selectedProvince?.full_name &&
-                    selectedDistrict?.full_name &&
-                    selectedWards?.full_name
-                    ? `${selectedUser.DIA_CHI_STREETNAME}, ${selectedWards.full_name}, ${selectedDistrict.full_name}, ${selectedProvince.full_name}`
-                    : "",
-        };
-
-        console.log("selectedUser sau khi cập nhật:", updatedUser);
-
+        const updatedUser = selectedUser
         try {
             const response = await axios.put(
-                `${api}/khach-hang/updateUser/${selectedUser.MA_KH}`,
+                `${api}/khach-hang/updateUser/${selectedUser.ID_USER}`,
                 updatedUser
             );
             if (response.data.EC === 1) {
                 setUsers((prevUsers) =>
                     prevUsers.map((user) =>
-                        user.MA_KH === updatedUser.MA_KH ? updatedUser : user
+                        user.ID_USER === updatedUser.ID_USER ? updatedUser : user
                     )
                 );
                 enqueueSnackbar(response.data.EM, { variant: "success" });
@@ -263,7 +245,7 @@ const DanhSachNguoiDungAdmin = () => {
                     />
                     <TextField
                         fullWidth
-                        label="Email"
+                        label="Số điện thoại"
                         name="PHONENUMBER"
                         value={selectedUser?.PHONENUMBER || ""}
                         onChange={handleInputChange}
@@ -304,8 +286,8 @@ const DanhSachNguoiDungAdmin = () => {
                             value={selectedUser?.ISDELETE ?? ""}
                             onChange={handleInputChange}
                         >
-                            <MenuItem value={0}>Ngưng hoạt động</MenuItem>
-                            <MenuItem value={1}>Đang hoạt động</MenuItem>
+                            <MenuItem value={1}>Ngưng hoạt động</MenuItem>
+                            <MenuItem value={0}>Đang hoạt động</MenuItem>
                         </Select>
                     </FormControl>
                 </DialogContent>

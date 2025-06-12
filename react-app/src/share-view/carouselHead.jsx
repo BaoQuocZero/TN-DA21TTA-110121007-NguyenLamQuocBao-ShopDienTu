@@ -42,13 +42,13 @@ const CarouselHead = ({ carouselProducts }) => {
   useEffect(() => {
     // Kiểm tra nếu có sản phẩm trong carouselProducts thì lấy hình ảnh đầu tiên
     if (carouselProducts && carouselProducts.length > 0) {
-      setMainImage(carouselProducts[0].HINH_ANH_BIA);
+      setMainImage(carouselProducts[0].GALLERYPRODUCT_DETAILS);
     }
   }, [carouselProducts]); // Chạy khi carouselProducts thay đổi
 
   const handleClick = (product, index) => {
     setIsSelected(index); // Đảo ngược trạng thái khi nhấp
-    setMainImage(product.HINH_ANH_BIA); // Cập nhật hình ảnh chính
+    setMainImage(product.GALLERYPRODUCT_DETAILS); // Cập nhật hình ảnh chính
 
     setAnimateLogo(true);
 
@@ -57,7 +57,7 @@ const CarouselHead = ({ carouselProducts }) => {
     }, 500);
   };
   const selectedProduct = carouselProducts.find(
-    (product) => product.HINH_ANH_BIA === mainImage
+    (product) => product.GALLERYPRODUCT_DETAILS === mainImage
   );
 
   const handleBuyProduct = (id) => {
@@ -117,11 +117,10 @@ const CarouselHead = ({ carouselProducts }) => {
                 flexDirection: { xs: "column", md: "row" },
                 width: "100%",
                 backgroundColor: currentTheme.backgroundColor,
-                backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0)), url(${
-                  selectedProduct
-                    ? `${api}/images/${selectedProduct.HINH_ANH_BIA}`
+                backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0)), url(${selectedProduct
+                    ? `${api}/images/${selectedProduct.GALLERYPRODUCT_DETAILS}`
                     : "default-image-path"
-                })`,
+                  })`,
                 backgroundSize: "cover", // Để ảnh phủ toàn bộ
                 backgroundPosition: "center", // Căn giữa ảnh nền
               }}
@@ -140,15 +139,14 @@ const CarouselHead = ({ carouselProducts }) => {
                 {selectedProduct && (
                   <img
                     src={
-                      selectedProduct.HINH_ANH_LOGO
-                        ? `${api}/images/${selectedProduct.HINH_ANH_LOGO}`
+                      selectedProduct.GALLERYPRODUCT_DETAILS
+                        ? `${api}/images/${selectedProduct.GALLERYPRODUCT_DETAILS}`
                         : "default-image-path" // Thay thế bằng đường dẫn ảnh mặc định nếu không tìm thấy
                     }
-                    alt={`${
-                      selectedProduct.HINH_ANH_LOGO
-                        ? selectedProduct.HINH_ANH_LOGO
+                    alt={`${selectedProduct.GALLERYPRODUCT_DETAILS
+                        ? selectedProduct.GALLERYPRODUCT_DETAILS
                         : "Product"
-                    } Logo`}
+                      } Logo`}
                     className={`${animateLogo ? "slide-in" : ""}`} // Áp dụng class animation
                     style={{
                       maxWidth: "150px", // Kích thước tối đa cho logo
@@ -163,9 +161,8 @@ const CarouselHead = ({ carouselProducts }) => {
                   isSelected === index ? (
                     <React.Fragment key={index}>
                       <Typography
-                        className={`component-game-description-background  ${
-                          animateLogo ? "fade-in-up-text" : ""
-                        }`}
+                        className={`component-game-description-background  ${animateLogo ? "fade-in-up-text" : ""
+                          }`}
                         variant="subtitle1"
                         sx={{
                           textAlign: "left",
@@ -173,7 +170,7 @@ const CarouselHead = ({ carouselProducts }) => {
                           fontSize: { xs: "0.9rem", md: "1.25rem" },
                         }}
                       >
-                        {products.GHI_CHU_UT}
+                        {products.SPECIFICATION}
                       </Typography>
                       <Typography
                         className="component-game-description-background"
@@ -183,7 +180,7 @@ const CarouselHead = ({ carouselProducts }) => {
                         {new Intl.NumberFormat("vi-VN", {
                           style: "currency",
                           currency: "VND",
-                        }).format(products.DON_GIA)}
+                        }).format(products.SALE_PRODUCTDETAILS)}
                       </Typography>
                     </React.Fragment>
                   ) : null
@@ -198,7 +195,7 @@ const CarouselHead = ({ carouselProducts }) => {
                   <Button
                     className="component-game-btn-play"
                     variant="contained"
-                    onClick={() => handleBuyProduct(selectedProduct.MASP)}
+                    onClick={() => handleBuyProduct(selectedProduct.ID_PRODUCTDETAILS)}
                     sx={{
                       zIndex: 2,
                       backgroundColor: "white",
@@ -260,9 +257,8 @@ const CarouselHead = ({ carouselProducts }) => {
               {carouselProducts.map((product, index) => (
                 <div
                   key={index}
-                  className={`component-game-slider-card ${
-                    isSelected === index ? "slider-game-active" : ""
-                  }`}
+                  className={`component-game-slider-card ${isSelected === index ? "slider-game-active" : ""
+                    }`}
                   onClick={() => {
                     handleClick(product, index);
                   }} // Gọi hàm khi nhấp vào
@@ -270,9 +266,9 @@ const CarouselHead = ({ carouselProducts }) => {
                   <div className="slider-select-game">
                     <img
                       component="img"
-                      src={`${api}/images/${product.HINH_ANH_NAVBAR}`}
+                      src={`${api}/images/${product.GALLERYPRODUCT_DETAILS}`}
                       className="component-game-img-slide"
-                      alt={product.HINH_ANH_NAVBAR}
+                      alt={product.GALLERYPRODUCT_DETAILS}
                       sx={{
                         objectFit: "contain",
                       }}
@@ -289,7 +285,7 @@ const CarouselHead = ({ carouselProducts }) => {
                         }}
                         variant="body2"
                       >
-                        {product.TENSP}
+                        {product.NAME_PRODUCTDETAILS}
                       </Typography>
                     </CardContent>
                   </div>

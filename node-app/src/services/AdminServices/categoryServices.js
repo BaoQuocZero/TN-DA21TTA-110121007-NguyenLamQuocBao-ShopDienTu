@@ -34,16 +34,16 @@ const tao_theloai = async (TENTL, MO_TA_TL) => {
 
 const xem_tatca_theloai = async () => {
   try {
-    let [results1, fields1] = await pool.execute("select * from theloai");
+    let [results1, fields1] = await pool.execute("select * from category");
 
     return {
-      EM: "tạo thể loại thành công",
+      EM: "Xem thể loại thành công",
       EC: 1,
       DT: results1,
     };
   } catch (error) {
     return {
-      EM: "lỗi services createTaiKhoan",
+      EM: "lỗi services xem_tatca_theloai",
       EC: 1,
       DT: [],
     };

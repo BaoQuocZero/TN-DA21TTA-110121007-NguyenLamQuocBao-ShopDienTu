@@ -51,7 +51,7 @@ const Quanlytheloai = () => {
 
   useEffect(() => {
     const filtered = theloai.filter((category) =>
-      category.TENTL.toLowerCase().includes(searchTerm.toLowerCase())
+      category.NAME_CATEGORY.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredTheloai(filtered);
   }, [searchTerm, theloai]);
@@ -75,9 +75,9 @@ const Quanlytheloai = () => {
 
   const handleOpenDialog = (category = null) => {
     setCurrentCategory(category);
-    setTenTheloai(category ? category.TENTL : "");
-    setMoTaTheloai(category ? category.MO_TA_TL : "");
-    setTrangThaiTheloai(category ? category.TRANG_THAI_THELOAI : 1);
+    setTenTheloai(category ? category.NAME_CATEGORY : "");
+    setMoTaTheloai(category ? category.DESCRIPTION : "");
+    setTrangThaiTheloai(category ? category.ISDELETE : 1);
     setOpenDialog(true);
   };
 
@@ -214,19 +214,19 @@ const Quanlytheloai = () => {
           </TableHead>
           <TableBody>
             {paginatedtheloai.map((category) => (
-              <TableRow key={category.MATL}>
-                <TableCell sx={{ color: "#c9d1d9" }}>{category.MATL}</TableCell>
+              <TableRow key={category.ID_CATEGORY}>
+                <TableCell sx={{ color: "#c9d1d9" }}>{category.ID_CATEGORY}</TableCell>
                 <TableCell sx={{ color: "#c9d1d9" }}>
-                  {category.TENTL}
+                  {category.NAME_CATEGORY}
                 </TableCell>
                 <TableCell sx={{ color: "#c9d1d9" }}>
-                  {category.MO_TA_TL}
+                  {category.DESCRIPTION}
                 </TableCell>
                 <TableCell sx={{ color: "#c9d1d9" }}>
-                  {moment(category.CREATED_AT).format("HH:mm:ss - DD/MM/YYYY")}
+                  {moment(category.CREATEDAT).format("HH:mm:ss - DD/MM/YYYY")}
                 </TableCell>
                 <TableCell sx={{ color: "#c9d1d9" }}>
-                  {moment(category.UPDATED_AT).format("HH:mm:ss - DD/MM/YYYY")}
+                  {moment(category.UPDATEDAT).format("HH:mm:ss - DD/MM/YYYY")}
                 </TableCell>
                 <TableCell>
                   <IconButton
@@ -237,7 +237,7 @@ const Quanlytheloai = () => {
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() => handleDelete(category.MATL)}
+                    onClick={() => handleDelete(category.ID_CATEGORY)}
                   >
                     <Delete />
                   </IconButton>
