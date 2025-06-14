@@ -267,7 +267,6 @@ const loginUserGoogle = async (req, res) => {
 const verifyAdmin = async (req, res) => {
   try {
     const check = await verify_adminService(req.body);
-    console.log("Check: ", check);
     return res.status(200).json({
       EM: "Kiểm tra thành công !!!",
       EC: 1,

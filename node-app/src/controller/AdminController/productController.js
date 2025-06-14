@@ -12,8 +12,6 @@ const tao_new_sanpham = async (req, res) => {
     const datasanpham = req.body;
     const filename = req.file ? req.file.filename : 1;
 
-    console.log("cehc", datasanpham);
-
     let results = await tao_sanpham(datasanpham, filename);
     return res.status(200).json({
       EM: results.EM,

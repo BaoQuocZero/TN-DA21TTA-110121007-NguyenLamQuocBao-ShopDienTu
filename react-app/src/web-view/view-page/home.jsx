@@ -157,7 +157,7 @@ const Home = () => {
                   >
                     <CardContent sx={{ padding: 2 }}>
                       <img
-                        src={`${api}/images/${product.ANH_SP}`}
+                        src={`${api}/images/${product.GALLERYPRODUCT_DETAILS}`}
                         alt={product.TENSP}
                         style={{
                           width: "100%",

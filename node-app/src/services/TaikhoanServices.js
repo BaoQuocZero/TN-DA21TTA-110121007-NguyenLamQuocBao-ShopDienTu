@@ -390,7 +390,6 @@ const verify_adminService = async (token) => {
     console.log("token", token.token);
     // Giải mã token để lấy thông tin tài khoản
     const decoded = jwt.verify(token.token, process.env.SECRETKEYADMIN);
-    console.log("decoded", decoded);
     const taikhoan = decoded.taikhoan;
 
     // Truy vấn cơ sở dữ liệu để lấy thông tin người dùng

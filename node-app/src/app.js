@@ -13,6 +13,7 @@ const { spawn } = require("child_process");
 const { exec } = require("child_process");
 const axios = require("axios");
 const knn = require("ml-knn");
+
 // Router =========================================================================
 const CRUDTaiKhoan = require("./routes/AdminRoute/AdminManageRoute");
 const CRUDTheLoai = require("./routes/AdminRoute/CategoryRoute");
@@ -35,6 +36,8 @@ const KhachHangRouter = require("./routes/AdminRoute/khachHangRoute");
 const ThanhToanOnlineRoute = require("./routes/AdminRoute/thanhToanOnlineRoute");
 const ChiTietHoaDonRoute = require("./routes/AdminRoute/chiTietHoaDonRouter");
 
+const CRUDBrand = require("./routes/AdminRoute/BrandRoute");
+const Promotion = require("./routes/AdminRoute/PromotionRoute");
 const corsOptions = {
   origin: process.env.URL_REACT, // Cho phép truy cập từ tất cả các nguồn
   credentials: true, // Cho phép gửi cookie
@@ -73,6 +76,8 @@ QuanLyDonHangRoute(app);
 giohangRoute(app);
 yeuthichRoute(app);
 
+CRUDBrand(app);
+Promotion(app);
 app.use("/api/home", HomeRoute);
 app.use("/api", libraryRoute);
 //=====================================================================================================

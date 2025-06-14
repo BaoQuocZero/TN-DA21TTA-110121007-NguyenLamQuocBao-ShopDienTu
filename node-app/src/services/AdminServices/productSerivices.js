@@ -1,74 +1,57 @@
 const pool = require("../../config/database");
+
 const tao_sanpham = async (datasanpham, anhsp) => {
-  let categories;
-
-  try {
-    categories = datasanpham.selectedCategories
-      ? JSON.parse(datasanpham.selectedCategories)
-      : [];
-  } catch (error) {
-    console.error("Error parsing selectedCategories:", error);
-    return {
-      EM: "Dữ liệu selectedCategories không hợp lệ",
-      EC: 0,
-      DT: [],
-    };
-  }
-
   try {
     console.log("Dữ liệu sản phẩm:", datasanpham);
-    console.log("Danh sách thể loại:", categories);
-
-    // Kiểm tra sản phẩm đã tồn tại
-    let [results1] = await pool.execute(
-      "SELECT * FROM sanpham WHERE TENSP = ?",
-      [datasanpham.TENSP]
-    );
-    if (results1.length > 0) {
-      return {
-        EM: "Sản phẩm đã tồn tại",
-        EC: 0,
-        DT: [],
-      };
-    }
-
-    // Tạo sản phẩm mới
-    let [results_tao] = await pool.execute(
-      "INSERT INTO sanpham (TENSP, DON_GIA, NHA_SAN_XUAT, ANH_SP, GHI_CHU_SP, TRANG_THAI_SAN_PHAM, NGAY_CAP_NHAT, NGAY_RA_MAT) VALUES (?,?,?,?,?,?,NOW(),NOW())",
+    console.log("anhsp:", anhsp);
+    // 1. Tạo sản phẩm (bảng `product`)
+    const [productResult] = await pool.execute(
+      `INSERT INTO product (
+        ID_PROMOTION, ID_CATEGORY, ID_BRAND,
+        NAMEPRODUCT, SLUG, STATUS, UNIT,
+        METATITLE, SHORTDESCRIPTION, DESCRIPTION, METADESCRIPTION,
+        ISDELETE, CREATEAT, UPDATEAT, GALLERYPRODUCT
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)`,
       [
-        datasanpham.TENSP,
-        datasanpham.DON_GIA,
-        datasanpham.NHA_SAN_XUAT,
-        anhsp,
-        datasanpham.GHI_CHU_SP,
-        datasanpham.TRANG_THAI_SAN_PHAM,
+        datasanpham.selectedPromotion,
+        datasanpham.selectedCategories,
+        datasanpham.selectedBrand,
+        datasanpham.NAME_PRODUCTDETAILS,
+        datasanpham.NAME_PRODUCTDETAILS.toLowerCase().replace(/\s+/g, "-"),
+        1, // STATUS mặc định là 1 (đang bán)
+        datasanpham.UNIT,
+        datasanpham.METATITLE,
+        datasanpham.SHORTDESCRIPTION,
+        datasanpham.DESCRIPTION,
+        datasanpham.METADESCRIPTION,
+        datasanpham.ISDELETE,
+        anhsp || null,
       ]
     );
 
-    console.log("Kết quả tạo sản phẩm:", results_tao);
+    // 2. Lấy ID_PRODUCT vừa insert
+    const ID_PRODUCT = productResult.insertId;
 
-    // Lấy lại sản phẩm vừa tạo
-    let [results_timkiem] = await pool.execute(
-      "SELECT * FROM sanpham WHERE TENSP = ?",
-      [datasanpham.TENSP]
+    // 3. Tạo chi tiết sản phẩm (bảng `product_details`)
+    await pool.execute(
+      `INSERT INTO product_details (
+        ID_PRODUCT, NAME_PRODUCTDETAILS,
+        PRICE_PRODUCTDETAILS, SALE_PRODUCTDETAILS, RATING_PRODUCTDETAILS,
+        ISSHOW_PRODUCTDETAILS, AMOUNT_AVAILABLE, SPECIFICATION,
+        Import_Price, GALLERYPRODUCT_DETAILS, USERUPDATE,
+        CREATEAT, UPDATEAT, ISDELETE
+      ) VALUES (?, ?, ?, 0, 0, 1, ?, ?, ?, ?, 'admin', NOW(), NOW(), ?)`,
+      [
+        ID_PRODUCT,
+        datasanpham.NAME_PRODUCTDETAILS,
+        datasanpham.PRICE_PRODUCTDETAILS,
+        datasanpham.AMOUNT_AVAILABLE,
+        datasanpham.SPECIFICATION,
+        datasanpham.Import_Price,
+        anhsp || null,
+        datasanpham.ISDELETE,
+      ]
     );
-
-    console.log("Sản phẩm vừa tạo:", results_timkiem);
-
-    // Thêm thể loại vào bảng `thuoc_loai`
-    if (Array.isArray(categories) && categories.length > 0) {
-      for (const matl of categories) {
-        try {
-          let [result_insert] = await pool.execute(
-            "INSERT INTO thuoc_loai (MASP, MATL) VALUES (?, ?)",
-            [results_timkiem[0].MASP, matl]
-          );
-          console.log("Kết quả thêm thể loại:", result_insert);
-        } catch (error) {
-          console.error(`Lỗi khi thêm thể loại ${matl}:`, error);
-        }
-      }
-    }
 
     return {
       EM: "Tạo sản phẩm thành công",
@@ -90,9 +73,10 @@ const xem_tatca_sanpham = async () => {
     let [results1, fields1] = await pool.execute(
       `
       SELECT 
-        product_details.*, 
-        brand.NAME AS BRAND_NAME, 
-        category.NAME_CATEGORY
+        product_details.*,
+        product.*,
+        brand.*, 
+        category.*
       FROM product_details
       JOIN product ON product_details.ID_PRODUCT = product.ID_PRODUCT
       JOIN brand ON product.ID_BRAND = brand.ID_BRAND

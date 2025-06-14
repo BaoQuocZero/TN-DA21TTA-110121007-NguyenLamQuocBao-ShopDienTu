@@ -29,8 +29,9 @@ const { upload } = require("../../config/multerConfig.js");
 //------------------------------------------------------------------------------
 
 const CRUDSanpham = (app) => {
-  router.put("/sua/:MASP", upload.single("ANH_SP"), sua_sanpham_voi_id);
-  router.post("/tao", upload.single("ANH_SP"), tao_new_sanpham);
+  router.put("/sua/:MASP", upload.single("GALLERYPRODUCT_DETAILS"), sua_sanpham_voi_id);
+  router.post("/tao", upload.single("GALLERYPRODUCT_DETAILS"), tao_new_sanpham);
+
   router.post("/xem-id", xem_sanpham_voi_id);
   router.get("/adventure", getSanPhamByAdventure);
   router.get("/action", getSanPhamByTheLoai_Action);

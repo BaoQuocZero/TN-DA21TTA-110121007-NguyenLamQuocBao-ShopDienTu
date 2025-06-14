@@ -13,6 +13,7 @@ import {
   Select,
   InputLabel,
   Autocomplete,
+  Grid,
 } from "@mui/material";
 import axios from "axios";
 const api = process.env.REACT_APP_URL_SERVER;
@@ -21,7 +22,7 @@ const modalStyle = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 600,
+  width: "90%",
   maxHeight: "90vh",         // Giới hạn chiều cao tối đa
   overflowY: "auto",         // Cho phép cuộn dọc nếu vượt quá
   bgcolor: "background.paper",
@@ -33,51 +34,66 @@ const modalStyle = {
 
 const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
   const [form, setForm] = useState({
+    selectedCategories: [],
+    selectedPromotion: [],
+    selectedBrand: [],
+
+    UNIT: 0,
+    METATITLE: "",
+    SHORTDESCRIPTION: "",
+    DESCRIPTION: "",
+    METADESCRIPTION: "",
+
     NAME_PRODUCTDETAILS: "",
-    PRICE_PRODUCTDETAILS: "",
-    NHA_SAN_XUAT: "", //NAME
+    PRICE_PRODUCTDETAILS: 0,
+    AMOUNT_AVAILABLE: 0,
+    SPECIFICATION: "",
+    Import_Price: 0,
+
     GALLERYPRODUCT_DETAILS: null,
-    ISDELETE: "",
-    selectedCategories: [], // Thêm trạng thái cho các thể loại đã chọn
+    ISDELETE: 1,
   });
   const [categories, setCategories] = useState([]);
-  console.log("products", product);
-  console.log("form", form);
-  console.log("category", categories);
+  const [brand, setBrand] = useState([]);
+  const [promotion, setPromotion] = useState([]);
 
   useEffect(() => {
     fetchCategories();
+    fetchBrand();
+    fetchPromotion();
   }, []);
 
   useEffect(() => {
     if (product) {
-      // Tách các MATL từ MATL_ARRAY
-      const matlArray = product.MATL_ARRAY
-        ? product.MATL_ARRAY.split(",").map((matl) => parseInt(matl, 10))
-        : [];
+      const selectedCategory = product.ID_CATEGORY || null;
 
-      // Lấy các thể loại khớp từ danh sách categories
-      const matchedCategories = categories.filter((category) =>
-        matlArray.includes(category.MATL)
-      );
-
-      // Cập nhật form
       setForm({
         ...product,
-        NAME_CATEGORY: product.NAME_CATEGORY ? product.NAME_CATEGORY.split(",") : [],
-        selectedCategories: matchedCategories.map((category) => category.MATL), // Chỉ lấy MATL
+        selectedCategories: selectedCategory, // chỉ 1 ID
       });
     } else {
       setForm({
+        selectedCategories: null, // không phải mảng nữa
+        selectedPromotion: null,
+        selectedBrand: null,
+
+        UNIT: "Máy",
+        METATITLE: "",
+        SHORTDESCRIPTION: "",
+        DESCRIPTION: "",
+        METADESCRIPTION: "",
+
         NAME_PRODUCTDETAILS: "",
-        PRICE_PRODUCTDETAILS: "",
-        NHA_SAN_XUAT: "", //NAME
+        PRICE_PRODUCTDETAILS: 0,
+        AMOUNT_AVAILABLE: 0,
+        SPECIFICATION: "",
+        Import_Price: 0,
+
         GALLERYPRODUCT_DETAILS: null,
-        ISDELETE: "",
-        selectedCategories: [],
+        ISDELETE: 1,
       });
     }
-  }, [product, categories]);
+  }, [product]);
 
   const fetchCategories = async () => {
     try {
@@ -85,6 +101,22 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
       setCategories(response.data.DT);
     } catch (error) {
       console.error("Error fetching categories:", error);
+    }
+  };
+  const fetchBrand = async () => {
+    try {
+      const response = await axios.get(`${api}/api/v1/admin/brand/getAllBrand`);
+      setBrand(response.data.DT);
+    } catch (error) {
+      console.error("Error fetching fetchBrand:", error);
+    }
+  };
+  const fetchPromotion = async () => {
+    try {
+      const response = await axios.get(`${api}/api/v1/admin/promotion/getAllPromotion`);
+      setPromotion(response.data.DT);
+    } catch (error) {
+      console.error("Error fetching fetchPromotion:", error);
     }
   };
 
@@ -96,58 +128,80 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
-
-  const handleCategoryChange = (event) => {
-    const selectedId = parseInt(event.target.value);
-    setForm((prevForm) => ({
-      ...prevForm,
-      selectedCategories: event.target.checked
-        ? [...prevForm.selectedCategories, selectedId]
-        : prevForm.selectedCategories.filter((id) => id !== selectedId),
-    }));
-  };
   const handleSubmit = async () => {
+    const requiredFields = [
+      "NAME_PRODUCTDETAILS",
+      "PRICE_PRODUCTDETAILS",
+      "Import_Price",
+      "AMOUNT_AVAILABLE",
+      "UNIT",
+      "METATITLE",
+      "SHORTDESCRIPTION",
+      "DESCRIPTION",
+      "METADESCRIPTION",
+      "SPECIFICATION",
+    ];
+
+    for (const field of requiredFields) {
+      if (!form[field] && form[field] !== 0) {
+        alert(`Vui lòng nhập ${field}`);
+        return;
+      }
+    }
+
     if (!form.GALLERYPRODUCT_DETAILS) {
       alert("Vui lòng chọn một hình ảnh.");
       return;
     }
 
     const formData = new FormData();
-    formData.append("TENSP", form.NAME_PRODUCTDETAILS);
-    formData.append("DON_GIA", form.PRICE_PRODUCTDETAILS);
-    formData.append("NHA_SAN_XUAT", form.NHA_SAN_XUAT);
-    formData.append("TRANG_THAI_SAN_PHAM", form.ISDELETE);
-    formData.append(
-      "selectedCategories",
-      JSON.stringify(form.selectedCategories)
-    );
 
-    // Nếu có ảnh, bạn cần thêm ảnh vào formData
-    if (form.GALLERYPRODUCT_DETAILS) {
-      formData.append("GALLERYPRODUCT_DETAILS", form.GALLERYPRODUCT_DETAILS);
-    }
+    // Thêm dữ liệu cơ bản
+    formData.append("NAME_PRODUCTDETAILS", form.NAME_PRODUCTDETAILS);
+    formData.append("PRICE_PRODUCTDETAILS", form.PRICE_PRODUCTDETAILS);
+    formData.append("Import_Price", form.Import_Price);
+    formData.append("AMOUNT_AVAILABLE", form.AMOUNT_AVAILABLE);
+    formData.append("UNIT", form.UNIT);
+    formData.append("METATITLE", form.METATITLE);
+    formData.append("SHORTDESCRIPTION", form.SHORTDESCRIPTION);
+    formData.append("DESCRIPTION", form.DESCRIPTION);
+    formData.append("METADESCRIPTION", form.METADESCRIPTION);
+    formData.append("SPECIFICATION", form.SPECIFICATION);
+    formData.append("ISDELETE", form.ISDELETE);
+
+    // Thêm ảnh
+    formData.append("GALLERYPRODUCT_DETAILS", form.GALLERYPRODUCT_DETAILS);
+
+    // Convert mảng ID sang JSON string (nếu backend yêu cầu)
+    formData.append("selectedCategories", JSON.stringify(form.selectedCategories));
+    formData.append("selectedBrand", JSON.stringify(form.selectedBrand));
+    formData.append("selectedPromotion", JSON.stringify(form.selectedPromotion));
 
     try {
       const url = product
         ? `${api}/api/v1/admin/sanpham/sua/${product.ID_PRODUCTDETAILS}`
-        : `${api}/api/v1/admin/sanpham/tao`; // Sử dụng POST cho thêm sản phẩm mới
+        : `${api}/api/v1/admin/sanpham/tao`;
 
-      const method = product ? "put" : "post"; // Sử dụng PUT cho cập nhật và POST cho thêm mới
+      const method = product ? "put" : "post";
 
-      const response = await axios[method](url, formData);
+      const response = await axios[method](url, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       if (response.data.EC === 1) {
         fetchProducts();
         onClose();
       } else {
-        alert(response.data.EM);
+        alert(response.data.EM || "Lỗi không xác định từ server.");
       }
     } catch (error) {
-      console.error("Error updating product:", error);
-      alert("Lỗi khi cập nhật sản phẩm");
+      console.error("Error submitting form:", error);
+      alert("Đã xảy ra lỗi khi gửi dữ liệu.");
     }
   };
-  console.log("product", product);
+
   return (
     <Modal
       open={open}
@@ -160,106 +214,162 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
           {product ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới"}
         </Typography>
 
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Tên sản phẩm"
-          name="NAME_PRODUCTDETAILS"
-          value={form.NAME_PRODUCTDETAILS}
-          onChange={handleChange}
-          required
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Đơn giá"
-          name="PRICE_PRODUCTDETAILS"
-          type="number"
-          value={form.PRICE_PRODUCTDETAILS}
-          onChange={handleChange}
-          required
-          inputProps={{ min: "0" }}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Nhà sản xuất"
-          name="NHA_SAN_XUAT"
-          value={form.NHA_SAN_XUAT}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="file"
-          name="GALLERYPRODUCT_DETAILS"
-          accept="image/*"
-          onChange={handleChange}
-          style={{ marginTop: "16px", marginBottom: "16px" }}
-          required
-        />
-        <Select
-          margin="dense"
-          label="Trạng Thái"
-          fullWidth
-          name="ISDELETE"
-          variant="outlined"
-          value={form.ISDELETE}
-          onChange={handleChange}
-        >
-          <MenuItem value="1">Đang kinh doanh</MenuItem>
-          <MenuItem value="0">Ngưng kinh doanh</MenuItem>
-        </Select>
-
-        <FormControl fullWidth margin="normal">
-          <Autocomplete
-            multiple
-            options={categories} // Danh sách các thể loại
-            getOptionLabel={(option) => option.TENTL} // Hiển thị tên thể loại
-            value={
-              categories.filter((category) =>
-                form.selectedCategories.includes(category.ID_CATEGORY)
-              ) // Tìm các thể loại khớp với selectedCategories
-            }
-            onChange={(event, newValue) =>
-              setForm((prevForm) => ({
-                ...prevForm,
-                selectedCategories: newValue.map((item) => item.ID_CATEGORY), // Cập nhật selectedCategories
-              }))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Chọn thể loại"
-                placeholder="Thêm thể loại"
+        <Grid container spacing={2}>
+          {/* 1 cột (full width) */}
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <Autocomplete
+                options={categories}
+                getOptionLabel={(option) => option.NAME_CATEGORY}
+                value={
+                  categories.find(
+                    (category) => category.ID_CATEGORY === form.selectedCategories
+                  ) || null
+                }
+                onChange={(event, newValue) =>
+                  setForm((prevForm) => ({
+                    ...prevForm,
+                    selectedCategories: newValue ? newValue.ID_CATEGORY : null,
+                  }))
+                }
+                renderInput={(params) => (
+                  <TextField {...params} label="Chọn thể loại" placeholder="Thêm thể loại" />
+                )}
               />
-            )}
-          />
-        </FormControl>
+            </FormControl>
+          </Grid>
 
-        <Box mt={2} display="flex" justifyContent="flex-end">
-          <button
-            className="btn btn-primary admin-btn"
-            onClick={() => handleSubmit()}
-          >
-            {product ? "Cập nhật" : "Tạo mới"}
-          </button>
-          {product && (
-            <button
-              className="btn btn-danger admin-btn"
-              onClick={() => onDelete(product)}
-              style={{ marginLeft: "10px" }}
+          {/* 2 cột */}
+          <Grid item xs={6}>
+            <FormControl fullWidth>
+              <Autocomplete
+                options={promotion}
+                getOptionLabel={(option) => option.NAME_PROMOTION}
+                value={
+                  promotion.find(
+                    (promotionItem) => promotionItem.ID_PROMOTION === form.selectedPromotion
+                  ) || null
+                }
+                onChange={(event, newValue) =>
+                  setForm((prevForm) => ({
+                    ...prevForm,
+                    selectedPromotion: newValue ? newValue.ID_PROMOTION : null,
+                  }))
+                }
+                renderInput={(params) => (
+                  <TextField {...params} label="Chọn khuyến mãi" placeholder="Thêm khuyến mãi" />
+                )}
+              />
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={6}>
+            <FormControl fullWidth>
+              <Autocomplete
+                options={brand}
+                getOptionLabel={(option) => option.NAME}
+                value={
+                  brand.find(
+                    (brandItem) => brandItem.ID_BRAND === form.selectedBrand
+                  ) || null
+                }
+                onChange={(event, newValue) =>
+                  setForm((prevForm) => ({
+                    ...prevForm,
+                    selectedBrand: newValue ? newValue.ID_BRAND : null,
+                  }))
+                }
+                renderInput={(params) => (
+                  <TextField {...params} label="Chọn nhà sản xuất" placeholder="Thêm nhà sản xuất" />
+                )}
+              />
+            </FormControl>
+          </Grid>
+
+          {/* Các ô input còn lại chia làm 2 cột tương tự */}
+          <Grid item xs={6}>
+            <TextField fullWidth label="Đơn vị" name="UNIT" value={form.UNIT} onChange={handleChange} required />
+          </Grid>
+
+          <Grid item xs={6}>
+            <TextField fullWidth label="Tiêu đề" name="METATITLE" value={form.METATITLE} onChange={handleChange} required />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField fullWidth label="Mô tả ngắn" name="SHORTDESCRIPTION" value={form.SHORTDESCRIPTION} onChange={handleChange} required />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField fullWidth label="Mô tả" name="DESCRIPTION" value={form.DESCRIPTION} onChange={handleChange} required multiline rows={4} />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField fullWidth label="Mô tả hiển thị" name="METADESCRIPTION" value={form.METADESCRIPTION} onChange={handleChange} required />
+          </Grid>
+
+          <Grid item xs={6}>
+            <TextField fullWidth label="Tên sản phẩm" name="NAME_PRODUCTDETAILS" value={form.NAME_PRODUCTDETAILS} onChange={handleChange} required />
+          </Grid>
+
+          <Grid item xs={6}>
+            <TextField fullWidth label="Đơn giá" name="PRICE_PRODUCTDETAILS" type="number" value={form.PRICE_PRODUCTDETAILS} onChange={handleChange} required inputProps={{ min: "0" }} />
+          </Grid>
+
+          <Grid item xs={6}>
+            <TextField fullWidth label="Tồn kho" name="AMOUNT_AVAILABLE" type="number" value={form.AMOUNT_AVAILABLE} onChange={handleChange} required inputProps={{ min: "0" }} />
+          </Grid>
+
+          <Grid item xs={6}>
+            <TextField
+              fullWidth label="Giá nhập" name="Import_Price" type="number" value={form.Import_Price} onChange={handleChange} required inputProps={{ min: "0" }} />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField fullWidth label="Mô tả kỹ thuật" name="SPECIFICATION" value={form.SPECIFICATION} onChange={handleChange} required multiline rows={4} />
+          </Grid>
+
+          <Grid item xs={12}>
+            <input
+              type="file"
+              name="GALLERYPRODUCT_DETAILS"
+              accept="image/*"
+              onChange={handleChange}
+              style={{ marginTop: "16px", marginBottom: "16px" }}
+              required
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Select
+              margin="dense"
+              label="Trạng Thái"
+              fullWidth
+              name="ISDELETE"
+              variant="outlined"
+              value={form.ISDELETE}
+              onChange={handleChange}
             >
-              Xóa
-            </button>
-          )}
-          <button
-            className="btn btn-danger admin-btn"
-            onClick={onClose}
-            style={{ marginLeft: "10px" }}
-          >
-            Huỷ
-          </button>
-        </Box>
+              <MenuItem value="1">Đang kinh doanh</MenuItem>
+              <MenuItem value="0">Ngưng kinh doanh</MenuItem>
+            </Select>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Box mt={2} display="flex" justifyContent="flex-end">
+              <button className="btn btn-primary admin-btn" onClick={() => handleSubmit()}>
+                {product ? "Cập nhật" : "Tạo mới"}
+              </button>
+              {product && (
+                <button className="btn btn-danger admin-btn" onClick={() => onDelete(product)} style={{ marginLeft: "10px" }}>
+                  Xóa
+                </button>
+              )}
+              <button className="btn btn-danger admin-btn" onClick={onClose} style={{ marginLeft: "10px" }}>
+                Huỷ
+              </button>
+            </Box>
+          </Grid>
+        </Grid>
       </Box>
     </Modal>
   );

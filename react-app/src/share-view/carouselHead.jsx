@@ -40,11 +40,10 @@ const CarouselHead = ({ carouselProducts }) => {
   );
 
   useEffect(() => {
-    // Kiểm tra nếu có sản phẩm trong carouselProducts thì lấy hình ảnh đầu tiên
     if (carouselProducts && carouselProducts.length > 0) {
       setMainImage(carouselProducts[0].GALLERYPRODUCT_DETAILS);
     }
-  }, [carouselProducts]); // Chạy khi carouselProducts thay đổi
+  }, [carouselProducts]);
 
   const handleClick = (product, index) => {
     setIsSelected(index); // Đảo ngược trạng thái khi nhấp
@@ -93,7 +92,7 @@ const CarouselHead = ({ carouselProducts }) => {
       enqueueSnackbar(error.response.data.EM, { variant: "error" });
     }
   };
-  console.log("selectedProduct", selectedProduct);
+
   return (
     <>
       {carouselProducts.length > 0 ? (
@@ -118,8 +117,8 @@ const CarouselHead = ({ carouselProducts }) => {
                 width: "100%",
                 backgroundColor: currentTheme.backgroundColor,
                 backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0)), url(${selectedProduct
-                    ? `${api}/images/${selectedProduct.GALLERYPRODUCT_DETAILS}`
-                    : "default-image-path"
+                  ? `${api}/images/${selectedProduct.GALLERYPRODUCT_DETAILS}`
+                  : "default-image-path"
                   })`,
                 backgroundSize: "cover", // Để ảnh phủ toàn bộ
                 backgroundPosition: "center", // Căn giữa ảnh nền
@@ -144,8 +143,8 @@ const CarouselHead = ({ carouselProducts }) => {
                         : "default-image-path" // Thay thế bằng đường dẫn ảnh mặc định nếu không tìm thấy
                     }
                     alt={`${selectedProduct.GALLERYPRODUCT_DETAILS
-                        ? selectedProduct.GALLERYPRODUCT_DETAILS
-                        : "Product"
+                      ? selectedProduct.GALLERYPRODUCT_DETAILS
+                      : "Product"
                       } Logo`}
                     className={`${animateLogo ? "slide-in" : ""}`} // Áp dụng class animation
                     style={{
@@ -170,7 +169,7 @@ const CarouselHead = ({ carouselProducts }) => {
                           fontSize: { xs: "0.9rem", md: "1.25rem" },
                         }}
                       >
-                        {products.SPECIFICATION}
+                        {products.METATITLE}
                       </Typography>
                       <Typography
                         className="component-game-description-background"
@@ -180,7 +179,7 @@ const CarouselHead = ({ carouselProducts }) => {
                         {new Intl.NumberFormat("vi-VN", {
                           style: "currency",
                           currency: "VND",
-                        }).format(products.SALE_PRODUCTDETAILS)}
+                        }).format(products.PRICE_PRODUCTDETAILS)}
                       </Typography>
                     </React.Fragment>
                   ) : null

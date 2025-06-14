@@ -222,7 +222,7 @@ const ProductManagement = () => {
                 </TableCell>
                 <TableCell sx={{ color: "#c9d1d9" }}>
                   <img
-                    src={`http://localhost:8081/images/${product.ANH_SP}`}
+                    src={`http://localhost:8081/images/${product.GALLERYPRODUCT_DETAILS}`}
                     alt={product.TENSP}
                     width="100"
                   />
