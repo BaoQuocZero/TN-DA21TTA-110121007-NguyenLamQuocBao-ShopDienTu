@@ -99,34 +99,24 @@ const xem_tatca_sanpham = async () => {
   }
 };
 
-const xem_sanpham_id = async (MASP, MA_KHH) => {
+const xem_sanpham_id = async (ID_PRODUCTDETAILS, ID_USER) => {
   try {
-    console.log("select game  MA_KHH", MA_KHH);
+    console.log("ID_PRODUCTDETAILS: ", ID_PRODUCTDETAILS)
     // Truy vấn thông tin sản phẩm và thể loại
     let [results, fields] = await pool.execute(
       `
       SELECT 
-        sp.MASP,
-        sp.TENSP,
-        sp.DON_GIA,
-        sp.NHA_SAN_XUAT,
-        sp.ANH_SP,
-        sp.GHI_CHU_SP,
-        sp.TRANG_THAI_SAN_PHAM,
-        tl.MATL,
-        tl.TENTL,
-        tl.MO_TA_TL,
-        tl.GHI_CHU_TL
-      FROM 
-        sanpham sp
-      LEFT JOIN 
-        thuoc_loai tlk ON sp.MASP = tlk.MASP
-      LEFT JOIN 
-        theloai tl ON tlk.MATL = tl.MATL
-      WHERE 
-        sp.MASP = ?
+        product_details.*,
+        product.*,
+        brand.*, 
+        category.*
+      FROM product_details
+      JOIN product ON product_details.ID_PRODUCT = product.ID_PRODUCT
+      JOIN brand ON product.ID_BRAND = brand.ID_BRAND
+      JOIN category ON product.ID_CATEGORY = category.ID_CATEGORY
+      WHERE product_details.ID_PRODUCTDETAILS = ?;
       `,
-      [MASP]
+      [ID_PRODUCTDETAILS]
     );
 
     if (results.length === 0) {
@@ -137,54 +127,11 @@ const xem_sanpham_id = async (MASP, MA_KHH) => {
       };
     }
 
-    // Gộp các thể loại
-    const product = {
-      MASP: results[0].MASP,
-      TENSP: results[0].TENSP,
-      DON_GIA: results[0].DON_GIA,
-      NHA_SAN_XUAT: results[0].NHA_SAN_XUAT,
-      ANH_SP: results[0].ANH_SP,
-      GHI_CHU_SP: results[0].GHI_CHU_SP,
-      TRANG_THAI_SAN_PHAM: results[0].TRANG_THAI_SAN_PHAM,
-      categories: results.map((row) => ({
-        MATL: row.MATL,
-        TENTL: row.TENTL,
-        MO_TA_TL: row.MO_TA_TL,
-        GHI_CHU_TL: row.GHI_CHU_TL,
-      })),
+    return {
+      EM: "Xem sản phẩm thành công 1",
+      EC: 1,
+      DT: results,
     };
-    if (!MA_KHH) {
-      return {
-        EM: "Xem sản phẩm thành công",
-        EC: 1,
-        DT: product,
-      };
-    } else {
-      // Kiểm tra nếu khách hàng đã mua sản phẩm
-      let [orderResults, orderFields] = await pool.execute(
-        `
-          SELECT  DISTINCT 
-            cthd.MASP
-          FROM 
-            chi_tiet_hoa_don cthd
-          JOIN 
-            hoadon hd ON cthd.MAHD = hd.MAHD
-          WHERE 
-            hd.MA_KH = ? AND cthd.MASP = ? AND hd.GHI_CHU_HOA_DON = "Giao dịch thành công"
-          `,
-        [MA_KHH, MASP]
-      );
-      console.log("orderResults", orderResults);
-      const isPurchased = orderResults.length > 0;
-      console.log("isPurchased", isPurchased);
-      const DaMua = isPurchased ? "Đã Mua" : "Chưa Mua";
-
-      return {
-        EM: "Xem sản phẩm thành công 1",
-        EC: 1,
-        DT: { ...product, DaMua },
-      };
-    }
   } catch (error) {
     console.error("Error in xem_sanpham_id:", error);
     return {

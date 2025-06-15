@@ -36,7 +36,7 @@ const ListGame = ({ title, items, api }) => {
   useEffect(() => {
     const fetchProductStatus = async () => {
       if (isAuthenticated && userInfo?.MA_KH) {
-        const productIds = items.map((item) => item.MASP);
+        const productIds = items.map((item) => item.ID_PRODUCTDETAILS);
         try {
           const response = await axios.post(
             `${api}/api/v1/yeuthich/check-product-status`,
@@ -67,7 +67,7 @@ const ListGame = ({ title, items, api }) => {
     }
     try {
       const payload = {
-        MASP: product.MASP,
+        ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
         MANGUOIDUNG: userInfo.MA_KH,
         NGAY_CAP_NHAT_GIOHANG: new Date().toISOString(),
       };
@@ -90,7 +90,7 @@ const ListGame = ({ title, items, api }) => {
     }
     try {
       const payload = {
-        MASP: product.MASP,
+        ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
         MA_KH: userInfo.MA_KH,
       };
       const response = await axios.post(`${api}/api/v1/yeuthich/them`, payload);
@@ -98,7 +98,7 @@ const ListGame = ({ title, items, api }) => {
         enqueueSnackbar(response.data.EM);
         setProductStatus((prevStatus) =>
           prevStatus.map((status) =>
-            status.MASP === product.MASP
+            status.ID_PRODUCTDETAILS === product.ID_PRODUCTDETAILS
               ? { ...status, favoriteStatus: true }
               : status
           )
@@ -121,14 +121,14 @@ const ListGame = ({ title, items, api }) => {
     try {
       const payload = {
         MA_KH: userInfo.MA_KH,
-        MASP: product.MASP,
+        ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
       };
       const response = await axios.post(`${api}/api/v1/yeuthich/xoa`, payload);
       if (response.data.EC === 1) {
         enqueueSnackbar(response.data.EM);
         setProductStatus((prevStatus) =>
           prevStatus.map((status) =>
-            status.MASP === product.MASP
+            status.ID_PRODUCTDETAILS === product.ID_PRODUCTDETAILS
               ? { ...status, favoriteStatus: false }
               : status
           )
@@ -161,7 +161,7 @@ const ListGame = ({ title, items, api }) => {
         }}
       >
         {items.map((item, index) => {
-          const status = productStatus.find((ps) => ps.MASP === item.MASP) || {
+          const status = productStatus.find((ps) => ps.ID_PRODUCTDETAILS === item.ID_PRODUCTDETAILS) || {
             favoriteStatus: false,
             buyStatus: false,
           };
@@ -170,7 +170,7 @@ const ListGame = ({ title, items, api }) => {
           return (
             <Card
               key={index}
-              onClick={() => handleBuyProduct(item.MASP)}
+              onClick={() => handleBuyProduct(item.ID_PRODUCTDETAILS)}
               sx={{
                 cursor: "pointer",
                 marginBottom: 2,
@@ -184,8 +184,8 @@ const ListGame = ({ title, items, api }) => {
             >
               <CardContent sx={{ display: "flex", alignItems: "center" }}>
                 <img
-                  src={`${api}/images/${item.ANH_SP}`}
-                  alt={item.TENSP}
+                  src={`${api}/images/${item.GALLERYPRODUCT_DETAILS}`}
+                  alt={item.NAME_PRODUCTDETAILS}
                   style={{
                     width: "50px",
                     height: "75px",
@@ -196,13 +196,13 @@ const ListGame = ({ title, items, api }) => {
                 />
                 <Box sx={{ marginLeft: 2, flexGrow: 1 }}>
                   <Typography variant="body2" noWrap>
-                    {item.TENSP}
+                    {item.NAME_PRODUCTDETAILS}
                   </Typography>
                   <Typography variant="caption" sx={{ color: "#bbb" }}>
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
                       currency: "VND",
-                    }).format(item.DON_GIA)}
+                    }).format(item.PRICE_PRODUCTDETAILS)}
                   </Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center" }}>

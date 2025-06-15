@@ -13,14 +13,16 @@ const storage = multer.diskStorage({
     ); // Tên tệp
   },
 });
+
 const imageFilter = function (req, file, cb) {
   // Accept images only
-  if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
+  if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF|webp|WEBP)$/)) {
     req.fileValidationError = "Only image files are allowed!";
     return cb(new Error("Only image files are allowed!"), false);
   }
   cb(null, true);
 };
+
 const upload = multer({ storage: storage, fileFilter: imageFilter });
 module.exports = {
   upload,

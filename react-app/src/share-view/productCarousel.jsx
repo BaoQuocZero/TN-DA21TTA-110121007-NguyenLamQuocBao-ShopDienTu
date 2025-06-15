@@ -97,8 +97,8 @@ const ProductCarousel = ({ title, products, api }) => {
     }
     try {
       const payload = {
-        MASP: product.MASP,
-        MANGUOIDUNG: userInfo.MA_KH,
+        ID_USER: userInfo.ID_USER,
+        ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
         NGAY_CAP_NHAT_GIOHANG: new Date().toISOString(),
       };
       const response = await axios.post(`${api}/api/v1/giohang/them`, payload);
@@ -123,8 +123,8 @@ const ProductCarousel = ({ title, products, api }) => {
     }
     try {
       const payload = {
-        MASP: product.MASP,
-        MA_KH: userInfo.MA_KH,
+        ID_USER: userInfo.ID_USER,
+        ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
       };
       const response = await axios.post(`${api}/api/v1/yeuthich/them`, payload);
       if (response.data.EC === 1) {
@@ -154,8 +154,8 @@ const ProductCarousel = ({ title, products, api }) => {
     }
     try {
       const payload = {
-        MA_KH: userInfo.MA_KH,
-        MASP: product.MASP,
+        ID_USER: userInfo.ID_USER,
+        ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
       };
       const response = await axios.post(`${api}/api/v1/yeuthich/xoa`, payload);
       if (response.data.EC === 1) {
@@ -262,7 +262,7 @@ const ProductCarousel = ({ title, products, api }) => {
           {products && products.length > 0 ? (
             products.map((product, index) => {
               const status = productStatus.find(
-                (ps) => ps.MASP === product.MASP
+                (ps) => ps.ID_PRODUCTDETAILS === product.ID_PRODUCTDETAILS
               ) || {
                 favoriteStatus: false,
                 buyStatus: false,
@@ -284,7 +284,7 @@ const ProductCarousel = ({ title, products, api }) => {
                       "background-color 0.3s ease, transform 0.3s ease",
                     position: "relative",
                   }}
-                  onClick={() => handleBuyProduct(product.MASP)}
+                  onClick={() => handleBuyProduct(product.ID_PRODUCTDETAILS)}
                 >
                   <Box sx={{ position: "relative" }}>
                     {!buyStatus && (
@@ -328,8 +328,8 @@ const ProductCarousel = ({ title, products, api }) => {
                     )}
                     <CardMedia
                       component="img"
-                      image={`${api}/images/${product.ANH_SP}`}
-                      alt={product.TENSP}
+                      image={`${api}/images/${product.GALLERYPRODUCT_DETAILS}`}
+                      alt={product.NAME_PRODUCTDETAILS}
                       sx={{
                         height: {
                           xs: "260px",
@@ -356,7 +356,7 @@ const ProductCarousel = ({ title, products, api }) => {
                         },
                       }}
                     >
-                      {product.TENSP}
+                      {product.NAME_PRODUCTDETAILS}
                     </Typography>
                     <Typography
                       variant="caption"
@@ -367,8 +367,8 @@ const ProductCarousel = ({ title, products, api }) => {
                         justifyContent: "space-between",
                       }}
                     >
-                      {product.DON_GIA
-                        ? `${product.DON_GIA.toLocaleString("vi-VN")}đ`
+                      {product.PRICE_PRODUCTDETAILS
+                        ? `${product.PRICE_PRODUCTDETAILS.toLocaleString("vi-VN")}đ`
                         : "Giá không có sẵn"}
                       {!buyStatus && (
                         <Tooltip title={t.AddToCart} arrow>
@@ -380,8 +380,8 @@ const ProductCarousel = ({ title, products, api }) => {
                               },
                             }}
                             onClick={(e) => {
-                              e.stopPropagation(); // Ngăn sự kiện lan truyền lên Card
-                              e.preventDefault(); // Ngăn hành vi mặc định (nếu có)
+                              e.stopPropagation();
+                              e.preventDefault();
                               handleAddToCart(product);
                             }}
                           >

@@ -131,11 +131,14 @@ const Home = () => {
         {" "}
         <div className="home">
           <CarouselHead carouselProducts={carouselProducts} api={api} />
+
           <ProductCarousel
-            title={t.Adventure ? t.Adventure : "Adventure"}
+            // title={t.Adventure ? t.Adventure : "Adventure"}
+            title={"Sản phẩm bán chạy"}
             products={adventureProducts}
             api={api}
           />
+
           <Box
             sx={{
               padding: 3,
@@ -158,7 +161,7 @@ const Home = () => {
                     <CardContent sx={{ padding: 2 }}>
                       <img
                         src={`${api}/images/${product.GALLERYPRODUCT_DETAILS}`}
-                        alt={product.TENSP}
+                        alt={product.NAME_PRODUCTDETAILS}
                         style={{
                           width: "100%",
                           height: "600px",
@@ -170,32 +173,18 @@ const Home = () => {
                         className="game-thumbnail" // Thêm lớp CSS cho hình ảnh
                       />
                       <Typography variant="h6" sx={{ marginBottom: 2 }}>
-                        {product.TENSP}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          marginBottom: 1,
-                          opacity: 0.7,
-                          display: "-webkit-box",
-                          WebkitBoxOrient: "vertical",
-                          WebkitLineClamp: 2,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {product.GHI_CHU_SP}
+                        {product.NAME_PRODUCTDETAILS}
                       </Typography>
                       <Typography variant="h6">
                         {new Intl.NumberFormat("vi-VN", {
                           style: "currency",
                           currency: "VND",
-                        }).format(product.DON_GIA)}
+                        }).format(product.PRICE_PRODUCTDETAILS)}
                       </Typography>{" "}
                       <Box>
                         {" "}
                         <Typography
-                          onClick={() => handleBuyProduct(product.MASP)}
+                          onClick={() => handleBuyProduct(product.ID_PRODUCTDETAILS)}
                           sx={{
                             marginBottom: 2,
                             cursor: "pointer",
@@ -207,7 +196,7 @@ const Home = () => {
                         </Typography>
                       </Box>
                       <Button
-                        onClick={() => handleBuyProduct(product.MASP)}
+                        onClick={() => handleBuyProduct(product.ID_PRODUCTDETAILS)}
                         variant="contained"
                         sx={{
                           backgroundColor: "#343437",
@@ -226,13 +215,16 @@ const Home = () => {
               ))}
             </Grid>
           </Box>{" "}
-          <CartProduct
-            title={t.ProductsChild}
+
+          {/* <CartProduct
+            title={"BBBBBBBBBBBBBBBBBBBB"}
             products={rpgProducts}
             api={api}
-          />
+          /> */}
+
           <ProductCarousel
-            title={t.Simulation}
+            // title={t.Simulation}
+            title={"Dành cho bạn"}
             products={simulationProducts}
             api={api}
           />
@@ -275,7 +267,6 @@ const Home = () => {
               </Grid>
             </Grid>
           </Box>{" "}
-          {/* <CartProduct />{" "} */}
         </div>
       </div>
     </>

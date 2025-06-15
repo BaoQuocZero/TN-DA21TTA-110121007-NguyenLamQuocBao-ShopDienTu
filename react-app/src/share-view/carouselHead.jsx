@@ -115,15 +115,20 @@ const CarouselHead = ({ carouselProducts }) => {
                 display: "flex",
                 flexDirection: { xs: "column", md: "row" },
                 width: "100%",
+                height: "100vh", // Chiều cao cụ thể, giúp ảnh có tỷ lệ chuẩn
+                borderRadius: "3%",
+                overflow: "hidden", // Ngăn ảnh tràn viền nếu có
                 backgroundColor: currentTheme.backgroundColor,
                 backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0)), url(${selectedProduct
                   ? `${api}/images/${selectedProduct.GALLERYPRODUCT_DETAILS}`
                   : "default-image-path"
                   })`,
-                backgroundSize: "cover", // Để ảnh phủ toàn bộ
-                backgroundPosition: "center", // Căn giữa ảnh nền
+                backgroundSize: "contain", // Lấp đầy khung, giữ tỷ lệ, cắt ảnh nếu cần
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
               }}
             >
+
               <Box
                 sx={{
                   flex: 1, // Chiếm 50% chiều rộng

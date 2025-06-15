@@ -48,10 +48,10 @@ const xemtatca_sanpham = async (req, res) => {
 
 const xem_sanpham_voi_id = async (req, res) => {
   try {
-    const MASP = req.body.MASP;
-    const MA_KHH = req.body.MA_KH;
+    const ID_PRODUCTDETAILS = req.body.ID_PRODUCTDETAILS;
+    const ID_USER = req.body.ID_USER;
 
-    let results = await xem_sanpham_id(MASP, MA_KHH);
+    let results = await xem_sanpham_id(ID_PRODUCTDETAILS, ID_USER);
     return res.status(200).json({
       EM: results.EM,
       EC: results.EC,

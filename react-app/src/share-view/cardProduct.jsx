@@ -64,14 +64,14 @@ const CartProduct = ({ title, products, api }) => {
             const discountPercentage =
               Math.floor(Math.random() * (30 - 10 + 1)) + 10;
             const originalPrice = (
-              product.DON_GIA *
+              product.PRICE_PRODUCTDETAILS *
               (1 + discountPercentage / 100)
             ).toFixed(0);
 
             return (
               <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
                 <Card
-                  onClick={() => handleBuyProduct(product.MASP)}
+                  onClick={() => handleBuyProduct(product.ID_PRODUCTDETAILS)}
                   sx={{
                     height: "auto",
                     backgroundColor: currentTheme.backgroundColor,
@@ -88,8 +88,8 @@ const CartProduct = ({ title, products, api }) => {
                   <CardMedia
                     component="img"
                     sx={{ objectFit: "contain", height: "200px" }}
-                    image={`${api}/images/${product.ANH_SP}`}
-                    alt={product.TENSP}
+                    image={`${api}/images/${product.GALLERYPRODUCT_DETAILS}`}
+                    alt={product.NAME_PRODUCTDETAILS}
                   />
                   <CardContent>
                     <Typography
@@ -97,7 +97,7 @@ const CartProduct = ({ title, products, api }) => {
                       component="div"
                       sx={{ textAlign: "left", color: currentTheme.color }}
                     >
-                      {product.TENSP}
+                      {product.NAME_PRODUCTDETAILS}
                     </Typography>
                     <Box
                       sx={{
@@ -135,7 +135,7 @@ const CartProduct = ({ title, products, api }) => {
 
                       {/* Giá thật, định dạng theo VND */}
                       <Typography sx={{ color: currentTheme.color }}>
-                        {parseInt(product.DON_GIA).toLocaleString("vi-VN")} ₫
+                        {parseInt(product.PRICE_PRODUCTDETAILS).toLocaleString("vi-VN")} ₫
                       </Typography>
                     </Box>
                   </CardContent>

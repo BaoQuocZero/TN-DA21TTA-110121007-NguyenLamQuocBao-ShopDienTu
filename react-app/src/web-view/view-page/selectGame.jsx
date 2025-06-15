@@ -52,19 +52,19 @@ const SelectGame = () => {
     }
   }, [id, isAuthenticated]);
   const fetchProduct = async (id) => {
-    const MA_KHH = userInfo ? userInfo.MA_KH : false;
+    const ID_USER = userInfo ? userInfo.ID_USER : false;
     try {
       // Gọi API lấy thông tin sản phẩm
       const responseProduct = await axios.post(
         `${api}/api/v1/admin/sanpham/xem-id`,
         {
-          MASP: id,
-          MA_KH: MA_KHH,
+          ID_PRODUCTDETAILS: id,
+          ID_USER: ID_USER,
         }
       );
-      console.log("responseProduct", responseProduct.data);
+
       if (responseProduct.data.EC === 1) {
-        setProduct(responseProduct.data.DT);
+        setProduct(responseProduct.data.DT[0]);
       } else {
         console.error(
           "Lỗi khi lấy thông tin sản phẩm:",
@@ -73,25 +73,25 @@ const SelectGame = () => {
       }
 
       // Gọi API lấy danh sách bình luận
-      const responseBinhLuan = await axios.get(`${api}/binh-luan/${id}`);
-      if (responseBinhLuan.data.EC === 1) {
-        setBinhLuan(responseBinhLuan.data.DT);
-      } else {
-        console.error("Lỗi khi lấy bình luận:", responseBinhLuan.data.EM);
-      }
+      // const responseBinhLuan = await axios.get(`${api}/binh-luan/${id}`);
+      // if (responseBinhLuan.data.EC === 1) {
+      //   setBinhLuan(responseBinhLuan.data.DT);
+      // } else {
+      //   console.error("Lỗi khi lấy bình luận:", responseBinhLuan.data.EM);
+      // }
 
       // Gọi API lấy phương thức thanh toán
-      const responsePayment = await axios.get(
-        `${api}/api/v1/admin/thanhtoan/use`
-      );
-      if (responsePayment.data.EC === 1) {
-        setPaymentMethods(responsePayment.data.DT);
-      } else {
-        console.error(
-          "Lỗi khi lấy phương thức thanh toán:",
-          responsePayment.data.EM
-        );
-      }
+      // const responsePayment = await axios.get(
+      //   `${api}/api/v1/admin/thanhtoan/use`
+      // );
+      // if (responsePayment.data.EC === 1) {
+      //   setPaymentMethods(responsePayment.data.DT);
+      // } else {
+      //   console.error(
+      //     "Lỗi khi lấy phương thức thanh toán:",
+      //     responsePayment.data.EM
+      //   );
+      // }
     } catch (error) {
       console.error("Error fetching product data:", error);
     }
@@ -107,8 +107,8 @@ const SelectGame = () => {
     console.log("userInfo", userInfo);
     try {
       const payload = {
-        MASP: id,
-        MANGUOIDUNG: userInfo.MA_KH, // ID người dùng
+        ID_PRODUCTDETAILS: id,
+        ID_USER: userInfo.MA_KH,
         NGAY_CAP_NHAT_GIOHANG: new Date().toISOString(),
       };
 
@@ -138,8 +138,8 @@ const SelectGame = () => {
 
     try {
       const payload = {
-        MASP: id,
-        MA_KH: userInfo.MA_KH, // ID người dùng
+        ID_PRODUCTDETAILS: id,
+        ID_USER: userInfo.ID_USER, // ID người dùng
       };
 
       const response = await axios.post(`${api}/api/v1/yeuthich/them`, payload);
@@ -279,21 +279,20 @@ const SelectGame = () => {
     }
   };
 
-  console.log("product", product);
   if (!product) {
     return <div>Loading...</div>; // Add a loading state
   }
-  console.log("product => ", userInfo);
+
   return (
     <Container maxWidth="lg" className="container-select-game">
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6} md={6}>
+        <Grid item xs={12} sm={10} md={10}>
           <Box sx={{ textAlign: "left", borderRadius: 1 }}>
             <Typography
               variant="h4"
               sx={{ fontWeight: "600", color: "#fff", mt: 4 }}
             >
-              {product.TENSP} {/* Product Name */}
+              {product.NAME_PRODUCTDETAILS} {/* Product Name */}
             </Typography>
           </Box>
         </Grid>
@@ -323,24 +322,11 @@ const SelectGame = () => {
             }}
           >
             <img
-              src={`${api}/images/${product.ANH_SP}`} // Dynamic image path
-              alt={product.TENSP}
+              src={`${api}/images/${product.GALLERYPRODUCT_DETAILS}`}
+              alt={product.NAME_PRODUCTDETAILS}
               style={{ maxWidth: "70%", height: "auto", borderRadius: "13px" }}
             />
           </Box>{" "}
-          {/* <Box
-            sx={{
-              textAlign: "left",
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              mt: 2,
-            }}
-          >
-            <Typography sx={{ color: currentTheme.color }}>
-              Mô tả: {product.MO_TA_SAN_PHAM}
-            </Typography>
-          </Box> */}
           <Box
             sx={{
               textAlign: "left",
@@ -351,7 +337,7 @@ const SelectGame = () => {
               mt: 2,
             }}
           >
-            <Box
+            {/* <Box
               sx={{
                 textAlign: "left",
                 borderRadius: 1,
@@ -372,12 +358,11 @@ const SelectGame = () => {
                     mr: index < product.categories.length - 1 ? 1 : 0, // Thêm khoảng cách trừ mục cuối
                   }}
                 >
-                  {category.TENTL}
+                  {category.NAME_CATEGORY}
                   {index < product.categories.length - 1 && ","}{" "}
-                  {/* Thêm dấu phẩy giữa các thể loại */}
                 </Typography>
               ))}
-            </Box>{" "}
+            </Box>{" "} */}
             <Box
               sx={{
                 borderRadius: 1,
@@ -386,14 +371,14 @@ const SelectGame = () => {
                 mt: 2,
               }}
             >
-              <Typography
+              {/* <Typography
                 sx={{
                   color: currentTheme.color,
                   display: "inline",
                 }}
               >
-                {product.GHI_CHU_SP}
-              </Typography>
+                {product.ISDELETE}
+              </Typography> */}
             </Box>
           </Box>
           <Box
@@ -406,6 +391,7 @@ const SelectGame = () => {
               mt: 2,
             }}
           >
+
             {/* ----------------------BÌNH LUẬN GAME----------------------------------- */}
             <CommentsSection reviews={binhLuan} />
           </Box>{" "}
@@ -427,18 +413,18 @@ const SelectGame = () => {
             }}
           >
             <Typography variant="h6" sx={{ mb: 1 }}>
-              {product.TENSP}
+              {product.NAME_PRODUCTDETAILS}
             </Typography>
             <Box>
               <Typography sx={{ color: currentTheme.color }} variant="body2">
-                Nhà sản xuất: {product.NHA_SAN_XUAT || "N/A"}
+                Nhà sản xuất: {product.NAME || "N/A"}
               </Typography>
             </Box>
             <Typography sx={{ color: currentTheme.color }} variant="h6">
               {new Intl.NumberFormat("vi-VN", {
                 style: "currency",
                 currency: "VND",
-              }).format(product.DON_GIA)}
+              }).format(product.PRICE_PRODUCTDETAILS)}
             </Typography>
             {/* Price */}
             <Button
