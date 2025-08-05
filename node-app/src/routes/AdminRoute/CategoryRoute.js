@@ -22,7 +22,7 @@ const CRUDTheLoai = (app) => {
   router.get("/xemtatca", xemtatca_theloai);
 
   router.post("/xemid", xem_theloai_voi_id);
-  router.put("/sua/:MATL", sua_theloai_voi_id);
+  router.put("/sua/:ID_CATEGORY", sua_theloai_voi_id);
   router.delete("/xoa/", xoa_theloai_voi_id);
   return app.use("/api/v1/admin/theloai", router);
 };

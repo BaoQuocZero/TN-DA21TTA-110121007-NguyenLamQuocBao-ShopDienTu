@@ -8,16 +8,18 @@ const {
 
 const tao_new_theloai = async (req, res) => {
   try {
-    const TENTL = req.body.TENTL;
-    const MO_TA_TL = req.body.MO_TA_TL;
-    let results = await tao_theloai(TENTL, MO_TA_TL);
+    console.log("Tạo thể loại ::::::", req.body);
+    const { NAME, PARENTID, DESCRIPTION, ISDELETE } = req.body;
+
+    const result = await tao_theloai(NAME, PARENTID, DESCRIPTION, ISDELETE);
+
     return res.status(200).json({
-      EM: results.EM,
-      EC: results.EC,
-      DT: results.DT,
+      EM: result.EM,
+      EC: result.EC,
+      DT: result.DT,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Lỗi tạo thể loại:", error);
     return res.status(500).json({
       EM: "Đã xảy ra lỗi máy chủ",
       EC: 500,
@@ -65,11 +67,10 @@ const xem_theloai_voi_id = async (req, res) => {
 
 const sua_theloai_voi_id = async (req, res) => {
   try {
-    const MATL = req.params.MATL;
-    const TENTL = req.body.TENTL;
-    const MO_TA_TL = req.body.MO_TA_TL;
+    const ID_CATEGORY = req.params.ID_CATEGORY;
+    const { NAME, PARENTID, DESCRIPTION, ISDELETE } = req.body;
+    const results = await sua_theloai_id(ID_CATEGORY, NAME, PARENTID, DESCRIPTION, ISDELETE);
 
-    let results = await sua_theloai_id(MATL, TENTL, MO_TA_TL);
     return res.status(200).json({
       EM: results.EM,
       EC: results.EC,
@@ -87,10 +88,11 @@ const sua_theloai_voi_id = async (req, res) => {
 
 const xoa_theloai_voi_id = async (req, res) => {
   try {
-    const MATL = req.body.MATL;
+    const ID_CATEGORY = req.body.ID_CATEGORY;
 
-    console.log("checlk,", MATL);
-    let results = await xoa_theloai_id(MATL);
+    console.log("ID cần xoá:", ID_CATEGORY);
+
+    const results = await xoa_theloai_id(ID_CATEGORY);
     return res.status(200).json({
       EM: results.EM,
       EC: results.EC,

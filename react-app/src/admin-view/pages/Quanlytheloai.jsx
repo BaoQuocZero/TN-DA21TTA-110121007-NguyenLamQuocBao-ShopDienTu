@@ -21,6 +21,7 @@ import {
   MenuItem,
   TablePagination,
 } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 import moment from "moment";
 import { Add, Edit, Delete } from "@mui/icons-material";
 import axios from "axios";
@@ -30,8 +31,14 @@ const api = process.env.REACT_APP_URL_SERVER;
 const Quanlytheloai = () => {
   const [theloai, setTheloai] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedCategoryToDelete, setSelectedCategoryToDelete] = useState(null);
+
   const [currentCategory, setCurrentCategory] = useState(null);
+
   const [tenTheloai, setTenTheloai] = useState("");
+  const [PARENTID, setPARENTID] = useState("");
   const [moTaTheloai, setMoTaTheloai] = useState("");
   const [trangThaiTheloai, setTrangThaiTheloai] = useState(1);
 
@@ -76,6 +83,7 @@ const Quanlytheloai = () => {
   const handleOpenDialog = (category = null) => {
     setCurrentCategory(category);
     setTenTheloai(category ? category.NAME_CATEGORY : "");
+    setPARENTID(category ? category.PARENTID : "");
     setMoTaTheloai(category ? category.DESCRIPTION : "");
     setTrangThaiTheloai(category ? category.ISDELETE : 1);
     setOpenDialog(true);
@@ -87,16 +95,28 @@ const Quanlytheloai = () => {
     setCurrentCategory(null);
   };
 
+  const handleOpenDeleteDialog = (category) => {
+    setSelectedCategoryToDelete(category);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setSelectedCategoryToDelete(null);
+  };
+
   const handleSave = async () => {
     const categoryData = {
-      TENTL: tenTheloai,
-      MO_TA_TL: moTaTheloai,
-      TRANG_THAI_THELOAI: trangThaiTheloai,
+      NAME: tenTheloai,
+      PARENTID: PARENTID,
+      DESCRIPTION: moTaTheloai,
+      ISDELETE: trangThaiTheloai,
     };
     try {
       if (currentCategory) {
+        console.log("currentCategory:", currentCategory)
         const response = await axios.put(
-          `${api}/api/v1/admin/theloai/sua/${currentCategory.MATL}`,
+          `${api}/api/v1/admin/theloai/sua/${currentCategory.ID_CATEGORY}`,
           categoryData
         );
         if (response.data.EC === 1) {
@@ -117,16 +137,39 @@ const Quanlytheloai = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  // const handleDelete = async (id) => {
+  //   try {
+  //     await axios.delete(`${api}/api/v1/admin/theloai/xoa`, {
+  //       data: { ID_CATEGORY: id },
+  //     });
+  //     fetchCategories();
+  //   } catch (error) {
+  //     console.error("Error deleting category:", error);
+  //   }
+  // };
+
+  const confirmDeleteCategory = async () => {
     try {
-      await axios.delete(`${api}/api/v1/admin/theloai/xoa`, {
-        data: { MATL: id },
+      const response = await axios.delete(`${api}/api/v1/admin/theloai/xoa`, {
+        data: { ID_CATEGORY: selectedCategoryToDelete.ID_CATEGORY },
       });
-      fetchCategories();
+
+      if (response.data.EC === 1) {
+        enqueueSnackbar(response.data.EM, { variant: "warning" });
+        fetchCategories(); // Cập nhật lại danh sách
+      }
+
+      if (response.data.EC === 0) {
+        enqueueSnackbar(response.data.EM, { variant: "warning" });
+      }
+
     } catch (error) {
-      console.error("Error deleting category:", error);
+      console.error("Lỗi xóa thể loại:", error);
+    } finally {
+      handleCloseDeleteDialog();
     }
   };
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -237,7 +280,7 @@ const Quanlytheloai = () => {
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() => handleDelete(category.ID_CATEGORY)}
+                    onClick={() => handleOpenDeleteDialog(category)}
                   >
                     <Delete />
                   </IconButton>
@@ -275,6 +318,17 @@ const Quanlytheloai = () => {
             value={tenTheloai}
             onChange={(e) => setTenTheloai(e.target.value)}
           />
+
+          <TextField
+            margin="dense"
+            label="Thể loại cha"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={PARENTID}
+            onChange={(e) => setPARENTID(e.target.value)}
+          />
+
           <TextField
             margin="dense"
             label="Mô tả thể loại"
@@ -292,8 +346,8 @@ const Quanlytheloai = () => {
             value={trangThaiTheloai}
             onChange={(e) => setTrangThaiTheloai(e.target.value)}
           >
-            <MenuItem value={1}>Đang sử dụng</MenuItem>
-            <MenuItem value={0}>Ngưng sử dụng</MenuItem>
+            <MenuItem value={0}>Đang sử dụng</MenuItem>
+            <MenuItem value={1}>Ngưng sử dụng</MenuItem>
           </Select>
         </DialogContent>
         <DialogActions>
@@ -302,6 +356,40 @@ const Quanlytheloai = () => {
           </Button>
           <Button onClick={handleSave} color="primary">
             {currentCategory ? "Sửa" : "Thêm"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="confirm-delete-title"
+      >
+        <DialogTitle id="confirm-delete-title">Xác nhận xoá thể loại</DialogTitle>
+        <DialogContent>
+          <Typography gutterBottom>
+            Bạn có chắc chắn muốn xoá <strong>{selectedCategoryToDelete?.NAME_CATEGORY}</strong> vĩnh viễn không?
+          </Typography>
+
+          <Typography variant="body2" color="warning.main" sx={{ mt: 1 }}>
+            ⚠️ Lưu ý: Thể loại <strong>không thể xoá</strong> nếu:
+          </Typography>
+          <ul style={{ marginTop: 8, paddingLeft: 24, color: "#fdd835" }}>
+            <li>Đang có <strong>sản phẩm</strong> liên kết với thể loại này.</li>
+            <li>Đang được sử dụng làm <strong>danh mục cha</strong> của thể loại khác.</li>
+          </ul>
+
+          <Typography sx={{ mt: 1 }} color="error">
+            Hành động này <strong>không thể hoàn tác</strong> nếu xoá thành công.
+          </Typography>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} color="inherit">
+            Hủy
+          </Button>
+          <Button onClick={confirmDeleteCategory} color="error" variant="contained">
+            Xoá
           </Button>
         </DialogActions>
       </Dialog>

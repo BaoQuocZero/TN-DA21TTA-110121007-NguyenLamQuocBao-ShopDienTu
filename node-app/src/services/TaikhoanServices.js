@@ -387,7 +387,7 @@ const updateTaiKhoan_avatar = async (TEN_DANG_NHAP, AVATAR) => {
 
 const verify_adminService = async (token) => {
   try {
-    console.log("token", token.token);
+    console.log("verify_adminService token", token.token);
     // Giải mã token để lấy thông tin tài khoản
     const decoded = jwt.verify(token.token, process.env.SECRETKEYADMIN);
     const taikhoan = decoded.taikhoan;
@@ -397,6 +397,12 @@ const verify_adminService = async (token) => {
       "SELECT * FROM `user` WHERE `EMAIL` = ?",
       [taikhoan]
     );
+
+    // return {
+    //   EM: "Kiểm tra thành công !!!",
+    //   EC: 1,
+    //   DT: "Admin",
+    // };
 
     if (results.length > 0) {
       const user = results[0];
