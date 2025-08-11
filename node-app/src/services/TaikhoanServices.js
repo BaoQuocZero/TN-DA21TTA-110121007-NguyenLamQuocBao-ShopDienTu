@@ -103,8 +103,8 @@ const LoginTaikhoan = async (EMAIL, PASSWORD) => {
       [EMAIL]
     );
 
-    console.log("EMAIL: ", EMAIL);
-    console.log("Query results: ", results);
+    // console.log("EMAIL: ", EMAIL);
+    // console.log("Query results: ", results);
 
     if (results.length === 0) {
       return {
@@ -143,6 +143,7 @@ const LoginTaikhoan = async (EMAIL, PASSWORD) => {
 
     if (isCorrectPass) {
       let payload = {
+        ID_USER: user.ID_USER,
         taikhoan: user.EMAIL,
         tenkhachhang: user.FIRSTNAME,
         LASTNAME: user.LASTNAME,
@@ -209,6 +210,7 @@ const LoginTaikhoanwithGOOGLE = async (EMAIL, PASSWORD) => {
       }
 
       let payload = {
+        ID_USER: user.ID_USER,
         taikhoan: user.EMAIL,
         tenkhachhang: user.FIRSTNAME,
         LASTNAME: user.LASTNAME,

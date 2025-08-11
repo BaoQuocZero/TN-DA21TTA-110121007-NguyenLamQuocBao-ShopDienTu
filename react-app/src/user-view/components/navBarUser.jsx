@@ -58,30 +58,7 @@ const NavBarUser = () => {
             primary={t.UserInfo ? t.UserInfo : "Thông tin người dùng"}
           />
         </ListItem>
-        <ListItem
-          button
-          component={Link}
-          to="/profile/don-hang"
-          sx={{ color: "#f0f6fc" }}
-        >
-          <ListItemIcon>
-            <EmailIcon sx={{ color: "#ffffff" }} />
-          </ListItemIcon>
-          <ListItemText
-            primary={t.LibraryGame ? t.LibraryGame : "Thư viện game"}
-          />
-        </ListItem>
-        {/* <ListItem
-        button
-        component={Link}
-        to="/payment-management"
-        sx={{ color: "#f0f6fc" }}
-      >
-        <ListItemIcon>
-          <PaymentIcon sx={{ color: "#ffffff" }} />
-        </ListItemIcon>
-        <ListItemText primary="Payment Management" />
-      </ListItem> */}
+
         <ListItem
           button
           component={Link}
@@ -97,40 +74,35 @@ const NavBarUser = () => {
             }
           />
         </ListItem>
-        {/* <ListItem
-        button
-        component={Link}
-        to="/epic-rewards"
-        sx={{ color: "#f0f6fc" }}
-      >
-        <ListItemIcon>
-          <StarIcon sx={{ color: "#fff" }} />
-        </ListItemIcon>
-        <ListItemText primary="Epic Rewards" />
-      </ListItem> */}
-        <Divider style={{ margin: "20px 0" }} />
+
+        <Divider sx={{ my: 2 }} />
+
         <Typography
           onClick={() => setIsOpenNeedHelp(!isOpenNeedHelp)}
           variant="body2"
-          style={{ color: "#888", textAlign: "center", cursor: "pointer" }}
+          sx={{ color: "#888", textAlign: "center", cursor: "pointer" }}
         >
-          {t.NeedHelp ? t.NeedHelp : "BẠN CẦN GIÚP ĐỠ?"}
+          {t.NeedHelp || "BẠN CẦN GIÚP ĐỠ?"}
         </Typography>
-        {isOpenNeedHelp ? (
-          <>
-            {" "}
-            <Typography
-              mt={4}
-              onClick={() => setIsOpenNeedHelp(!isOpenNeedHelp)}
-              variant="body2"
-              style={{ color: "#888", textAlign: "center", cursor: "pointer" }}
-            >
-              Kệ bạn =)))
-            </Typography>
-          </>
-        ) : (
-          <></>
+
+        {isOpenNeedHelp && (
+          <Typography
+            mt={2}
+            component={Link}
+            to="/profile/ho-tro"
+            variant="body2"
+            sx={{
+              color: "#4dabf7",
+              textAlign: "center",
+              cursor: "pointer",
+              textDecoration: "underline",
+              display: "block"
+            }}
+          >
+            Đến trang hỗ trợ
+          </Typography>
         )}
+
       </List>
     </Box>
   );

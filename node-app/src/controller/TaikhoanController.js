@@ -35,7 +35,7 @@ const dangnhap_taikhoan = async (req, res) => {
     const EMAIL = req.body.email;
     const PASSWORD = req.body.password;
 
-    console.log("req.body:", req.body)
+    // console.log("req.body:", req.body)
     let results = await LoginTaikhoan(EMAIL, PASSWORD);
     return res.status(200).json({
       EM: results.EM,

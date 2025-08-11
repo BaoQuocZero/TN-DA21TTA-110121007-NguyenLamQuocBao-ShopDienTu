@@ -9,8 +9,8 @@ const path = require("path");
 const pool = require("../../config/database");
 const Xem_ThongTin_KhachHang_MA_KH = async (req, res) => {
   try {
-    const MA_KH = req.body.MA_KH;
-    let results = await Servces_xem_ThongTin_KhachHang_MA_KH(MA_KH);
+    const ID_USER = req.body.ID_USER;
+    let results = await Servces_xem_ThongTin_KhachHang_MA_KH(ID_USER);
     return res.status(200).json({
       EM: results.EM,
       EC: results.EC,
@@ -28,8 +28,8 @@ const Xem_ThongTin_KhachHang_MA_KH = async (req, res) => {
 
 const Sua_ThongTin_KhachHang_MA_KH = async (req, res) => {
   try {
-    const KhachHang = req.body;
-    let results = await Servces_Sua_ThongTin_KhachHang_MA_KH(KhachHang);
+    const UserData = req.body;
+    let results = await Servces_Sua_ThongTin_KhachHang_MA_KH(UserData);
     return res.status(200).json({
       EM: results.EM,
       EC: results.EC,
