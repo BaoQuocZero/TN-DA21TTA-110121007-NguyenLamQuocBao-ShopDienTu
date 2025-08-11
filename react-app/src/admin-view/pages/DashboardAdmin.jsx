@@ -107,7 +107,7 @@ const Admin = () => {
           <InputLabel style={{ color: "#fff" }}>
             Preferred Communication Language
           </InputLabel>
-          <Select
+          {/* <Select
             defaultValue="English"
             sx={{
               color: "#fff", // Màu chữ
@@ -125,7 +125,7 @@ const Admin = () => {
           >
             <MenuItem value="English">English</MenuItem>
             <MenuItem value="Vietnamese">Vietnamese</MenuItem>
-          </Select>
+          </Select> */}
           <Typography
             variant="caption"
             style={{ marginTop: "5px", color: "#fff" }}

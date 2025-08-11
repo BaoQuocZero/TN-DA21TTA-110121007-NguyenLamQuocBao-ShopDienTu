@@ -46,6 +46,7 @@ const UserProfile = () => {
     }
 
     try {
+      console.log("infor:   ", userInfo)
       const response = await axios.post(
         `${api}/api/v1/KhachHang/xem/thongtin`,
         {
@@ -348,10 +349,10 @@ const UserProfile = () => {
               dataUser?.GHI_CHU_KH === "1"
                 ? "Đang hoạt động"
                 : dataUser?.GHI_CHU_KH === "0"
-                ? "Ngưng hoạt động"
-                : dataUser?.GHI_CHU_KH === "1.5"
-                ? "Bị Hạn chế"
-                : "Chưa xác định"
+                  ? "Ngưng hoạt động"
+                  : dataUser?.GHI_CHU_KH === "1.5"
+                    ? "Bị Hạn chế"
+                    : "Chưa xác định"
             }
             defaultValue="H***g"
             fullWidth

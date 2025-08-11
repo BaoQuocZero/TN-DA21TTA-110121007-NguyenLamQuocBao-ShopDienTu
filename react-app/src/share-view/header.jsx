@@ -118,7 +118,7 @@ const Header = () => {
       {" "}
       <Button color="inherit">{t.support}</Button>
       <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
-        <IconButton
+        {/* <IconButton
           color="inherit"
           aria-label="language menu"
           aria-controls="language-menu"
@@ -129,9 +129,9 @@ const Header = () => {
         </IconButton>
         <Button color="inherit" onClick={handleLanguageMenu}>
           {optionLanguage === "vi" ? "Tiếng Việt" : "English"}
-        </Button>
+        </Button> */}
 
-        <Menu
+        {/* <Menu
           id="language-menu"
           anchorEl={anchorElLanguage}
           open={Boolean(anchorElLanguage)}
@@ -163,16 +163,7 @@ const Header = () => {
           >
             English
           </MenuItem>
-          {/* <MenuItem
-            sx={{ color: "#fff", "&:hover": { backgroundColor: "#4a494c" } }}
-            onClick={() => {
-              handleChangeLanguage("es");
-              handleLanguageClose();
-            }}
-          >
-            Español
-          </MenuItem> */}
-        </Menu>
+        </Menu> */}
 
         {/* <Typography
           onClick={handleLanguageMenu}

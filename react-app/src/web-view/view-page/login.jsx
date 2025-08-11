@@ -103,7 +103,7 @@ const LoginPage = () => {
         `${process.env.REACT_APP_URL_SERVER}/api/v1/admin/taikhoan/dangnhap`,
         { email, password }
       );
-      console.log("Response:", response.data);
+      // console.log("Response:", response.data);
 
       if (response.data.EC === 1) {
         Cookies.remove("accessToken");
