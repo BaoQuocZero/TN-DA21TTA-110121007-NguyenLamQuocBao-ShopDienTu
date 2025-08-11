@@ -1,6 +1,7 @@
 const {
   Servces_xem_ThongTin_KhachHang_MA_KH,
   Servces_Sua_ThongTin_KhachHang_MA_KH,
+  Servces_Doi_Mat_Khau_Email,
 } = require("../../services/CustomerServices/KhachHangServces");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.SECRETKEYADMIN;
@@ -126,8 +127,38 @@ const updateAvatarController = async (req, res) => {
   }
 };
 
+const Doi_Mat_Khau_Email = async (req, res) => {
+  try {
+    console.log("req.body: ", req.body);
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({
+        EM: "Thiếu email hoặc mật khẩu mới",
+        EC: -1,
+        DT: null,
+      });
+    }
+
+    let results = await Servces_Doi_Mat_Khau_Email(email, newPassword);
+    return res.status(200).json({
+      EM: results.EM,
+      EC: results.EC,
+      DT: results.DT,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      EM: "Đã xảy ra lỗi máy chủ",
+      EC: -1,
+      DT: null,
+    });
+  }
+};
+
 module.exports = {
   Xem_ThongTin_KhachHang_MA_KH,
   Sua_ThongTin_KhachHang_MA_KH,
   updateAvatarController,
+  Doi_Mat_Khau_Email,
 };

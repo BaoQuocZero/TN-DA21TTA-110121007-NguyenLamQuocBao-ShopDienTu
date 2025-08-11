@@ -35,15 +35,13 @@ const PasswordAndSetting = () => {
     e.preventDefault();
     if (newPassword === confirmNewPassword) {
       try {
-        const response = await axios.post(`${apiUrl}/update-password`, {
+        const response = await axios.post(`${apiUrl}/api/v1/KhachHang/update-password`, {
           email: userInfo.EMAIL,
           newPassword: newPassword,
         });
         if (response.data.EC == 1) {
           enqueueSnackbar(response.data.EM);
-          setCountdown(0);
           setIsOpenChangePassword(false);
-          setOtp("");
         } else {
           enqueueSnackbar(response.data.EM);
         }
@@ -154,6 +152,7 @@ const PasswordAndSetting = () => {
                       setConfirmNewPassword(e.target.value)
                     }
                     style={{ marginBottom: 20 }}
+                    type="password"
                   />
                   <Button
                     variant="contained"

@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.SECRETKEYADMIN;
 const path = require("path");
 const { createJWT } = require("../../middlewares/JWTAction");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 const Servces_xem_ThongTin_KhachHang_MA_KH = async (ID_USER) => {
   try {
     let [khachhang] = await pool.execute(
@@ -124,7 +126,49 @@ const Servces_Sua_ThongTin_KhachHang_MA_KH = async (UserData) => {
   }
 };
 
+
+const Servces_Doi_Mat_Khau_Email = async (email, newPassword) => {
+  try {
+    // Kiểm tra user tồn tại
+    const [rows] = await pool.execute(
+      "SELECT * FROM `user` WHERE EMAIL = ? AND ISDELETE = 0",
+      [email]
+    );
+
+    if (rows.length === 0) {
+      return {
+        EM: "Email không tồn tại",
+        EC: -1,
+        DT: [],
+      };
+    }
+
+    // Hash mật khẩu mới
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Cập nhật mật khẩu
+    await pool.execute(
+      "UPDATE `user` SET PASSWORD = ?, UPDATEAT = NOW() WHERE EMAIL = ?",
+      [hashedPassword, email]
+    );
+
+    return {
+      EM: "Cập nhật mật khẩu thành công",
+      EC: 1,
+      DT: null,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      EM: "Lỗi services Servces_Doi_Mat_Khau_Email",
+      EC: -1,
+      DT: [],
+    };
+  }
+};
+
 module.exports = {
   Servces_xem_ThongTin_KhachHang_MA_KH,
   Servces_Sua_ThongTin_KhachHang_MA_KH,
+  Servces_Doi_Mat_Khau_Email,
 };

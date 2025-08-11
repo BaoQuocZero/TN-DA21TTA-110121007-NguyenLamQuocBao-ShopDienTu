@@ -126,7 +126,7 @@ export default function SupportPage() {
     const faqs = [
         {
             q: "Làm sao để thay đổi mật khẩu?",
-            a: "Vào Trang cài đặt > Bảo mật > Đổi mật khẩu. Nếu bạn quên mật khẩu, sử dụng chức năng 'Quên mật khẩu' để lấy lại.",
+            a: "Vào Trang thông tin > Mật khẩu & cài đặt. Nếu bạn quên mật khẩu, sử dụng chức năng 'Quên mật khẩu' để lấy lại.",
         },
         {
             q: "Bao lâu để nhận được phản hồi?",
