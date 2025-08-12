@@ -46,6 +46,7 @@ const TatCaDonHangAdminProcess = () => {
       if (response.data.EC === 1) {
         setOrders(response.data.DT);
       }
+      console.log("responseresponseresponse: ", response.data.DT)
     } catch (error) {
       console.error("Error fetching orders:", error);
     }
@@ -216,56 +217,56 @@ const TatCaDonHangAdminProcess = () => {
                 <TableCell
                   sx={{ fontSize: "0.875rem", color: currentTheme.color }}
                 >
-                  {order.MAHD || "Không xác định"}
+                  {order.ID_ORDER || "Không xác định"}
                 </TableCell>
                 <TableCell
                   sx={{ fontSize: "0.875rem", color: currentTheme.color }}
                 >
-                  {order.TEN_KHACH_HANG || "N/A"}
+                  {(order.FIRSTNAME && order.LASTNAME) ? (order.FIRSTNAME + " " + order.LASTNAME) : "N/A"}
                 </TableCell>
                 <TableCell
                   sx={{ fontSize: "0.875rem", color: currentTheme.color }}
                 >
-                  {order.SDT_KH || "Không xác định"}
+                  {order.PHONENUMBER || "Không xác định"}
                 </TableCell>
                 <TableCell
                   sx={{ fontSize: "0.875rem", color: currentTheme.color }}
                 >
-                  {order.DIA_CHI_Provinces || "Không xác định"}
+                  {order.ADDRESS || "Không xác định"}
                 </TableCell>
                 <TableCell
                   sx={{ fontSize: "0.875rem", color: currentTheme.color }}
                 >
-                  {order.TONG_TIEN
-                    ? order.TONG_TIEN.toLocaleString() + "đ"
+                  {order.TOTALORDERPRICE
+                    ? order.TOTALORDERPRICE.toLocaleString() + "đ"
                     : "N/A"}
                 </TableCell>
                 <TableCell
                   sx={{ fontSize: "0.875rem", color: currentTheme.color }}
                 >
-                  {order.GHI_CHU_HOA_DON || "N/A"}
+                  {order.STATUS ? order.STATUS : (order.ISDELETE ? "Đã hủy" : "Lỗi")}
                 </TableCell>
                 <TableCell
                   sx={{ fontSize: "0.875rem", color: currentTheme.color }}
                 >
-                  {order.NGAY_LAP_HOA_DON
-                    ? moment(order.NGAY_LAP_HOA_DON).format("DD/MM/YYYY HH:mm")
+                  {order.CREATEAT
+                    ? moment(order.CREATEAT).format("DD/MM/YYYY HH:mm")
                     : "N/A"}
                 </TableCell>
                 <TableCell
                   sx={{ fontSize: "0.875rem", color: currentTheme.color }}
                 >
-                  {order.NGAY_CAP_NHAT_DONHANG
-                    ? moment(order.NGAY_CAP_NHAT_DONHANG).format(
-                        "DD/MM/YYYY HH:mm"
-                      )
+                  {order.UPDATEAT
+                    ? moment(order.UPDATEAT).format(
+                      "DD/MM/YYYY HH:mm"
+                    )
                     : "N/A"}
                 </TableCell>
                 <TableCell
                   sx={{ fontSize: "0.875rem", color: currentTheme.colorTitle }}
                 >
                   <Button
-                    onClick={() => handleViewDetails(order.MAHD)}
+                    onClick={() => handleViewDetails(order.ID_ORDER)}
                     startIcon={
                       <VisibilityIcon sx={{ color: currentTheme.colorTitle }} />
                     }
@@ -274,9 +275,9 @@ const TatCaDonHangAdminProcess = () => {
                 <TableCell sx={{ fontSize: "0.875rem", color: "#68d684" }}>
                   <Button
                     sx={{ color: "#68d684" }}
-                    onClick={() => handleOpenDialog("success", order.MAHD)}
+                    onClick={() => handleOpenDialog("success", order.ID_ORDER)}
                   >
-                    Đã giao
+                    Xác nhận
                   </Button>
                 </TableCell>
                 <TableCell sx={{ fontSize: "0.875rem", color: "red" }}>
@@ -284,7 +285,7 @@ const TatCaDonHangAdminProcess = () => {
                     sx={{ color: "red" }}
                     onClick={() => handleOpenDialog("canceled", order.MAHD)}
                   >
-                    Đã hủy
+                    Hủy
                   </Button>
                 </TableCell>
               </TableRow>
@@ -317,6 +318,7 @@ const TatCaDonHangAdminProcess = () => {
           },
         }}
       />
+
       {/* Modal hiển thị thông tin chi tiết */}
       {openModal && (
         <ProductDetailModal
@@ -324,6 +326,7 @@ const TatCaDonHangAdminProcess = () => {
           onClose={handleCloseModal} // Hàm đóng modal
         />
       )}{" "}
+
       {/* Modal xác nhận */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Xác nhận hành động</DialogTitle>

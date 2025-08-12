@@ -23,8 +23,8 @@ import {
 import { getThemeConfig } from "../../../service/themeService";
 import * as XLSX from "xlsx";
 const ProductDetailModal = ({ productId, onClose }) => {
-  const currentTheme = getThemeConfig(localStorage.getItem("THEMES") || "dark");
   const [productDetails, setProductDetails] = useState(null);
+  const [orderInfo, setOrderInfo] = useState(null);
   const api = process.env.REACT_APP_URL_SERVER;
 
   // Hàm lấy thông tin chi tiết sản phẩm
@@ -32,12 +32,15 @@ const ProductDetailModal = ({ productId, onClose }) => {
     try {
       const response = await axios.get(`${api}/chi-tiet-hoa-don/${productId}`);
       if (response.data) {
-        setProductDetails(response.data.DT); // Lưu dữ liệu vào state
+        setProductDetails(response.data.DT.chiTietHoaDon); // Lưu dữ liệu vào state
+        setOrderInfo(response.data.DT.hoaDon)
       }
+      console.log("response.data.DT:::::", response.data.DT.chiTietHoaDon)
     } catch (error) {
       console.error("Error fetching product details:", error);
     }
   };
+
   const handleExportToExcel = () => {
     if (!productDetails) return;
 
@@ -102,33 +105,33 @@ const ProductDetailModal = ({ productId, onClose }) => {
           {/* Cột bên trái chứa thông tin khách hàng */}
           <Grid item xs={12} md={8}>
             <Typography variant="h6">Thông tin khách hàng:</Typography>
-            <Typography>Email: {productDetails.TEN_DANG_NHAP}</Typography>
+            <Typography>Email: {orderInfo.EMAIL}</Typography>
             <Typography>
-              Số điện thoại: {productDetails.SDT_LIEN_HE_KH}
+              Số điện thoại: {orderInfo.PHONENUMBER}
             </Typography>
             <Typography>
-              Địa chỉ đơn hàng: {productDetails.DIA_CHI_SHIP}
+              Địa chỉ đơn hàng: {orderInfo.ADDRESS}
             </Typography>
             <Typography>
               Ngày tạo đơn hàng:{" "}
-              {new Date(productDetails.NGAY_LAP_HOA_DON).toLocaleString(
+              {new Date(orderInfo.CREATEAT).toLocaleString(
                 "vi-VN"
               )}
             </Typography>
             <Typography>
-              Phương thức thanh toán: {productDetails.CACH_THANH_TOAN}
+              Phương thức thanh toán: {orderInfo.PAYMENTMETHOD}
             </Typography>
             <Typography>
-              Trạng thái đơn hàng: {productDetails.GHI_CHU_HOA_DON}
+              Trạng thái đơn hàng: {orderInfo.STATUS}
             </Typography>
-            <Typography>Mã đơn hàng: {productDetails.MAHD || ""}</Typography>
+            <Typography>Mã đơn hàng: {orderInfo.ID_ORDER || ""}</Typography>
             <Typography>
               Tổng tiền đơn hàng:{" "}
               <b>
                 {new Intl.NumberFormat("vi-VN", {
                   style: "currency",
                   currency: "VND",
-                }).format(productDetails.TONG_TIEN || 0)}
+                }).format(orderInfo.TOTALORDERPRICE || 0)}
               </b>
             </Typography>
           </Grid>
@@ -137,14 +140,12 @@ const ProductDetailModal = ({ productId, onClose }) => {
           <Grid item xs={12} md={4}>
             <Typography variant="h6">Thông tin người dùng:</Typography>
             <Avatar
-              src={`${api}/images/${productDetails.AVATAR}`}
+              src={`${api}/images/${orderInfo.AVATAR}`}
               alt="Avatar"
               sx={{ width: 100, height: 100 }}
             />
-            <Typography>Họ tên: {productDetails.TEN_KHACH_HANG}</Typography>
             <Typography>
-              Ngày sinh:{" "}
-              {new Date(productDetails.NGAY_SINH).toLocaleDateString("vi-VN")}
+              Họ tên: {orderInfo.FIRSTNAME} {orderInfo.LASTNAME}
             </Typography>
           </Grid>
         </Grid>
@@ -167,28 +168,28 @@ const ProductDetailModal = ({ productId, onClose }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {productDetails.chiTietHoaDon.map((item, index) => (
+              {productDetails.map((item, index) => (
                 <TableRow key={index}>
-                  <TableCell>{item.TENSP}</TableCell>
+                  <TableCell>{item.NAME_PRODUCTDETAILS}</TableCell>
                   <TableCell>
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
                       currency: "VND",
-                    }).format(item.DON_GIA || 0)}
+                    }).format(item.UNIT_PRICE || 0)}
                   </TableCell>
-                  <TableCell>{item.SO_LUONG}</TableCell>
+                  <TableCell>{item.QUANTITY}</TableCell>
                   <TableCell>
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
                       currency: "VND",
-                    }).format(item.GIA_SP_KHI_MUA * item.SO_LUONG || 0)}
+                    }).format(item.UNIT_PRICE * item.QUANTITY || 0)}
                   </TableCell>
-                  <TableCell>{item.NHA_SAN_XUAT}</TableCell>
-                  <TableCell>{item.TENTL}</TableCell>
-                  <TableCell>{item.MO_TA_TL}</TableCell>
+                  <TableCell>{item.BRAND_NAME}</TableCell>
+                  <TableCell>{item.NAME_CATEGORY}</TableCell>
+                  <TableCell>{item.SHORTDESCRIPTION}</TableCell>
                   <TableCell>
                     <img
-                      src={`${api}/images/${item.ANH_SP}`}
+                      src={`${api}/images/${item.GALLERYPRODUCT_DETAILS}`}
                       alt="Sản phẩm"
                       style={{
                         width: "100px",

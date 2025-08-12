@@ -2,96 +2,55 @@ const connection = require("../../config/database");
 
 const getChiTietHoaDon = async (req, res) => {
   const { id } = req.params;
+  console.log("addddđ: ", id)
   try {
-    // Truy vấn bảng HOADON và thông tin liên quan
-    const [hoadonResults] = await connection.execute(
-      `SELECT 
-          hd.MAHD, 
-          hd.MA_THANH_TOAN, 
-          hd.MA_KH, 
-          hd.DIA_CHI_SHIP, 
-          hd.SDT_LIEN_HE_KH, 
-          hd.NGAY_LAP_HOA_DON, 
-          hd.GHI_CHU_HOA_DON, 
-          hd.TONG_TIEN, 
-          kh.TEN_KHACH_HANG, 
-          kh.DIA_CHI AS DIA_CHI_KH, 
-          kh.SDT_KH, 
-          kh.TEN_DANG_NHAP, 
-          kh.NGAY_SINH, 
-          kh.AVATAR, 
-          kh.GHI_CHU_KH, 
-          tt.CACH_THANH_TOAN, 
-          tt.GHI_CHU_THANH_TOAN
-        FROM 
-          hoadon hd
-        LEFT JOIN 
-          khachhang kh ON hd.MA_KH = kh.MA_KH
-        LEFT JOIN 
-          thanh_toan tt ON hd.MA_THANH_TOAN = tt.MA_THANH_TOAN
-        WHERE 
-          hd.MAHD = ?
-        ORDER BY 
-          hd.NGAY_LAP_HOA_DON DESC`,
+    const [hoaDonResults] = await connection.execute(
+      `
+      SELECT 
+        user.ID_USER, user.ADDRESS, user.PHONENUMBER, user.FIRSTNAME, user.LASTNAME, user.EMAIL,
+        orders.STATUS, orders.CREATEAT, orders.ID_ORDER, orders.PAYMENTMETHOD, orders.TOTALORDERPRICE
+      FROM orders 
+      JOIN order_item ON order_item.ID_ORDER = orders.ID_ORDER
+      JOIN user ON user.ID_USER = orders.ID_USER
+      WHERE orders.ID_ORDER = ?
+      `,
       [id]
     );
 
-    // Truy vấn bảng CHI_TIET_HOA_DON và thông tin sản phẩm liên quan
     const [chiTietHoaDonResults] = await connection.execute(
-      `SELECT 
-          cthd.MA_CTHD, 
-          cthd.MASP, 
-          cthd.MAHD, 
-          cthd.SO_LUONG, 
-          cthd.GIA_SP_KHI_MUA, 
-          cthd.GIAM_GIA_KHI_MUA, 
-          cthd.GHI_CHU_CTHD, 
-          cthd.BINH_LUAN, 
-          cthd.DANH_GIA, 
-          sp.TENSP, 
-          sp.DON_GIA, 
-          sp.NHA_SAN_XUAT, 
-          sp.ANH_SP, 
-          sp.GHI_CHU_SP, 
-          sp.TRANG_THAI_SAN_PHAM,
-          -- Gom nhóm thể loại vào một chuỗi, tránh bị lặp dòng
-          GROUP_CONCAT(DISTINCT tl.TENTL ORDER BY tl.TENTL ASC SEPARATOR ', ') AS THE_LOAI
-        FROM 
-          chi_tiet_hoa_don cthd
-        LEFT JOIN 
-          sanpham sp ON cthd.MASP = sp.MASP
-        LEFT JOIN 
-          thuoc_loai tl_map ON sp.MASP = tl_map.MASP
-        LEFT JOIN 
-          theloai tl ON tl_map.MATL = tl.MATL
-        WHERE 
-          cthd.MAHD = ?
-        GROUP BY 
-          cthd.MA_CTHD, cthd.MASP, cthd.MAHD, cthd.SO_LUONG, 
-          cthd.GIA_SP_KHI_MUA, cthd.GIAM_GIA_KHI_MUA, 
-          cthd.GHI_CHU_CTHD, cthd.BINH_LUAN, cthd.DANH_GIA, 
-          sp.TENSP, sp.DON_GIA, sp.NHA_SAN_XUAT, 
-          sp.ANH_SP, sp.GHI_CHU_SP, sp.TRANG_THAI_SAN_PHAM`,
+      `
+      SELECT 
+        order_item.TOTAL_PRICE, order_item.QUANTITY, order_item.UNIT_PRICE,
+        category.NAME_CATEGORY,
+        brand.NAME AS BRAND_NAME,
+        product_details.GALLERYPRODUCT_DETAILS, product_details.NAME_PRODUCTDETAILS,
+        product.SHORTDESCRIPTION
+      FROM orders 
+      JOIN order_item ON order_item.ID_ORDER = orders.ID_ORDER
+      JOIN user ON user.ID_USER = orders.ID_USER
+      JOIN product_details ON product_details.ID_PRODUCTDETAILS = order_item.ID_PRODUCTDETAILS
+      JOIN product ON product.ID_PRODUCT = product_details.ID_PRODUCT 
+      JOIN brand ON product.ID_BRAND = brand.ID_BRAND
+      JOIN category ON category.ID_CATEGORY = product.ID_CATEGORY
+      WHERE orders.ID_ORDER = ?
+      `,
       [id]
     );
 
-    // Gộp dữ liệu từ hai truy vấn
-    if (hoadonResults.length > 0) {
-      const result = {
-        ...hoadonResults[0], // Thông tin hóa đơn
-        chiTietHoaDon: chiTietHoaDonResults, // Thông tin chi tiết hóa đơn
-      };
-
+    if (hoaDonResults.length > 0) {
       return res.status(200).json({
         EM: "Lấy chi tiết hóa đơn thành công",
         EC: 1,
-        DT: result,
+        DT: {
+          hoaDon: hoaDonResults[0],  // thông tin hóa đơn (đơn hàng, user)
+          chiTietHoaDon: chiTietHoaDonResults, // danh sách sản phẩm
+        },
       });
     } else {
       return res.status(404).json({
         EM: "Không tìm thấy hóa đơn này",
         EC: 0,
-        DT: [],
+        DT: {},
       });
     }
   } catch (error) {
@@ -99,7 +58,7 @@ const getChiTietHoaDon = async (req, res) => {
     return res.status(500).json({
       EM: "Có lỗi xảy ra khi lấy chi tiết hóa đơn",
       EC: 0,
-      DT: [],
+      DT: {},
     });
   }
 };

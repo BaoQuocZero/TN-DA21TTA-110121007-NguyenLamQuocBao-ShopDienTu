@@ -700,24 +700,15 @@ const updateOrderStatusSuccess = async (req, res) => {
 
     // Cập nhật trạng thái đơn hàng
     const [result] = await conn.execute(
-      `UPDATE hoadon 
-       SET GHI_CHU_HOA_DON = 'Giao dịch thành công', 
-           NGAY_LAP_HOA_DON = NOW() 
-       WHERE MAHD = ?`,
+      `UPDATE orders 
+       SET STATUS = 'Đang giao', 
+           UPDATEAT = NOW() 
+       WHERE ID_ORDER  = ?`,
       [orderId]
     );
 
     if (result.affectedRows > 0) {
-      // Lấy danh sách chi tiết đơn hàng (sản phẩm)
-      const [orderDetails] = await conn.execute(
-        `SELECT MASP, SO_LUONG FROM chi_tiet_hoa_don WHERE MAHD = ?`,
-        [orderId]
-      );
 
-      // Không cần trừ số lượng sản phẩm vì là game
-      // Bỏ qua thao tác trừ số lượng sản phẩm trong bảng SAN_PHAM
-
-      // Nếu tất cả các thao tác thành công, commit giao dịch
       await conn.commit();
 
       return res.status(200).json({
@@ -844,80 +835,22 @@ const getDonHangGiaoDichProcess = async (req, res) => {
   try {
     // Lấy dữ liệu đơn hàng có GHI_CHU_HOA_DON là "Giao dịch thành công"
     const [results] = await connection.execute(`
-     SELECT 
-    h.MAHD, 
-    h.MA_THANH_TOAN, 
-    h.MA_KH, 
-    h.DIA_CHI_SHIP, 
-    h.SDT_LIEN_HE_KH, 
-    h.NGAY_LAP_HOA_DON, 
-    h.GHI_CHU_HOA_DON, 
-    h.TONG_TIEN,
-
-    -- Thanh Toán
-    t.CACH_THANH_TOAN, 
-    t.GHI_CHU_THANH_TOAN,
-
-    -- Khách Hàng
-    k.TEN_KHACH_HANG, 
-    k.DIA_CHI, 
-    k.SDT_KH, 
-    k.GHI_CHU_KH, 
-    k.DIA_CHI_Provinces, 
-    k.DIA_CHI_Wards, 
-    k.DIA_CHI_STREETNAME, 
-    k.DIA_CHI_Districts, 
-    k.NGAY_SINH, 
-    k.AVATAR, 
-    k.GHI_CHU_KH,
-
-    -- Chi Tiết Hóa Đơn
-    GROUP_CONCAT(DISTINCT c.MA_CTHD ORDER BY c.MA_CTHD SEPARATOR ', ') AS MA_CTHD,
-    GROUP_CONCAT(DISTINCT c.MASP ORDER BY c.MASP SEPARATOR ', ') AS MASP,
-    GROUP_CONCAT(DISTINCT c.SO_LUONG ORDER BY c.SO_LUONG SEPARATOR ', ') AS SO_LUONG,
-    GROUP_CONCAT(DISTINCT c.GIA_SP_KHI_MUA ORDER BY c.GIA_SP_KHI_MUA SEPARATOR ', ') AS GIA_SP_KHI_MUA,
-    GROUP_CONCAT(DISTINCT c.GIAM_GIA_KHI_MUA ORDER BY c.GIAM_GIA_KHI_MUA SEPARATOR ', ') AS GIAM_GIA_KHI_MUA,
-    GROUP_CONCAT(DISTINCT c.GHI_CHU_CTHD ORDER BY c.GHI_CHU_CTHD SEPARATOR ', ') AS GHI_CHU_CTHD,
-
-    -- Sản Phẩm
-    GROUP_CONCAT(DISTINCT p.TENSP ORDER BY p.TENSP SEPARATOR ', ') AS TENSP,
-    GROUP_CONCAT(DISTINCT p.DON_GIA ORDER BY p.DON_GIA SEPARATOR ', ') AS DON_GIA,
-    GROUP_CONCAT(DISTINCT p.NHA_SAN_XUAT ORDER BY p.NHA_SAN_XUAT SEPARATOR ', ') AS NHA_SAN_XUAT,
-    GROUP_CONCAT(DISTINCT p.ANH_SP ORDER BY p.ANH_SP SEPARATOR ', ') AS ANH_SP,
-
-    -- Thể Loại
-    GROUP_CONCAT(DISTINCT tl.TENTL ORDER BY tl.TENTL SEPARATOR ', ') AS TENTL
-
-FROM 
-    hoadon h
-LEFT JOIN 
-    thanh_toan t ON h.MA_THANH_TOAN = t.MA_THANH_TOAN
-LEFT JOIN 
-    khachhang k ON h.MA_KH = k.MA_KH
-LEFT JOIN 
-    chi_tiet_hoa_don c ON h.MAHD = c.MAHD
-LEFT JOIN 
-    sanpham p ON c.MASP = p.MASP
-LEFT JOIN 
-    thuoc_loai tl1 ON p.MASP = tl1.MASP
-LEFT JOIN 
-    theloai tl ON tl1.MATL = tl.MATL
-WHERE 
-    h.GHI_CHU_HOA_DON = 'Đang chờ thanh toán'
-GROUP BY 
-    h.MAHD
-ORDER BY 
-    h.NGAY_LAP_HOA_DON DESC;
-
+      SELECT 
+      user.ID_USER, user.EMAIL, user.FIRSTNAME, user.LASTNAME, user.PHONENUMBER, user.ADDRESS,
+      orders.*
+      FROM orders 
+      JOIN order_item ON order_item.ID_ORDER = orders.ID_ORDER
+      JOIN user ON user.ID_USER = orders.ID_USER
+      WHERE orders.STATUS = "Đang chờ xác nhận"
     `);
 
     return res.status(200).json({
-      EM: "Lấy danh sách đơn hàng Đang chờ thanh toán thành công",
+      EM: "Lấy danh sách đơn hàng Đang chờ xác nhận toán thành công",
       EC: 1,
       DT: results,
     });
   } catch (error) {
-    console.error("Error getting don hang with 'Đang chờ thanh toán':", error);
+    console.error("Error getting don hang with 'Đang chờ xác nhận':", error);
     return res.status(500).json({
       EM: "Có lỗi xảy ra khi lấy thông tin",
       EC: 0,
