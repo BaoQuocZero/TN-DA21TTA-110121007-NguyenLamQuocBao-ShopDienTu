@@ -198,90 +198,84 @@ ORDER BY
 
 // đang sử dụng
 const createDON_HANG = async (req, res) => {
+  // console.log("Tạo đơn: ", req.body);
+
   const {
-    idNguoiDung,
+    ID_USER,
     idThanhToan,
-    tongTien,
-    ghiChuDonHang = "Đang chờ thanh toán",
+    PRICE_PRODUCTDETAILS,
+    trangThaiDonHang = "Đang chờ thanh toán",
     ID_ODER,
     items,
-    email,
-    SO_DIEN_THOAI_DON_HANG,
-    DIA_CHI_DON_HANG,
+    ADDRESS,
+    PHONENUMBER
   } = req.body;
-
-  console.log("req.body", req.body);
 
   try {
     const itemsArray = Array.isArray(items) ? items : [items];
-
-    for (const item of itemsArray) {
-      const { MASP } = item;
-
-      const [existingOrder] = await connection.execute(
-        `
-      SELECT 1 
-      FROM chi_tiet_hoa_don c 
-      JOIN hoadon h ON c.MAHD = h.MAHD
-      WHERE h.MA_KH = ? 
-        AND c.MASP = ? 
-        AND h.GHI_CHU_HOA_DON = 'Giao dịch thành công';
-      `,
-        [idNguoiDung, MASP]
-      );
-
-      if (existingOrder.length > 0) {
-        return res.status(400).json({
-          EM: `Bạn đã mua sản phẩm này rồi!`,
-          EC: -1,
-        });
-      }
-    }
-
     const ngayTaoDonHang = new Date();
 
-    // Tạo đơn hàng
-    const [results] = await connection.execute(
-      "INSERT INTO hoadon (MA_KH, MA_THANH_TOAN, DIA_CHI_SHIP, SDT_LIEN_HE_KH, NGAY_LAP_HOA_DON, GHI_CHU_HOA_DON,TONG_TIEN,ID_ODER) VALUES (?, ?, ?, ?, ?, ?,?,?)",
+    // Tính tổng tiền
+    const tongTien = itemsArray.reduce((sum, item) => {
+      return sum + (item.PRICE_PRODUCTDETAILS * (item.SO_LUONG || 1));
+    }, 0);
+
+    // Thêm vào bảng orders
+    const [orderResult] = await connection.execute(
+      `INSERT INTO orders 
+       (ID_USER, QUANTITY, STATUS, PAYMENTSTATUS, PAYMENTMETHOD, TOTALORDERPRICE, CREATEAT, ISDELETE) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
       [
-        idNguoiDung,
-        idThanhToan,
-        DIA_CHI_DON_HANG,
-        SO_DIEN_THOAI_DON_HANG,
-        ngayTaoDonHang,
-        ghiChuDonHang,
+        ID_USER,
+        itemsArray.length,
+        trangThaiDonHang,
+        "Chưa thanh toán",
+        "Chuyển khoản",
         tongTien,
-        ID_ODER,
+        ngayTaoDonHang
       ]
     );
 
-    const donHangId = results.insertId;
+    const orderId = orderResult.insertId;
 
-    // Thêm chi tiết hóa đơn cho từng sản phẩm
-    const chiTietHoaDonPromises = itemsArray.map(async (item) => {
-      const { MASP, SO_LUONG = 1, DON_GIA, GIAM_GIA_KHI_MUA = 0 } = item;
-      const giaSanPhamChiTiet = DON_GIA * SO_LUONG * (1 - GIAM_GIA_KHI_MUA);
+    // Thêm chi tiết từng sản phẩm
+    for (const item of itemsArray) {
+      const soLuong = item.SO_LUONG || 1;
+      const unitPrice = item.PRICE_PRODUCTDETAILS;
+      const totalPrice = unitPrice * soLuong;
 
       await connection.execute(
-        "INSERT INTO chi_tiet_hoa_don (MASP, MAHD, SO_LUONG, GIA_SP_KHI_MUA, GIAM_GIA_KHI_MUA) VALUES (?, ?, ?, ?, ?)",
-        [MASP, donHangId, SO_LUONG, giaSanPhamChiTiet, GIAM_GIA_KHI_MUA]
+        `INSERT INTO order_item 
+         (ID_PRODUCTDETAILS, ID_ORDER, QUANTITY, UNIT_PRICE, TOTAL_PRICE, CREATEAT, ISDELETE) 
+         VALUES (?, ?, ?, ?, ?, ?, 0)`,
+        [
+          item.ID_PRODUCTDETAILS,
+          orderId,
+          soLuong,
+          unitPrice,
+          totalPrice,
+          ngayTaoDonHang
+        ]
       );
-    });
+    }
 
-    await Promise.all(chiTietHoaDonPromises);
-
+    // Lấy order_item mới tạo
     const [orderDetails] = await connection.execute(
-      "SELECT c.MASP, c.SO_LUONG, c.GIA_SP_KHI_MUA, c.GIAM_GIA_KHI_MUA, p.TENSP FROM chi_tiet_hoa_don c JOIN sanpham p ON c.MASP = p.MASP WHERE c.MAHD = ?",
-      [donHangId]
+      `SELECT oi.*, p.NAMEPRODUCT
+       FROM order_item oi
+       JOIN product_details pd ON oi.ID_PRODUCTDETAILS = pd.ID_PRODUCTDETAILS
+       JOIN product p ON pd.ID_PRODUCT = p.ID_PRODUCT
+       WHERE oi.ID_ORDER = ?`,
+      [orderId]
     );
 
     // Lấy thông tin người dùng
     const [userResults] = await connection.execute(
-      "SELECT TEN_KHACH_HANG, TEN_DANG_NHAP, DIA_CHI_Provinces, DIA_CHI_Districts, DIA_CHI_Wards, SDT_KH,DIA_CHI_STREETNAME,DIA_CHI  FROM khachhang WHERE MA_KH = ?",
-      [idNguoiDung]
+      `SELECT LASTNAME, EMAIL
+       FROM user
+       WHERE ID_USER = ?`,
+      [ID_USER]
     );
-
-    console.log("orderDetails", orderDetails);
 
     if (userResults.length === 0) {
       return res.status(404).json({
@@ -290,41 +284,47 @@ const createDON_HANG = async (req, res) => {
       });
     }
 
-    const user = userResults[0]; // Lấy thông tin người dùng
+    const user = userResults[0];
 
     // Chuẩn bị thông tin gửi email
     const orderDetailsFormatted = {
-      orderId: ID_ODER,
+      orderId: orderId,
       tongTien: tongTien,
       ngayTaoDonHang: ngayTaoDonHang,
       items: orderDetails.map((item) => ({
-        tenSanPham: item.TENSP,
-        soLuong: item.SO_LUONG,
-        giaSanPhamChiTiet: item.GIA_SP_KHI_MUA,
-        giamGia: item.GIAM_GIA_KHI_MUA,
+        tenSanPham: item.NAMEPRODUCT,
+        soLuong: item.QUANTITY,
+        giaSanPhamChiTiet: item.UNIT_PRICE,
+        giamGia: item.GIAM_GIA_KHI_MUA || 0
       })),
       user: {
-        name: user.TEN_KHACH_HANG,
-        email: user.TEN_DANG_NHAP,
-        address: DIA_CHI_DON_HANG,
-        phone: SO_DIEN_THOAI_DON_HANG,
+        name: user.LASTNAME,
+        email: user.EMAIL,
+        address: ADDRESS,
+        phone: PHONENUMBER,
       },
     };
 
     // Gọi hàm gửi email
-    const emailResult = await sendOrderEmail({
-      email,
-      orderDetails: orderDetailsFormatted,
-    });
-
+    // const emailResult = await sendOrderEmail({
+    //   email: user.EMAIL,
+    //   orderDetails: orderDetailsFormatted,
+    // });
+    let emailResult = {
+      EC: 1, // 1 = thành công, 0 = thất bại (theo quy ước của bạn)
+      EM: "Email sent successfully (fake mode)", // Thông báo giả
+      DT: null // Data trả về (nếu cần)
+    };
     if (emailResult.EC === 1) {
-      // Xóa dữ liệu trong bảng GIO_HANG nếu email gửi thành công
-      await connection.execute("DELETE FROM gio_hang WHERE MA_KH = ?", [
-        idNguoiDung,
-      ]);
+      //Xóa giỏ hàng thêm sau
       return res.status(200).json({
         EM: "Mua hàng thành công, vui lòng kiểm tra đơn hàng",
         EC: 1,
+      });
+    } else {
+      return res.status(500).json({
+        EM: "Đơn hàng tạo thành công nhưng gửi email thất bại",
+        EC: -1,
       });
     }
   } catch (error) {
@@ -440,80 +440,74 @@ const updateTrangThaiDonHang = async (req, res) => {
 // Hàm gửi email
 const sendOrderEmail = async ({ email, orderDetails }) => {
   if (!email || !orderDetails) {
-    return {
-      EM: "Email và chi tiết đơn hàng là bắt buộc",
-      EC: -1,
-    };
+    return { EM: "Email và chi tiết đơn hàng là bắt buộc", EC: -1 };
   }
+
   const formattedTongTien = new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
   }).format(orderDetails.tongTien);
-  // Tạo nội dung email
+
+  const formattedNgayDat = new Date(orderDetails.ngayTaoDonHang).toLocaleString("vi-VN");
+
+  // Nội dung email
   const orderMessage = `
-    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-      <div style="text-align: center; padding: 10px 0;">
-        <h1 style="color: #007BFF;">Cảm Ơn Bạn Đã Đặt Hàng! Epic Game</h1>
+    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+      <div style="text-align: center; padding-bottom: 10px;">
+        <h1 style="color: #007BFF;">Cảm Ơn Bạn Đã Đặt Hàng! Shop Điện Tử</h1>
         <p style="font-size: 16px; color: #555;">Đơn hàng của bạn đã được ghi nhận thành công.</p>
       </div>
-      <div style="padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
+
+      <div style="padding: 15px; background-color: #f9f9f9; border-radius: 8px;">
         <h2 style="color: #007BFF;">Chi Tiết Đơn Hàng</h2>
         <p><strong>Mã Đơn Hàng:</strong> ${orderDetails.orderId}</p>
         <p><strong>Tổng Tiền:</strong> ${formattedTongTien}</p>
-        <p><strong>Ngày Đặt:</strong> ${orderDetails.ngayTaoDonHang}</p>
+        <p><strong>Ngày Đặt:</strong> ${formattedNgayDat}</p>
+
         <h3>Sản Phẩm:</h3>
         <ul>
-        ${orderDetails.items
-          .map(
-            (item) =>
-              `<li>${item.tenSanPham} x ${new Intl.NumberFormat("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              }).format(item.giaSanPhamChiTiet)} </li>`
-          )
-          .join("")}
-        
+          ${orderDetails.items.map(item => `
+            <li>
+              ${item.tenSanPham} - 
+              SL: ${item.soLuong} - 
+              Giá: ${new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(item.giaSanPhamChiTiet)}
+            </li>
+          `).join("")}
         </ul>
+
         <h3>Thông Tin Người Dùng:</h3>
         <p><strong>Họ Tên:</strong> ${orderDetails.user.name}</p>
         <p><strong>Địa Chỉ:</strong> ${orderDetails.user.address}</p>
         <p><strong>Số Điện Thoại:</strong> ${orderDetails.user.phone}</p>
       </div>
+
       <div style="margin-top: 20px; text-align: center; color: #888; font-size: 12px;">
-        <p>&copy; 2024 Epic Game. All rights reserved.</p>
+        <p>&copy; ${new Date().getFullYear()} Shop Điện Tử. All rights reserved.</p>
       </div>
     </div>
   `;
 
-  // Cấu hình gửi email
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: process.env.EMAIL_OTP,
-      pass: process.env.PASSWORD_OTP,
-    },
+      user: "baoquoczero@gmail.com",
+      pass: "atnb rkps serx fozp"
+    }
   });
 
   const mailOptions = {
-    from: "hohoangphucjob@gmail.com",
+    from: process.env.EMAIL_OTP, // Không hardcode email
     to: email,
     subject: "Thông Tin Đơn Hàng Của Bạn",
     html: orderMessage,
   };
 
   try {
-    // Gửi email
     await transporter.sendMail(mailOptions);
-    return {
-      EM: "Gửi email đơn hàng thành công",
-      EC: 1,
-    };
+    return { EM: "Gửi email đơn hàng thành công", EC: 1 };
   } catch (error) {
     console.error("Error sending order email:", error);
-    return {
-      EM: "Gửi email thất bại",
-      EC: -1,
-    };
+    return { EM: "Gửi email thất bại", EC: -1 };
   }
 };
 

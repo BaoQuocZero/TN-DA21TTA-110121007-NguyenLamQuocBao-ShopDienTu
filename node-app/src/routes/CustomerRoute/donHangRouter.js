@@ -21,7 +21,7 @@ router.get("/dang-cho-xu-ly", getDonHangGiaoDichProcess);
 
 router.get("/:id", getDON_HANG_ByIDUser); //admin
 
-router.post("/", createDON_HANG);
+router.post("/tao", createDON_HANG);
 router.post("/hoan-tat", updateTrangThaiDonHang);
 router.put("/:id", updateDON_HANG);
 router.delete("/:id", deleteDON_HANG);
@@ -31,11 +31,5 @@ router.put("/:orderId/success", updateOrderStatusSuccess);
 
 //Cancel - Admin
 router.put("/:orderId/canceled", updateOrderStatusCanceled);
-
-//Cancel - User
-// router.put(
-//   "/api/user/orders/:orderId/canceled",
-//   updateOrderStatusCanceled_User
-// );
 
 module.exports = router;

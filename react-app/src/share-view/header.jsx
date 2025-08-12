@@ -118,65 +118,7 @@ const Header = () => {
       {" "}
       <Button color="inherit">{t.support}</Button>
       <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
-        {/* <IconButton
-          color="inherit"
-          aria-label="language menu"
-          aria-controls="language-menu"
-          aria-haspopup="true"
-          onClick={handleLanguageMenu}
-        >
-          <LanguageIcon />
-        </IconButton>
-        <Button color="inherit" onClick={handleLanguageMenu}>
-          {optionLanguage === "vi" ? "Tiếng Việt" : "English"}
-        </Button> */}
 
-        {/* <Menu
-          id="language-menu"
-          anchorEl={anchorElLanguage}
-          open={Boolean(anchorElLanguage)}
-          onClose={handleLanguageClose}
-          PaperProps={{
-            sx: {
-              backgroundColor: "#29292d",
-              borderRadius: "13px",
-              paddingTop: 1,
-              paddingBottom: 1,
-            },
-          }}
-        >
-          <MenuItem
-            sx={{ color: "#fff", "&:hover": { backgroundColor: "#4a494c" } }}
-            onClick={() => {
-              handleChangeLanguage("vi");
-              handleLanguageClose();
-            }}
-          >
-            Tiếng Việt
-          </MenuItem>
-          <MenuItem
-            sx={{ color: "#fff", "&:hover": { backgroundColor: "#4a494c" } }}
-            onClick={() => {
-              handleChangeLanguage("en");
-              handleLanguageClose();
-            }}
-          >
-            English
-          </MenuItem>
-        </Menu> */}
-
-        {/* <Typography
-          onClick={handleLanguageMenu}
-          variant="body1"
-          component="span"
-          sx={{
-            ml: 1,
-            cursor: "pointer",
-            color: `${userInfo?.VAI_TRO === "1" ? "red" : "white"}`,
-          }}
-        >
-          {isAuthenticated ? <div>{userInfo?.HO_TEN}</div> : <></>}
-        </Typography> */}
       </Box>
       {/* <Button color="inherit">Language</Button> */}
       <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
@@ -255,26 +197,6 @@ const Header = () => {
           >
             Thông tin
           </MenuItem>
-          <MenuItem
-            sx={{
-              borderRadius: "8px",
-              paddingTop: 1,
-              paddingBottom: 1,
-              paddingRight: 8,
-
-              paddingLeft: 2,
-              color: "#fff",
-              "&:hover": {
-                backgroundColor: "#3ccaff", // Màu nền khi hover
-                color: "#000",
-              },
-            }}
-            onClick={handleClose}
-            component={Link}
-            to="/profile/don-hang"
-          >
-            Thư viện game
-          </MenuItem>{" "}
           <MenuItem
             sx={{
               borderRadius: "8px",

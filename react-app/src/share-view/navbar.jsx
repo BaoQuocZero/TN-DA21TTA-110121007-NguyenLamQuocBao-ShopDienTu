@@ -87,7 +87,7 @@ const Navbar = () => {
                 color: isActive("/") ? "#3ccaff" : "#fff",
               }}
             >
-              {t.Discover}
+              Khám Phá
             </Typography>
           </Box>
 
@@ -105,7 +105,7 @@ const Navbar = () => {
                 color: isActive("/browser") ? "#3ccaff" : "#fff",
               }}
             >
-              {t.Products}
+              Sản Phẩm
             </Typography>
           </Box>
 
@@ -131,24 +131,6 @@ const Navbar = () => {
         <Box sx={{ display: "flex" }}>
           <Box
             component={RouterLink}
-            to="/wishlist"
-            sx={{ textDecoration: "none" }}
-          >
-            <Typography
-              variant="body1"
-              component="div"
-              sx={{
-                mx: 2,
-                cursor: "pointer",
-                color: isActive("/wishlist") ? "#3ccaff" : "#fff",
-              }}
-            >
-              {t.Wishlist}
-            </Typography>
-          </Box>
-
-          <Box
-            component={RouterLink}
             to="/cart"
             sx={{ textDecoration: "none" }}
           >
@@ -162,7 +144,7 @@ const Navbar = () => {
               }}
             >
               <Badge badgeContent={totalCart} color="secondary">
-                {t.Cart}
+                Giỏ hàng
               </Badge>
             </Typography>
           </Box>

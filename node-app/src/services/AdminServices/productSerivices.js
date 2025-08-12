@@ -101,7 +101,6 @@ const xem_tatca_sanpham = async () => {
 
 const xem_sanpham_id = async (ID_PRODUCTDETAILS, ID_USER) => {
   try {
-    console.log("ID_PRODUCTDETAILS: ", ID_PRODUCTDETAILS)
     // Truy vấn thông tin sản phẩm và thể loại
     let [results, fields] = await pool.execute(
       `

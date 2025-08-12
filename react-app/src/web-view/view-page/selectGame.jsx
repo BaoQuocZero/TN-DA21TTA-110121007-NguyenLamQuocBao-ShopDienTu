@@ -32,7 +32,11 @@ const api = process.env.REACT_APP_URL_SERVER;
 const SelectGame = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
-  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([
+    // { MA_THANH_TOAN: 1, CACH_THANH_TOAN: "Momo" },
+    { MA_THANH_TOAN: 2, CACH_THANH_TOAN: "Thanh toán tại nhà" },
+    { MA_THANH_TOAN: 24, CACH_THANH_TOAN: "VNPAY" },
+  ]);
   const [binhLuan, setBinhLuan] = useState([]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -43,7 +47,10 @@ const SelectGame = () => {
     localStorage.getItem("THEMES") || userInfo?.THEMES || "dark"
   );
 
+  const [selectStreetName, setSelectStreetName] = useState(userInfo.ADDRESS || "");
+  const [soDienThoai, setSoDienThoai] = useState(userInfo.PHONENUMBER || "");
   useEffect(() => {
+    console.log("User fo:::: ", userInfo)
     if (id) {
       fetchProduct(id);
     }
@@ -128,34 +135,6 @@ const SelectGame = () => {
       enqueueSnackbar(error.response.data.EM, { variant: "error" });
     }
   };
-  // Hàm handleAddToWish
-  const handleAddToWish = async () => {
-    if (!isAuthenticated) {
-      // Nếu người dùng chưa đăng nhập, chuyển hướng đến trang đăng nhập
-      navigate("/login");
-      return; // Dừng hàm nếu chưa đăng nhập
-    }
-
-    try {
-      const payload = {
-        ID_PRODUCTDETAILS: id,
-        ID_USER: userInfo.ID_USER, // ID người dùng
-      };
-
-      const response = await axios.post(`${api}/api/v1/yeuthich/them`, payload);
-
-      if (response.data.EC === 1) {
-        enqueueSnackbar(response.data.EM, { variant: "success" });
-        console.log(response.data.EM); // Thêm vào yêu thích thành công
-      } else {
-        console.log("Lỗi:", response.data.EM); // Xử lý lỗi nếu có
-        enqueueSnackbar(response.data.EM, { variant: "error" });
-      }
-    } catch (error) {
-      console.error("Lỗi hệ thống:", error);
-      enqueueSnackbar(error.response.data.EM, { variant: "error" });
-    }
-  };
 
   //THAY ĐỔI ĐỊA CHỈ
   const [isSwitchOn, setIsSwitchOn] = useState(true); // Trạng thái của Switch
@@ -165,8 +144,6 @@ const SelectGame = () => {
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
   const [selectedWards, setSelectedWards] = useState(null);
-  const [selectStreetName, setSelectStreetName] = useState(null);
-  const [soDienThoai, setSoDienThoai] = useState(null);
 
   const handleSummitThanhToan = async () => {
     if (!isAuthenticated) {
@@ -180,21 +157,17 @@ const SelectGame = () => {
 
     // Tạo mã đơn hàng duy nhất
     const orderId = uuidv4();
-    const orderInfo = `Epick Game - Mã đơn hàng: ${orderId}`;
+    const orderInfo = `Shop Điện Tử - Mã đơn hàng: ${orderId}`;
     const requestData = {
-      idNguoiDung: userInfo.MA_KH,
+      ID_USER: userInfo.ID_USER,
       idThanhToan: selectPhuongThucThanhToan,
-      tongTien: product.DON_GIA,
+      PRICE_PRODUCTDETAILS: product.PRICE_PRODUCTDETAILS,
       trangThaiDonHang: "Đang chờ thanh toán",
       ID_ODER: orderInfo,
       items: [product],
-      email: userInfo.TEN_DANG_NHAP,
-      DIA_CHI_DON_HANG: isSwitchOn
-        ? `${userInfo?.DIA_CHI_STREETNAME}, ${userInfo?.DIA_CHI_Wards}, ${userInfo?.DIA_CHI_Districts}, ${userInfo?.DIA_CHI_Provinces}`
-        : `${selectStreetName}, ${selectedWards?.name}, ${selectedDistrict?.name}, ${selectedProvince?.name}`,
-      SO_DIEN_THOAI_DON_HANG: isSwitchOn
-        ? `${userInfo.SDT_KH}`
-        : `${soDienThoai}`,
+      EMAIL: userInfo.EMAIL,
+      ADDRESS: userInfo.ADDRESS,
+      PHONENUMBER: userInfo.PHONENUMBER
     };
 
     let result = paymentMethods.find(
@@ -207,7 +180,7 @@ const SelectGame = () => {
           const responsive = await axios.post(
             "http://emailserivce.somee.com/api/Momo/CreatePaymentUrl",
             {
-              fullName: userInfo.TEN_KHACH_HANG,
+              fullName: userInfo.LASTNAME,
               orderId: orderInfo,
               options: "mutil",
               orderInfo: orderInfo,
@@ -215,7 +188,7 @@ const SelectGame = () => {
               amount: product.DON_GIA, // Gửi tổng tiền trong giỏ hàng
             }
           );
-          await axios.post(`${api}/don-hang`, requestData);
+          await axios.post(`${api}/don-hang/tao`, requestData);
           const paymentUrl = responsive.data.url;
 
           window.location.href = paymentUrl;
@@ -223,9 +196,10 @@ const SelectGame = () => {
           console.error("Error during Momo payment creation:", error);
           enqueueSnackbar(error.response.data.EM, { variant: "info" });
         }
+
       } else if (result.CACH_THANH_TOAN === "Thanh toán tại nhà") {
         try {
-          const response = await axios.post(`${api}/don-hang`, requestData);
+          const response = await axios.post(`${api}/don-hang/tao`, requestData);
           console.log("check ", response.data);
           if (response.data.EC === 1) {
             console.log("check ", response.data);
@@ -237,9 +211,10 @@ const SelectGame = () => {
           console.error("Error during Thanh toán tại nhà payment:", error);
           enqueueSnackbar(error.response.data.EM, { variant: "info" });
         }
+
       } else if (selectPhuongThucThanhToan == 24) {
         try {
-          const response = await axios.post(`${api}/don-hang`, requestData);
+          const response = await axios.post(`${api}/don-hang/tao`, requestData);
           if (response.data.EC === 1) {
             const responsive = await axios.post(
               `${api}/thanh-toan-online/create_payment_url`,
@@ -363,6 +338,7 @@ const SelectGame = () => {
                 </Typography>
               ))}
             </Box>{" "} */}
+
             <Box
               sx={{
                 borderRadius: 1,
@@ -371,14 +347,7 @@ const SelectGame = () => {
                 mt: 2,
               }}
             >
-              {/* <Typography
-                sx={{
-                  color: currentTheme.color,
-                  display: "inline",
-                }}
-              >
-                {product.ISDELETE}
-              </Typography> */}
+
             </Box>
           </Box>
           <Box
@@ -430,7 +399,6 @@ const SelectGame = () => {
             <Button
               variant="contained"
               onClick={handleSummitThanhToan}
-              disabled={product.DaMua === "Chưa Mua" ? false : true}
               sx={{
                 borderRadius: "14px",
                 paddingTop: "13px",
@@ -448,27 +416,8 @@ const SelectGame = () => {
             >
               Mua ngay
             </Button>{" "}
+
             <Button
-              disabled={product.DaMua === "Chưa Mua" ? false : true}
-              onClick={() => handleAddToWish()}
-              sx={{
-                borderRadius: "14px",
-                paddingTop: "13px",
-                paddingBottom: "13px",
-                backgroundColor: "#343437",
-                color: "#fff",
-                fontWeight: "600",
-                fontSize: "12px",
-                "&:hover": {
-                  backgroundColor: "#4b4b4e",
-                },
-              }}
-              fullWidth
-            >
-              Add To Wish
-            </Button>
-            <Button
-              disabled={product.DaMua === "Chưa Mua" ? false : true}
               onClick={() => handleAddToCart()}
               sx={{
                 borderRadius: "14px",
@@ -508,7 +457,7 @@ const SelectGame = () => {
                 }}
               >
                 {" "}
-                <MenuItem value="">Xem tất cả</MenuItem>
+                {/* <MenuItem value="">Chọn cách thanh toán</MenuItem> */}
                 {paymentMethods.map((item) => (
                   <MenuItem key={item.MA_THANH_TOAN} value={item.MA_THANH_TOAN}>
                     {item.CACH_THANH_TOAN}
@@ -516,103 +465,63 @@ const SelectGame = () => {
                 ))}
               </Select>
             </FormControl>{" "}
-            {isSwitchOn ? (
-              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Switch
-                  checked={isSwitchOn} // Liên kết trạng thái với Switch
-                  onChange={handleSwitchChange}
-                  color="primary"
-                />
-                {userInfo && (
-                  <>
-                    <Typography
-                      variant="body2"
-                      color="white"
-                      sx={{ fontSize: "11px", color: currentTheme.color }}
-                    >
-                      {`Địa chỉ: ${userInfo.DIA_CHI_STREETNAME}, ${userInfo?.DIA_CHI_Wards}, 
-              ${userInfo?.DIA_CHI_Districts}, ${userInfo?.DIA_CHI_Provinces}`}
-                    </Typography>
-                  </>
-                )}
-              </Box>
-            ) : (
-              <>
-                <Switch
-                  checked={isSwitchOn} // Liên kết trạng thái với Switch
-                  onChange={handleSwitchChange}
-                  color="primary"
-                />{" "}
-                <Typography
-                  variant="body2"
-                  color="white"
-                  sx={{ fontSize: "11px", color: currentTheme.color }}
-                >
-                  {`Địa chỉ: ${selectStreetName || " "} ${selectedWards || ""} 
-        ${selectedDistrict || ""} ${selectedProvince || ""}`}
-                </Typography>
-                <AddressSelector
-                  selectedProvince={selectedProvince}
-                  selectedDistrict={selectedDistrict}
-                  selectedWards={selectedWards}
-                  //
-                  setSelectedProvince={setSelectedProvince}
-                  setSelectedDistrict={setSelectedDistrict}
-                  setSelectedWards={setSelectedWards}
-                  backgroundColor={"#343437"}
-                  color={"#fff"}
-                />{" "}
-                <TextField
-                  label="Tên đường"
-                  variant="outlined"
-                  value={selectStreetName} // Đảm bảo giá trị mặc định là chuỗi rỗng nếu không có dataUser hoặc EMAIL
-                  fullWidth
-                  InputProps={{
-                    style: { color: currentTheme.color }, // Màu chữ trong TextField
-                  }}
-                  onChange={(e) => setSelectStreetName(e.target.value)}
-                  InputLabelProps={{
-                    style: { color: currentTheme.color }, // Màu chữ nhãn
-                  }}
-                  sx={{
-                    backgroundColor: currentTheme.backgroundColorLow, // Màu nền của input
-                    "& .MuiInputLabel-root": { color: currentTheme.color }, // Màu chữ của label
-                    "& .MuiInputBase-input": { color: currentTheme.color }, // Màu chữ của input
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": { borderColor: "#00000" }, // Màu viền
-                    },
-                    "& .MuiInputBase-root": {
-                      borderRadius: "4px", // Làm tròn góc nếu muốn
-                    },
-                  }}
-                />{" "}
-                <TextField
-                  label="Số điện thoại"
-                  variant="outlined"
-                  type="number"
-                  value={soDienThoai} // Đảm bảo giá trị mặc định là chuỗi rỗng nếu không có dataUser hoặc EMAIL
-                  fullWidth
-                  InputProps={{
-                    style: { color: currentTheme.color }, // Màu chữ trong TextField
-                  }}
-                  onChange={(e) => setSoDienThoai(e.target.value)}
-                  InputLabelProps={{
-                    style: { color: currentTheme.color }, // Màu chữ nhãn
-                  }}
-                  sx={{
-                    backgroundColor: currentTheme.backgroundColorLow, // Màu nền của input
-                    "& .MuiInputLabel-root": { color: currentTheme.color }, // Màu chữ của label
-                    "& .MuiInputBase-input": { color: currentTheme.color }, // Màu chữ của input
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": { borderColor: "#00000" }, // Màu viền
-                    },
-                    "& .MuiInputBase-root": {
-                      borderRadius: "4px", // Làm tròn góc nếu muốn
-                    },
-                  }}
-                />
-              </>
-            )}
+            <>
+              {/* <Switch
+                checked={isSwitchOn} // Liên kết trạng thái với Switch
+                onChange={handleSwitchChange}
+                color="primary"
+              />{" "} */}
+              <TextField
+                label="Địa chỉ"
+                variant="outlined"
+                value={selectStreetName}
+                fullWidth
+                InputProps={{
+                  style: { color: currentTheme.color },
+                }}
+                onChange={(e) => setSelectStreetName(e.target.value)}
+                InputLabelProps={{
+                  style: { color: currentTheme.color },
+                }}
+                sx={{
+                  backgroundColor: currentTheme.backgroundColorLow,
+                  "& .MuiInputLabel-root": { color: currentTheme.color },
+                  "& .MuiInputBase-input": { color: currentTheme.color },
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "#00000" },
+                  },
+                  "& .MuiInputBase-root": {
+                    borderRadius: "4px",
+                  },
+                }}
+              />
+
+              <TextField
+                label="Số điện thoại"
+                variant="outlined"
+                type="number"
+                value={userInfo.PHONENUMBER} // Đảm bảo giá trị mặc định là chuỗi rỗng nếu không có dataUser hoặc EMAIL
+                fullWidth
+                InputProps={{
+                  style: { color: currentTheme.color }, // Màu chữ trong TextField
+                }}
+                onChange={(e) => setSoDienThoai(e.target.value)}
+                InputLabelProps={{
+                  style: { color: currentTheme.color }, // Màu chữ nhãn
+                }}
+                sx={{
+                  backgroundColor: currentTheme.backgroundColorLow, // Màu nền của input
+                  "& .MuiInputLabel-root": { color: currentTheme.color }, // Màu chữ của label
+                  "& .MuiInputBase-input": { color: currentTheme.color }, // Màu chữ của input
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "#00000" }, // Màu viền
+                  },
+                  "& .MuiInputBase-root": {
+                    borderRadius: "4px", // Làm tròn góc nếu muốn
+                  },
+                }}
+              />
+            </>
             <Divider sx={{ backgroundColor: "#555", mb: 2 }} />
             {/* <Box>
               <Typography

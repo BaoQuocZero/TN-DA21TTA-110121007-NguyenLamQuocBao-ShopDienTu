@@ -287,45 +287,6 @@ const ProductCarousel = ({ title, products, api }) => {
                   onClick={() => handleBuyProduct(product.ID_PRODUCTDETAILS)}
                 >
                   <Box sx={{ position: "relative" }}>
-                    {!buyStatus && (
-                      <Tooltip
-                        title={favoriteStatus ? t.RemoveFromWish : t.AddToWish}
-                        arrow
-                      >
-                        <IconButton
-                          sx={{
-                            position: "absolute",
-                            top: 8,
-                            right: 8,
-                            color: favoriteStatus ? "red" : currentTheme.color,
-                            borderRadius: "50%",
-                            margin: "8px",
-                            fontSize: "25px",
-                            cursor: "pointer",
-                            transition: "transform 0.3s ease",
-                            "&:hover": {
-                              transform: "scale(1.2)",
-                            },
-                            zIndex: 1, // Đảm bảo nút nổi lên trên CardMedia
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation(); // Ngăn sự kiện lan truyền lên Card
-                            e.preventDefault(); // Ngăn hành vi mặc định (nếu có)
-                            if (favoriteStatus) {
-                              handleRemoveFromWish(product);
-                            } else {
-                              handleAddToWish(product);
-                            }
-                          }}
-                        >
-                          {favoriteStatus ? (
-                            <FavoriteIcon />
-                          ) : (
-                            <FavoriteBorderIcon />
-                          )}
-                        </IconButton>
-                      </Tooltip>
-                    )}
                     <CardMedia
                       component="img"
                       image={`${api}/images/${product.GALLERYPRODUCT_DETAILS}`}
