@@ -310,12 +310,9 @@ const createDON_HANG = async (req, res) => {
     //   email: user.EMAIL,
     //   orderDetails: orderDetailsFormatted,
     // });
-    let emailResult = {
-      EC: 1, // 1 = thành công, 0 = thất bại (theo quy ước của bạn)
-      EM: "Email sent successfully (fake mode)", // Thông báo giả
-      DT: null // Data trả về (nếu cần)
-    };
-    if (emailResult.EC === 1) {
+
+    // if (emailResult.EC === 1) {
+    if (1) {
       //Xóa giỏ hàng thêm sau
       return res.status(200).json({
         EM: "Mua hàng thành công, vui lòng kiểm tra đơn hàng",

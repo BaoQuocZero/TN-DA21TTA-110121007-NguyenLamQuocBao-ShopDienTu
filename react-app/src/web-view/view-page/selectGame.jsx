@@ -185,7 +185,7 @@ const SelectGame = () => {
               options: "mutil",
               orderInfo: orderInfo,
               returnUrl: "http://localhost:3000/checkout",
-              amount: product.DON_GIA, // Gửi tổng tiền trong giỏ hàng
+              amount: product.PRICE_PRODUCTDETAILS, // Gửi tổng tiền trong giỏ hàng
             }
           );
           await axios.post(`${api}/don-hang/tao`, requestData);
@@ -222,8 +222,8 @@ const SelectGame = () => {
                 orderId: orderInfo,
 
                 returnUrl: "http://localhost:3000/checkout-vnpay",
-                amount: product.DON_GIA,
-                bankCode: "NCB",
+                amount: product.PRICE_PRODUCTDETAILS,
+                bankCode: "",
                 orderType: "fashion",
                 language: "vi",
               }

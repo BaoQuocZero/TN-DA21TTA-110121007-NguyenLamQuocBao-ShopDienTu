@@ -49,7 +49,7 @@ router.post("/create_payment_url", function (req, res, next) {
   vnp_Params["vnp_OrderInfo"] = encodeURIComponent(orderInfo);
 
   vnp_Params["vnp_OrderType"] = orderType;
-  vnp_Params["vnp_Amount"] = Math.round(amount * 100); // VND -> đồng
+  vnp_Params["vnp_Amount"] = amount
 
   vnp_Params["vnp_ReturnUrl"] = returnUrl;
   vnp_Params["vnp_IpAddr"] = ipAddr;
@@ -91,6 +91,7 @@ router.post("/create_payment_url", function (req, res, next) {
   console.log("Generated vnpUrl:", vnpUrl); // Log URL để kiểm tra
   res.json({ url: vnpUrl });
 });
+
 
 // Vui lòng tham khảo thêm tại code demo
 
