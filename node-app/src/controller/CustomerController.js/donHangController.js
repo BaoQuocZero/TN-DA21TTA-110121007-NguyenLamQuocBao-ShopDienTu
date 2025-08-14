@@ -204,11 +204,10 @@ const createDON_HANG = async (req, res) => {
     ID_USER,
     idThanhToan,
     PRICE_PRODUCTDETAILS,
-    trangThaiDonHang = "Đang chờ thanh toán",
     ID_ODER,
     items,
     ADDRESS,
-    PHONENUMBER
+    PHONENUMBER,
   } = req.body;
 
   try {
@@ -223,15 +222,17 @@ const createDON_HANG = async (req, res) => {
     // Thêm vào bảng orders
     const [orderResult] = await connection.execute(
       `INSERT INTO orders 
-       (ID_USER, QUANTITY, STATUS, PAYMENTSTATUS, PAYMENTMETHOD, TOTALORDERPRICE, CREATEAT, ISDELETE) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
+       (ID_USER, QUANTITY, STATUS, PAYMENTSTATUS, PAYMENTMETHOD, TOTALORDERPRICE, SHIPPING_ADDRESS, SHIPPING_PHONE, CREATEAT, ISDELETE) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
       [
         ID_USER,
         itemsArray.length,
-        trangThaiDonHang,
+        "Đang chờ xác nhận",
         "Chưa thanh toán",
         "Chuyển khoản",
         tongTien,
+        ADDRESS,
+        PHONENUMBER,
         ngayTaoDonHang
       ]
     );
@@ -646,6 +647,7 @@ const updateOrderStatusCanceled_User = async (req, res) => {
     });
   }
 };
+
 // Cập nhật trạng thái đơn hàng là "Đã hủy" ADMIN
 const updateOrderStatusCanceled = async (req, res) => {
   const { orderId } = req.params; // ID đơn hàng từ tham số URL
@@ -653,13 +655,13 @@ const updateOrderStatusCanceled = async (req, res) => {
   try {
     // Cập nhật trạng thái đơn hàng
     const [result] = await connection.execute(
-      `UPDATE hoadon 
-       SET GHI_CHU_HOA_DON = 'Đã hủy', 
-           NGAY_LAP_HOA_DON = NOW() 
-       WHERE MAHD = ?`,
+      `UPDATE orders 
+       SET STATUS = 'Đã hủy', 
+           UPDATEAT = NOW() 
+       WHERE ID_ORDER = ?`,
       [orderId] // Tham số orderId để xác định đơn hàng cần cập nhật
     );
-    console.log("result", result);
+    // console.log("result", result);
     if (result.affectedRows > 0) {
       return res.status(200).json({
         EM: "Cập nhật trạng thái đơn hàng thành công",
@@ -742,79 +744,78 @@ const updateOrderStatusSuccess = async (req, res) => {
   }
 };
 
+const updatePAYMENTSTATUSSuccess = async (req, res) => {
+  const { orderId } = req.params; // ID đơn hàng từ tham số URL
+  let conn; // Khai báo biến kết nối
+
+  try {
+    // Lấy kết nối từ pool
+    conn = await connection.getConnection();
+
+    // Bắt đầu giao dịch
+    await conn.beginTransaction();
+
+    // Cập nhật trạng thái đơn hàng
+    const [result] = await conn.execute(
+      `UPDATE orders 
+       SET PAYMENTSTATUS = 'Đã thanh toán', 
+           UPDATEAT = NOW() 
+       WHERE ID_ORDER  = ?`,
+      [orderId]
+    );
+
+    if (result.affectedRows > 0) {
+
+      await conn.commit();
+
+      return res.status(200).json({
+        EM: "Cập nhật trạng thái đơn hàng thành công",
+        EC: 1,
+        DT: [],
+      });
+    } else {
+      return res.status(404).json({
+        EM: "Không tìm thấy đơn hàng",
+        EC: 0,
+        DT: [],
+      });
+    }
+  } catch (error) {
+    // Nếu có lỗi, rollback giao dịch
+    if (conn) {
+      await conn.rollback();
+    }
+    console.error("Error updating order status:", error);
+    return res.status(500).json({
+      EM: "Có lỗi xảy ra khi cập nhật trạng thái đơn hàng",
+      EC: 0,
+      DT: [],
+    });
+  } finally {
+    // Giải phóng kết nối
+    if (conn) {
+      conn.release();
+    }
+  }
+};
+
 const getDonHangGiaoDichThanhCong = async (req, res) => {
   try {
     // Lấy dữ liệu đơn hàng có GHI_CHU_HOA_DON là "Giao dịch thành công"
     const [results] = await connection.execute(`
-      SELECT 
-        -- Dữ liệu từ bảng Hóa Đơn
-        h.MAHD, 
-        h.MA_THANH_TOAN, 
-        h.MA_KH, 
-        h.DIA_CHI_SHIP, 
-        h.SDT_LIEN_HE_KH, 
-        h.NGAY_LAP_HOA_DON, 
-        h.GHI_CHU_HOA_DON, 
-        h.TONG_TIEN,
-        
-        -- Dữ liệu từ bảng Thanh Toán
-        t.CACH_THANH_TOAN, 
-        t.GHI_CHU_THANH_TOAN,
-        
-        -- Dữ liệu từ bảng Khách Hàng
-        k.TEN_KHACH_HANG, 
-        k.DIA_CHI, 
-        k.SDT_KH, 
-        k.GHI_CHU_KH, 
-        k.DIA_CHI_Provinces, 
-        k.DIA_CHI_Wards, 
-        k.DIA_CHI_STREETNAME, 
-        k.DIA_CHI_Districts, 
-        k.NGAY_SINH, 
-        k.AVATAR, 
-        k.GHI_CHU_KH,
-        
-        -- Dữ liệu từ bảng Chi Tiết Hóa Đơn
-        c.MA_CTHD, 
-        c.MASP, 
-        c.SO_LUONG, 
-        c.GIA_SP_KHI_MUA, 
-        c.GIAM_GIA_KHI_MUA, 
-        c.GHI_CHU_CTHD, 
-        c.BINH_LUAN, 
-        c.DANH_GIA,
-        
-        -- Dữ liệu từ bảng Sản Phẩm
-        p.TENSP, 
-        p.DON_GIA, 
-        p.NHA_SAN_XUAT, 
-        p.ANH_SP, 
-        p.GHI_CHU_SP, 
-        p.TRANG_THAI_SAN_PHAM,
-        
-        -- Dữ liệu từ bảng Thể Loại
-        tl.TENTL, 
-        tl.MO_TA_TL, 
-        tl.GHI_CHU_TL
-
-      FROM 
-        hoadon h
-      LEFT JOIN 
-        thanh_toan t ON h.MA_THANH_TOAN = t.MA_THANH_TOAN
-      LEFT JOIN 
-        khachhang k ON h.MA_KH = k.MA_KH
-      LEFT JOIN 
-        chi_tiet_hoa_don c ON h.MAHD = c.MAHD
-      LEFT JOIN 
-        sanpham p ON c.MASP = p.MASP
-      LEFT JOIN 
-        thuoc_loai tl1 ON p.MASP = tl1.MASP
-      LEFT JOIN 
-        theloai tl ON tl1.MATL = tl.MATL
-      WHERE 
-        h.GHI_CHU_HOA_DON = 'Giao dịch thành công'
-      ORDER BY 
-        h.NGAY_LAP_HOA_DON DESC;
+        SELECT 
+            user.ID_USER, 
+            user.EMAIL, 
+            user.FIRSTNAME, 
+            user.LASTNAME, 
+            user.PHONENUMBER, 
+            user.ADDRESS,
+            orders.*
+        FROM orders
+        JOIN order_item ON order_item.ID_ORDER = orders.ID_ORDER
+        JOIN user ON user.ID_USER = orders.ID_USER
+        WHERE orders.ISDELETE = 0
+        ORDER BY orders.CREATEAT DESC;
     `);
 
     return res.status(200).json({
@@ -870,4 +871,5 @@ module.exports = {
   updateOrderStatusCanceled,
   updateOrderStatusSuccess,
   getDonHangGiaoDichProcess,
+  updatePAYMENTSTATUSSuccess,
 };

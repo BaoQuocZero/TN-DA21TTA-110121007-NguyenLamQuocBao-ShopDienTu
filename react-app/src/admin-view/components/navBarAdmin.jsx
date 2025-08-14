@@ -232,7 +232,7 @@ const NavBarAdmin = () => {
                   to="/admin/don-hang-dang-xu-ly"
                   sx={{ pl: 4, color: "#f0f6fc" }}
                 >
-                  <ListItemText primary="Đang chờ thanh toán" />
+                  <ListItemText primary="Đang chờ xác nhận" />
                 </ListItem>
                 <ListItem
                   button

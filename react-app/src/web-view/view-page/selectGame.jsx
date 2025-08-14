@@ -33,9 +33,9 @@ const SelectGame = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [paymentMethods, setPaymentMethods] = useState([
-    // { MA_THANH_TOAN: 1, CACH_THANH_TOAN: "Momo" },
-    { MA_THANH_TOAN: 2, CACH_THANH_TOAN: "Thanh toán tại nhà" },
-    { MA_THANH_TOAN: 24, CACH_THANH_TOAN: "VNPAY" },
+    // { MA_THANH_TOAN: 1, CACH_THANH_TOAN: "Chuyển khoản Momo" },
+    { MA_THANH_TOAN: 2, CACH_THANH_TOAN: "Thanh toán khi nhận hàng COD" },
+    { MA_THANH_TOAN: 3, CACH_THANH_TOAN: "Chuyển khoản VNPAY" },
   ]);
   const [binhLuan, setBinhLuan] = useState([]);
   const navigate = useNavigate();
@@ -47,10 +47,9 @@ const SelectGame = () => {
     localStorage.getItem("THEMES") || userInfo?.THEMES || "dark"
   );
 
-  const [selectStreetName, setSelectStreetName] = useState(userInfo.ADDRESS || "");
-  const [soDienThoai, setSoDienThoai] = useState(userInfo.PHONENUMBER || "");
+  const [SHIPPING_ADDRESS, setSHIPPING_ADDRESS] = useState(userInfo.ADDRESS || "");
+  const [SHIPPING_PHONE, setSHIPPING_PHONE] = useState(userInfo.PHONENUMBER || "");
   useEffect(() => {
-    console.log("User fo:::: ", userInfo)
     if (id) {
       fetchProduct(id);
     }
@@ -141,9 +140,6 @@ const SelectGame = () => {
   const handleSwitchChange = (event) => {
     setIsSwitchOn(event.target.checked); // Cập nhật trạng thái
   };
-  const [selectedProvince, setSelectedProvince] = useState(null);
-  const [selectedDistrict, setSelectedDistrict] = useState(null);
-  const [selectedWards, setSelectedWards] = useState(null);
 
   const handleSummitThanhToan = async () => {
     if (!isAuthenticated) {
@@ -158,6 +154,11 @@ const SelectGame = () => {
     // Tạo mã đơn hàng duy nhất
     const orderId = uuidv4();
     const orderInfo = `Shop Điện Tử - Mã đơn hàng: ${orderId}`;
+
+    let result = paymentMethods.find(
+      (payment) => payment.MA_THANH_TOAN === selectPhuongThucThanhToan
+    );
+
     const requestData = {
       ID_USER: userInfo.ID_USER,
       idThanhToan: selectPhuongThucThanhToan,
@@ -166,16 +167,13 @@ const SelectGame = () => {
       ID_ODER: orderInfo,
       items: [product],
       EMAIL: userInfo.EMAIL,
-      ADDRESS: userInfo.ADDRESS,
-      PHONENUMBER: userInfo.PHONENUMBER
+      ADDRESS: SHIPPING_ADDRESS,
+      PHONENUMBER: SHIPPING_PHONE,
+      CACH_THANH_TOAN: result.CACH_THANH_TOAN
     };
 
-    let result = paymentMethods.find(
-      (payment) => payment.MA_THANH_TOAN === selectPhuongThucThanhToan
-    );
-
     try {
-      if (result.CACH_THANH_TOAN === "Momo") {
+      if (result.CACH_THANH_TOAN === "Chuyển khoản Momo") {
         try {
           const responsive = await axios.post(
             "http://emailserivce.somee.com/api/Momo/CreatePaymentUrl",
@@ -197,7 +195,7 @@ const SelectGame = () => {
           enqueueSnackbar(error.response.data.EM, { variant: "info" });
         }
 
-      } else if (result.CACH_THANH_TOAN === "Thanh toán tại nhà") {
+      } else if (result.CACH_THANH_TOAN === "Thanh toán khi nhận hàng COD") {
         try {
           const response = await axios.post(`${api}/don-hang/tao`, requestData);
           console.log("check ", response.data);
@@ -212,7 +210,7 @@ const SelectGame = () => {
           enqueueSnackbar(error.response.data.EM, { variant: "info" });
         }
 
-      } else if (selectPhuongThucThanhToan == 24) {
+      } else if (selectPhuongThucThanhToan == "Chuyển khoản VNPAY") {
         try {
           const response = await axios.post(`${api}/don-hang/tao`, requestData);
           if (response.data.EC === 1) {
@@ -474,12 +472,12 @@ const SelectGame = () => {
               <TextField
                 label="Địa chỉ"
                 variant="outlined"
-                value={selectStreetName}
+                value={SHIPPING_ADDRESS}
                 fullWidth
                 InputProps={{
                   style: { color: currentTheme.color },
                 }}
-                onChange={(e) => setSelectStreetName(e.target.value)}
+                onChange={(e) => setSHIPPING_ADDRESS(e.target.value)}
                 InputLabelProps={{
                   style: { color: currentTheme.color },
                 }}
@@ -505,7 +503,7 @@ const SelectGame = () => {
                 InputProps={{
                   style: { color: currentTheme.color }, // Màu chữ trong TextField
                 }}
-                onChange={(e) => setSoDienThoai(e.target.value)}
+                onChange={(e) => setSHIPPING_PHONE(e.target.value)}
                 InputLabelProps={{
                   style: { color: currentTheme.color }, // Màu chữ nhãn
                 }}

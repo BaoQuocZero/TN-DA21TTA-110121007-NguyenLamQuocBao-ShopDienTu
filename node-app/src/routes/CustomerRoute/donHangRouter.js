@@ -12,6 +12,7 @@ const {
   updateOrderStatusSuccess,
   getDonHangGiaoDichThanhCong,
   getDonHangGiaoDichProcess,
+  updatePAYMENTSTATUSSuccess,
 } = require("../../controller/CustomerController.js/donHangController");
 
 // Định nghĩa các route
@@ -31,5 +32,7 @@ router.put("/:orderId/success", updateOrderStatusSuccess);
 
 //Cancel - Admin
 router.put("/:orderId/canceled", updateOrderStatusCanceled);
+
+router.put("/PAYMENTSTATUS/:orderId/success", updatePAYMENTSTATUSSuccess);
 
 module.exports = router;

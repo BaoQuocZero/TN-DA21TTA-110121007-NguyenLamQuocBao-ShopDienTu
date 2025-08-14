@@ -100,7 +100,16 @@ const TatCaDonHangAdminProcess = () => {
     setActionType("");
     setCurrentOrderId(null);
   };
-  // Xử lý khi người dùng xác nhận hành động trong modal
+
+  // Hủy đơn hàng và đóng modal
+  const handleCancelOrder = () => {
+    if (currentOrderId) {
+      handleUpdateStatusCanceled(currentOrderId);
+    }
+    handleCloseDialog();
+  };
+
+  // Xử lý khi xác nhận
   const handleConfirmAction = () => {
     if (actionType === "success" && currentOrderId) {
       handleUpdateStatusSuccess(currentOrderId);
@@ -227,12 +236,12 @@ const TatCaDonHangAdminProcess = () => {
                 <TableCell
                   sx={{ fontSize: "0.875rem", color: currentTheme.color }}
                 >
-                  {order.PHONENUMBER || "Không xác định"}
+                  {order.SHIPPING_PHONE || "Không xác định"}
                 </TableCell>
                 <TableCell
                   sx={{ fontSize: "0.875rem", color: currentTheme.color }}
                 >
-                  {order.ADDRESS || "Không xác định"}
+                  {order.SHIPPING_ADDRESS || "Không xác định"}
                 </TableCell>
                 <TableCell
                   sx={{ fontSize: "0.875rem", color: currentTheme.color }}
@@ -283,7 +292,7 @@ const TatCaDonHangAdminProcess = () => {
                 <TableCell sx={{ fontSize: "0.875rem", color: "red" }}>
                   <Button
                     sx={{ color: "red" }}
-                    onClick={() => handleOpenDialog("canceled", order.MAHD)}
+                    onClick={() => handleOpenDialog("canceled", order.ID_ORDER)}
                   >
                     Hủy
                   </Button>
@@ -333,19 +342,26 @@ const TatCaDonHangAdminProcess = () => {
         <DialogContent>
           {actionType === "success" ? (
             <p>
-              Bạn có chắc chắn muốn đánh dấu đơn hàng này là "Giao dịch thành
-              công"?
+              Bạn có chắc chắn muốn đánh dấu đơn hàng này là "Đang giao"?
             </p>
           ) : (
             <p>Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color="primary">
-            Hủy
+          <Button
+            onClick={handleConfirmAction}
+            variant="contained"
+            color="success"
+          >
+            Xác nhận gửi hàng
           </Button>
-          <Button onClick={handleConfirmAction} color="primary">
-            Xác nhận
+          <Button
+            onClick={handleCancelOrder}
+            variant="contained"
+            color="error"
+          >
+            Hủy đơn
           </Button>
         </DialogActions>
       </Dialog>
