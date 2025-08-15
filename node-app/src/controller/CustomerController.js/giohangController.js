@@ -2,56 +2,47 @@ const connection = require("../../config/database");
 
 const getAllCartItems = async (req, res) => {
   try {
-    const maKhachHang = req.body.MA_KH; // Lấy mã khách hàng từ body request
+    const maKhachHang = req.body.ID_USER; // Lấy mã khách hàng từ body request
 
     // Truy vấn danh sách sản phẩm trong giỏ hàng (chỉ lấy một bản ghi cho mỗi sản phẩm)
     const [results] = await connection.execute(
-      `SELECT sanpham.MASP, 
-       sanpham.TENSP, 
-       sanpham.DON_GIA, 
-       sanpham.NHA_SAN_XUAT, 
-       sanpham.ANH_SP, 
-       sanpham.GHI_CHU_SP, 
-       sanpham.TRANG_THAI_SAN_PHAM,
-       GROUP_CONCAT(DISTINCT theloai.MATL ORDER BY theloai.MATL) AS MATL, -- Gộp mã thể loại
-       GROUP_CONCAT(DISTINCT theloai.TENTL ORDER BY theloai.MATL) AS TENTL, -- Gộp tên thể loại
-       GROUP_CONCAT(DISTINCT theloai.MO_TA_TL ORDER BY theloai.MATL) AS MO_TA_TL, -- Gộp mô tả thể loại
-       GROUP_CONCAT(DISTINCT theloai.GHI_CHU_TL ORDER BY theloai.MATL) AS GHI_CHU_TL -- Gộp ghi chú thể loại
-FROM sanpham
-LEFT JOIN  gio_hang ON sanpham.MASP = gio_hang.MASP
- LEFT  JOIN khachhang ON khachhang.MA_KH = gio_hang.MA_KH
- LEFT JOIN thuoc_loai ON sanpham.MASP = thuoc_loai.MASP
- LEFT JOIN theloai ON thuoc_loai.MATL = theloai.MATL
-WHERE khachhang.MA_KH = ?
-GROUP BY sanpham.MASP, sanpham.TENSP, sanpham.DON_GIA, sanpham.NHA_SAN_XUAT, sanpham.ANH_SP, sanpham.GHI_CHU_SP, sanpham.TRANG_THAI_SAN_PHAM;
-`,
+      `
+      SELECT 
+      cart_item.QUANTITY, cart_item.TOTAL_PRICE, 
+      product_details.*,
+      brand.NAME AS brand_NAME,
+      category.NAME_CATEGORY, category.DESCRIPTION AS category_DESCRIPTION
+      FROM cart_item
+      JOIN product_details ON product_details.ID_PRODUCTDETAILS = cart_item.ID_PRODUCTDETAILS
+      JOIN product ON product.ID_PRODUCT = product_details.ID_PRODUCT
+      JOIN brand ON brand.ID_BRAND = product.ID_BRAND
+      JOIN category ON category.ID_CATEGORY = product.ID_CATEGORY
+      JOIN cart ON cart.ID_CART = cart_item.ID_CART
+      WHERE cart.ID_USER = ?
+      `,
       [maKhachHang]
     );
 
     // Truy vấn tổng số lượng sản phẩm và tổng tiền trong giỏ hàng
-    const [results_dem1] = await connection.execute(
-      `SELECT SUM(sanpham.DON_GIA * dem.so_luong_san_pham) AS tong_tien,
-              SUM(dem.so_luong_san_pham) AS tong_so_luong
-       FROM (
-         SELECT gio_hang.MASP, COUNT(gio_hang.MASP) AS so_luong_san_pham
-         FROM gio_hang
-         JOIN khachhang ON khachhang.MA_KH = gio_hang.MA_KH
-         WHERE khachhang.MA_KH = ?
-         GROUP BY gio_hang.MASP
-       ) AS dem
-       JOIN sanpham ON sanpham.MASP = dem.MASP`,
+    const [cartSummary] = await connection.execute(
+      `
+      SELECT 
+        SUM(cart_item.QUANTITY) AS totalQuantity,
+        SUM(cart_item.TOTAL_PRICE) AS totalPrice
+      FROM cart_item
+      JOIN cart ON cart.ID_CART = cart_item.ID_CART
+      WHERE cart.ID_USER = ?
+  `,
       [maKhachHang]
     );
 
-    const results_dem = results_dem1[0];
-    console.log("results", results);
     // Trả về danh sách sản phẩm trong giỏ hàng
     return res.status(200).json({
       EM: "Xem thông tin sản phẩm trong giỏ hàng thành công",
       EC: 1,
       DT: {
         results, // Danh sách sản phẩm kèm thông tin chi tiết và tổng số lượng
-        results_dem, // Tổng số lượng và tổng tiền
+        cartSummary, // Tổng số lượng và tổng tiền
       },
     });
   } catch (error) {
@@ -65,10 +56,9 @@ GROUP BY sanpham.MASP, sanpham.TENSP, sanpham.DON_GIA, sanpham.NHA_SAN_XUAT, san
 
 const addToCart = async (req, res) => {
   try {
-    const { MANGUOIDUNG, MASP, NGAY_CAP_NHAT_GIOHANG } = req.body;
-    console.log("req.body", req.body);
-    // Kiểm tra xem mã người dùng và mã sản phẩm có tồn tại không
-    if (!MANGUOIDUNG || !MASP) {
+    const { ID_USER, ID_PRODUCTDETAILS } = req.body;
+    // console.log("req.bodyreq.bodyreq.bodyreq.body: ", req.body)
+    if (!ID_USER || !ID_PRODUCTDETAILS) {
       return res.status(200).json({
         EM: "Mã người dùng hoặc mã sản phẩm không tồn tại",
         EC: 0,
@@ -76,59 +66,77 @@ const addToCart = async (req, res) => {
       });
     }
 
-    const [existingOrder] = await connection.execute(
-      `
-    SELECT 1 
-    FROM chi_tiet_hoa_don c 
-    JOIN hoadon h ON c.MAHD = h.MAHD
-    WHERE h.MA_KH = ? 
-      AND c.MASP = ? 
-      AND h.GHI_CHU_HOA_DON = 'Giao dịch thành công';
-    `,
-      [MANGUOIDUNG, MASP]
+    // 1. Kiểm tra giỏ hàng của người dùng
+    const [cart] = await connection.execute(
+      `SELECT * FROM cart WHERE ID_USER = ? AND ISDELETE = 0`,
+      [ID_USER]
     );
 
-    if (existingOrder.length > 0) {
-      return res.status(400).json({
-        EM: `Bạn đã mua sản phẩm này rồi!`,
-        EC: -1,
-      });
+    let cartId;
+    if (cart.length === 0) {
+      // 2. Chưa có giỏ → tạo mới
+      const [result] = await connection.execute(
+        `INSERT INTO cart (ID_USER, CREATEAT, UPDATEAT, ISDELETE)
+         VALUES (?, NOW(), NOW(), 0)`,
+        [ID_USER]
+      );
+      cartId = result.insertId;
+    } else {
+      cartId = cart[0].ID_CART;
     }
-    const formattedDate = new Date(NGAY_CAP_NHAT_GIOHANG)
-      .toISOString()
-      .slice(0, 19)
-      .replace("T", " ");
 
-    // Bước 1: Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-    const [existingProduct] = await connection.execute(
-      `SELECT * FROM gio_hang WHERE MA_KH = ? AND MASP = ?`,
-      [MANGUOIDUNG, MASP]
+    // 3. Kiểm tra sản phẩm trong giỏ hàng
+    const [existingItem] = await connection.execute(
+      `SELECT * FROM cart_item 
+       WHERE ID_CART = ? AND ID_PRODUCTDETAILS = ? AND ISDELETE = 0`,
+      [cartId, ID_PRODUCTDETAILS]
     );
 
-    if (existingProduct.length > 0) {
+    // Lấy thông tin sản phẩm (bao gồm giá)
+    const [productDetails] = await connection.execute(
+      `SELECT PRICE_PRODUCTDETAILS FROM product_details WHERE ID_PRODUCTDETAILS = ?`,
+      [ID_PRODUCTDETAILS]
+    );
+
+    if (productDetails.length === 0) {
       return res.status(200).json({
-        EM: "Sản phẩm đã có trong giỏ hàng",
+        EM: "Sản phẩm không tồn tại",
         EC: 0,
         DT: [],
       });
     }
 
-    // Bước 2: Nếu sản phẩm chưa có trong giỏ, thêm vào giỏ hàng
-    const [insertResult] = await connection.execute(
-      "INSERT INTO `gio_hang` (`MA_KH`, `MASP`, `NGAY_CAP_NHAT`) VALUES (?, ?, ?)",
-      [MANGUOIDUNG, MASP, formattedDate]
-    );
+    const price = productDetails[0].PRICE_PRODUCTDETAILS;
 
-    // Bước 3: Tính tổng số lượng sản phẩm trong giỏ hàng của người dùng
+    if (existingItem.length > 0) {
+      // Tăng số lượng và cập nhật tổng giá
+      await connection.execute(
+        `UPDATE cart_item 
+     SET QUANTITY = QUANTITY + 1, 
+         TOTAL_PRICE = (QUANTITY + 1) * ?, 
+         UPDATEAT = NOW() 
+     WHERE ID_CART = ? AND ID_PRODUCTDETAILS = ?`,
+        [price, cartId, ID_PRODUCTDETAILS]
+      );
+    } else {
+      // Thêm mới
+      await connection.execute(
+        `INSERT INTO cart_item 
+     (ID_PRODUCTDETAILS, ID_CART, QUANTITY, TOTAL_PRICE, CREATEAT, UPDATEAT, ISDELETE) 
+     VALUES (?, ?, 1, ?, NOW(), NOW(), 0)`,
+        [ID_PRODUCTDETAILS, cartId, price]
+      );
+    }
+
+    // 6. Lấy tổng số lượng sản phẩm trong giỏ
     const [totalResults] = await connection.execute(
-      `SELECT COUNT(MASP) AS totalQuantity
-       FROM gio_hang
-       WHERE MA_KH = ?`,
-      [MANGUOIDUNG]
+      `SELECT SUM(QUANTITY) AS totalQuantity 
+       FROM cart_item 
+       WHERE ID_CART = ? AND ISDELETE = 0`,
+      [cartId]
     );
 
-    // Bước 4: Trả về phản hồi với tổng số sản phẩm trong giỏ hàng
-    const totalQuantity = totalResults[0].totalQuantity;
+    const totalQuantity = totalResults[0]?.totalQuantity || 0;
 
     return res.status(200).json({
       EM: "Thêm vào giỏ hàng thành công",
@@ -149,21 +157,28 @@ const addToCart = async (req, res) => {
 // Đang sử dụng
 const removeCartItem = async (req, res) => {
   try {
-    const { MA_KH, MASP } = req.body;
+    const { ID_USER, ID_PRODUCTDETAILS } = req.body;
 
+    // Xóa sản phẩm trong giỏ hàng của đúng user
     const [deleteResult] = await connection.execute(
-      "DELETE FROM `gio_hang` WHERE `MA_KH` = ? AND `MASP` = ?",
-      [MA_KH, MASP]
+      `
+      DELETE cart_item
+      FROM cart_item
+      JOIN cart ON cart.ID_CART = cart_item.ID_CART
+      WHERE cart.ID_USER = ? AND cart_item.ID_PRODUCTDETAILS = ?
+      `,
+      [ID_USER, ID_PRODUCTDETAILS]
     );
+
     return res.status(200).json({
-      EM: " thành công",
+      EM: "Xóa sản phẩm khỏi giỏ hàng thành công",
       EC: 1,
       DT: deleteResult,
     });
   } catch (error) {
     console.error(error.message);
-    return res.status(200).json({
-      EM: " thành công",
+    return res.status(500).json({
+      EM: "Xóa sản phẩm khỏi giỏ hàng thất bại",
       EC: -1,
       DT: [],
     });

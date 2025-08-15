@@ -110,12 +110,10 @@ const SelectGame = () => {
       navigate("/login"); // Đảm bảo '/login' là đường dẫn đúng tới trang đăng nhập của bạn
       return; // Dừng hàm nếu chưa đăng nhập
     }
-    console.log("userInfo", userInfo);
     try {
       const payload = {
-        ID_PRODUCTDETAILS: id,
-        ID_USER: userInfo.MA_KH,
-        NGAY_CAP_NHAT_GIOHANG: new Date().toISOString(),
+        ID_USER: userInfo[0].ID_USER,
+        ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
       };
 
       const response = await axios.post(`${api}/api/v1/giohang/them`, payload);

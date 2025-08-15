@@ -95,6 +95,9 @@ const CartItem = ({
           }).format(price)}
         </Typography>
 
+        <Typography color="gray" variant="body2" sx={{ mt: 1 }}>
+          Số lượng: {quantity}
+        </Typography>
         <Button
           sx={{ mt: 2 }}
           variant="text"
@@ -206,16 +209,16 @@ const Cart = () => {
   const fetchCartItems = async () => {
     try {
       const response = await axios.post(`${api}/api/v1/giohang/xem`, {
-        MA_KH: userInfo.MA_KH,
+        ID_USER: userInfo[0].ID_USER,
       });
 
       const data = response.data;
 
       if (data.EC === 1) {
-        dispatch(setTotalCart(data.DT.results_dem.tong_so_luong));
-        setTongTienCart(data.DT.results_dem.tong_tien);
+        dispatch(setTotalCart(data.DT.cartSummary[0].totalQuantity));
+        setTongTienCart(data.DT.cartSummary[0].totalPrice);
         setItems(data.DT.results);
-        setSubtotal(data.DT.results_dem.tong_tien);
+        setSubtotal(data.DT.cartSummary[0].totalPrice);
 
         setLoading(false);
       }
@@ -226,7 +229,7 @@ const Cart = () => {
 
   const [paymentMethods, setPaymentMethods] = useState([]);
   useEffect(() => {
-    fetchPaymentMethods();
+    // fetchPaymentMethods();
   }, []);
 
   const fetchPaymentMethods = async () => {
@@ -247,7 +250,7 @@ const Cart = () => {
       if (title === "Add") {
         // Tăng số lượng
         const response = await axios.post(`${api}/api/v1/giohang/them`, {
-          MANGUOIDUNG: userInfo.MA_KH,
+          MANGUOIDUNG: userInfo.ID_USER,
           MASP: id,
           NGAY_CAP_NHAT_GIOHANG: new Date().toISOString(),
         });
@@ -262,8 +265,8 @@ const Cart = () => {
       } else if (title === "Delete") {
         // Giảm số lượng
         const response = await axios.delete(`${api}/api/v1/giohang/xoa`, {
-          userId: userInfo.MA_KH,
-          productId: id,
+          ID_USER: userInfo.ID_USER,
+          ID_PRODUCTDETAILS: id,
         });
 
         if (response.data.EC === 1) {
@@ -283,8 +286,8 @@ const Cart = () => {
     console.log("handleRemoveProduct", id);
     try {
       const response = await axios.post(`${api}/api/v1/giohang/xoa`, {
-        MA_KH: userInfo.MA_KH,
-        MASP: id,
+        ID_USER: userInfo[0].ID_USER,
+        ID_PRODUCTDETAILS: id,
       });
 
       if (response.data.EC === 1) {
@@ -434,23 +437,10 @@ const Cart = () => {
         <Box sx={{ textAlign: "left", paddingLeft: 2 }}>
           {" "}
           <Typography variant="h4" color="white">
-            My Cart
+            Giỏ hàng của bạn
           </Typography>
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", mt: 2, mb: 2 }}>
-          <Switch defaultChecked color="primary" />
-          <Typography variant="body2" color="white">
-            Sort by:{" "}
-          </Typography>
-          <FormControl sx={{ ml: 1, minWidth: 120 }}>
-            <Select sx={{ color: "#c9d1d9" }} defaultValue="Newest">
-              <MenuItem value="Newest">Newest</MenuItem>
-              <MenuItem value="On Sale">On Sale</MenuItem>
-              <MenuItem value="Popular">Popular</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
         <Divider sx={{ backgroundColor: "#555", mb: 2 }} />
       </Grid>
       <Grid item xs={12} sm={12} md={7} lg={7} xl={8}>
@@ -458,19 +448,18 @@ const Cart = () => {
           items.map((item, index) => (
             <CartItem
               key={index}
-              quantity={item.so_luong_san_pham}
+              quantity={item.QUANTITY}
               handleRemoveProduct={handleRemoveProduct}
               handleQuantityChange={handleQuantityChange}
-              name={item.TENSP}
-              price={item.DON_GIA}
-              description={item.GHI_CHU_SP}
-              gender={item.TEN_GIOI_TINH}
-              category={item.TENTL}
-              brand={item.TEN_THUONG_HIEU}
-              quantityInCart={item.so_luong_san_pham}
-              image={item.ANH_SP}
-              userId={userInfo.ID_NGUOI_DUNG}
-              id={item.MASP}
+              name={item.NAME_PRODUCTDETAILS}
+              price={item.PRICE_PRODUCTDETAILS}
+              description={item.category_DESCRIPTION}
+              category={`Loại máy: ${item.NAME_CATEGORY}`}
+              brand={item.brand_NAME}
+              quantityInCart={item.QUANTITY}
+              image={item.GALLERYPRODUCT_DETAILS}
+              userId={userInfo.ID_USER}
+              id={item.ID_PRODUCTDETAILS}
               fetchCartItems={fetchCartItems}
             />
           ))

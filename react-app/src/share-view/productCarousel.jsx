@@ -45,13 +45,13 @@ const ProductCarousel = ({ title, products, api }) => {
   // Gọi API kiểm tra trạng thái sản phẩm khi component load
   useEffect(() => {
     const fetchProductStatus = async () => {
-      if (isAuthenticated && userInfo?.MA_KH && products.length > 0) {
-        const productIds = products.map((item) => item.MASP);
+      if (isAuthenticated && userInfo?.ID_USER && products.length > 0) {
+        const productIds = products.map((item) => item.ID_PRODUCTDETAILS);
         try {
           const response = await axios.post(
             `${api}/api/v1/yeuthich/check-product-status`,
             {
-              userId: userInfo.MA_KH,
+              userId: userInfo.ID_USER,
               productIds,
             }
           );
@@ -96,10 +96,10 @@ const ProductCarousel = ({ title, products, api }) => {
       return;
     }
     try {
+      // console.log(userInfo)
       const payload = {
-        ID_USER: userInfo.ID_USER,
+        ID_USER: userInfo[0].ID_USER,
         ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
-        NGAY_CAP_NHAT_GIOHANG: new Date().toISOString(),
       };
       const response = await axios.post(`${api}/api/v1/giohang/them`, payload);
       if (response.data.EC === 1) {
@@ -273,16 +273,19 @@ const ProductCarousel = ({ title, products, api }) => {
                 <Card
                   key={index}
                   sx={{
+                    height: 380, // Chiều cao cố định
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
                     backgroundColor: currentTheme.backgroundColor,
                     color: currentTheme.color,
                     padding: 1,
-                    flexShrink: 0,
-                    margin: "2px",
-                    cursor: "pointer",
-                    width: { xs: "100%", sm: "30%", md: "260px", lg: "260px" },
-                    transition:
-                      "background-color 0.3s ease, transform 0.3s ease",
-                    position: "relative",
+                    width: { xs: "100%", sm: "20%", md: "15%x" },
+                    borderRadius: "10px",
+                    transition: "transform 0.3s ease",
+                    "&:hover": {
+                      transform: "translateY(-4px)",
+                    },
                   }}
                   onClick={() => handleBuyProduct(product.ID_PRODUCTDETAILS)}
                 >
@@ -312,6 +315,11 @@ const ProductCarousel = ({ title, products, api }) => {
                       variant="body2"
                       sx={{
                         textAlign: "left",
+                        minHeight: "40px", // Đảm bảo chiều cao cố định
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2, // Giới hạn 2 dòng
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
                         "&:hover": {
                           filter: "brightness(1.1)",
                         },
@@ -319,6 +327,7 @@ const ProductCarousel = ({ title, products, api }) => {
                     >
                       {product.NAME_PRODUCTDETAILS}
                     </Typography>
+
                     <Typography
                       variant="caption"
                       sx={{
@@ -326,32 +335,36 @@ const ProductCarousel = ({ title, products, api }) => {
                         display: "flex",
                         marginTop: "4px",
                         justifyContent: "space-between",
+                        alignItems: "center", // Căn icon giữa dòng
                       }}
                     >
                       {product.PRICE_PRODUCTDETAILS
                         ? `${product.PRICE_PRODUCTDETAILS.toLocaleString("vi-VN")}đ`
                         : "Giá không có sẵn"}
-                      {!buyStatus && (
-                        <Tooltip title={t.AddToCart} arrow>
-                          <IconButton
-                            sx={{
-                              cursor: "pointer",
-                              "&:hover": {
-                                color: "#555",
-                              },
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              handleAddToCart(product);
-                            }}
-                          >
-                            <AddShoppingCartIcon />
-                          </IconButton>
-                        </Tooltip>
-                      )}
+
+                      <Tooltip title={t.AddToCart} arrow>
+                        <IconButton
+                          sx={{
+                            cursor: "pointer",
+                            color: "#fff",
+                            backgroundColor: "rgba(255, 255, 255, 0.1)",
+                            "&:hover": {
+                              backgroundColor: "#ff9800",
+                              color: "#fff",
+                            },
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleAddToCart(product);
+                          }}
+                        >
+                          <AddShoppingCartIcon />
+                        </IconButton>
+                      </Tooltip>
                     </Typography>
                   </CardContent>
+
                 </Card>
               );
             })

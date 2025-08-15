@@ -216,14 +216,7 @@ const Home = () => {
             </Grid>
           </Box>{" "}
 
-          {/* <CartProduct
-            title={"BBBBBBBBBBBBBBBBBBBB"}
-            products={rpgProducts}
-            api={api}
-          /> */}
-
           <ProductCarousel
-            // title={t.Simulation}
             title={"Dành cho bạn"}
             products={simulationProducts}
             api={api}
