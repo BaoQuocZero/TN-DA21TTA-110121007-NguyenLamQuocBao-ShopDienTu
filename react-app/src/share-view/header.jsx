@@ -50,15 +50,15 @@ const Header = () => {
       if (token) {
         const decode = jwtDecode(token);
         try {
-          const response = await axiosInstance.post(`${apiUrl}/user-info`, {
-            ID_NGUOI_DUNG: decode.ID_NGUOI_DUNG,
+          const response = await axiosInstance.post(`${apiUrl}/api/v1/KhachHang/xem/thongtin`, {
+            ID_USER: decode.ID_USER,
           });
           if (response.data.EC === 1) {
             setInfoUser(response.data.DT);
             dispatch(setUserInfo(response.data.DT));
           }
 
-          // console.log("response", response.data);
+          console.log("response", response.data);
         } catch (error) {
           console.log(error);
         }
@@ -111,16 +111,20 @@ const Header = () => {
   const handleLanguageClose = () => {
     setAnchorElLanguage(null);
   };
-  console.log("userInfo", userInfo);
-  console.log("isAuthenticated", isAuthenticated);
+
   const menuItems = (
     <>
       {" "}
-      <Button color="inherit">{t.support}</Button>
+      <Button
+        color="inherit"
+        component={Link}
+        to="/profile/ho-tro"
+      >
+        Hỗ trợ
+      </Button>
       <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
 
       </Box>
-      {/* <Button color="inherit">Language</Button> */}
       <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
         <Typography
           onClick={handleMenu}
@@ -129,10 +133,10 @@ const Header = () => {
           sx={{
             ml: 1,
             cursor: "pointer",
-            color: `${userInfo?.MA_PHAN_QUYEN === 1 ? "red" : "white"}`,
+            color: `${userInfo?.ID_ROLE === 1 ? "red" : "white"}`,
           }}
         >
-          {isAuthenticated ? <div>{userInfo?.TEN_KHACH_HANG}</div> : <></>}
+          {isAuthenticated ? <div>{userInfo?.LASTNAME}</div> : <></>}
         </Typography>{" "}
         <IconButton
           size="large"
@@ -216,7 +220,7 @@ const Header = () => {
           >
             Mật khẩu & cài đặt
           </MenuItem>{" "}
-          {userInfo?.MA_PHAN_QUYEN === 1 ? (
+          {infoUser?.ID_ROLE === 1 ? (
             <>
               {" "}
               <MenuItem
@@ -229,7 +233,7 @@ const Header = () => {
                   paddingLeft: 2,
                   color: "#fff",
                   "&:hover": {
-                    backgroundColor: "#3ccaff", // Màu nền khi hover
+                    backgroundColor: "#3ccaff",
                     color: "#000",
                   },
                 }}
@@ -283,7 +287,7 @@ const Header = () => {
             component="div"
             sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }}
           >
-            {t.store ? t.store : "Kho hàng"}
+            Kho hàng
           </Typography>{" "}
         </Box>
         {isMobile ? (

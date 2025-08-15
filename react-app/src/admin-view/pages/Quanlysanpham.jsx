@@ -58,7 +58,7 @@ const ProductManagement = () => {
   const handleDelete = async (product) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?")) {
       try {
-        await axios.delete(`${api}/api/v1/admin/sanpham/xoa/${product.MASP}`);
+        await axios.delete(`${api}/api/v1/admin/sanpham/xoa/${product.ID_PRODUCT}`);
         console.log("Product deleted successfully");
         fetchProducts();
       } catch (error) {
@@ -223,7 +223,7 @@ const ProductManagement = () => {
                 <TableCell sx={{ color: "#c9d1d9" }}>
                   <img
                     src={`http://localhost:8081/images/${product.GALLERYPRODUCT_DETAILS}`}
-                    alt={product.TENSP}
+                    alt={product.NAME_PRODUCTDETAILS}
                     width="100"
                   />
                 </TableCell>

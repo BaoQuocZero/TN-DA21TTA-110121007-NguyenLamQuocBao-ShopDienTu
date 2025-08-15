@@ -241,7 +241,7 @@ const Navbar = () => {
           <InputBase
             value={searchTerm}
             onChange={handleSearchChange}
-            placeholder={t.SearchStore}
+            placeholder={"Tìm kiếm sản phẩm"}
             sx={{
               ml: 1,
               color: "inherit",

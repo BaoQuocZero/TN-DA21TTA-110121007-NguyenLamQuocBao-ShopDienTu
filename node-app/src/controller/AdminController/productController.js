@@ -91,9 +91,9 @@ const sua_sanpham_voi_id = async (req, res) => {
 
 const xoa_sanpham_voi_id = async (req, res) => {
   try {
-    const MASP = req.params.MASP;
-
-    let results = await xoa_sanpham_id(MASP);
+    const ID_PRODUCT = req.params.ID_PRODUCT;
+    console.log("AAAAAA: ", req.params)
+    let results = await xoa_sanpham_id(ID_PRODUCT);
     return res.status(200).json({
       EM: results.EM,
       EC: results.EC,
@@ -388,8 +388,8 @@ const get2LatestProducts = async (req, res) => {
 
 const searchSanPhamDynamic = async (req, res) => {
   try {
-    const { query } = req.query; // Truy xuất từ khóa tìm kiếm
-    if (!query || query.trim().length < 1) {
+    const { query } = req.query; // Từ khóa tìm kiếm
+    if (!query || query.trim().length < 3) {
       return res.status(400).json({
         EM: "Từ khóa tìm kiếm phải có ít nhất 3 ký tự",
         EC: 0,
@@ -397,12 +397,13 @@ const searchSanPhamDynamic = async (req, res) => {
       });
     }
 
-    // Tìm kiếm theo tên sản phẩm và giới hạn 5 kết quả
+    // Tìm kiếm sản phẩm chưa bị xóa
     let [results] = await pool.execute(
       `
-      SELECT *
-      FROM sanpham
-      WHERE TENSP LIKE ? AND TRANG_THAI_SAN_PHAM = 'Đang hoạt động'
+      SELECT product.*
+      FROM product
+      WHERE product.NAMEPRODUCT LIKE ? 
+        AND product.ISDELETE = 0
       LIMIT 5
       `,
       [`%${query}%`]

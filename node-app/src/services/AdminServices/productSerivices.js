@@ -80,7 +80,8 @@ const xem_tatca_sanpham = async () => {
       FROM product_details
       JOIN product ON product_details.ID_PRODUCT = product.ID_PRODUCT
       JOIN brand ON product.ID_BRAND = brand.ID_BRAND
-      JOIN category ON product.ID_CATEGORY = category.ID_CATEGORY;
+      JOIN category ON product.ID_CATEGORY = category.ID_CATEGORY
+      WHERE product.ISDELETE != 1
       `
     );
 
@@ -232,42 +233,33 @@ const sua_sanpham_id = async (MASP, datasanpham, anhsp) => {
   }
 };
 
-const xoa_sanpham_id = async (MASP) => {
+const xoa_sanpham_id = async (ID_PRODUCT) => {
   try {
-    let [results_kiemtra, fields_kiemtra] = await pool.execute(
-      "select * from chi_tiet_hoa_don where MASP = ?;",
-      [MASP]
+    // Cập nhật ISDELETE của bảng product
+    await pool.execute(
+      `UPDATE product 
+       SET ISDELETE = 1, UPDATEAT = NOW() 
+       WHERE ID_PRODUCT = ?`,
+      [ID_PRODUCT]
     );
 
-    let [results_kiemtra2, fields_kiemtra2] = await pool.execute(
-      "select * from thuoc_loai where MASP = ?;",
-      [MASP]
+    // Cập nhật ISDELETE của bảng product_details
+    await pool.execute(
+      `UPDATE product_details 
+       SET ISDELETE = 1, UPDATEAT = NOW() 
+       WHERE ID_PRODUCT = ?`,
+      [ID_PRODUCT]
     );
 
-    if (results_kiemtra2.length > 0) {
-      await pool.execute("DELETE FROM thuoc_loai WHERE MASP=?;", [MASP]);
-    }
-
-    if (results_kiemtra.length > 0) {
-      let [results1, fields1] = await pool.execute(
-        "DELETE FROM chi_tiet_hoa_don WHERE MASP=?;",
-        [MASP]
-      );
-    }
-
-    let [results2, fields2] = await pool.execute(
-      "DELETE FROM sanpham WHERE MASP=?;",
-      [MASP]
-    );
     return {
-      EM: "xóa sản phẩm thành công",
+      EM: "Xóa sản phẩm thành công",
       EC: 0,
       DT: [],
     };
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return {
-      EM: "lỗi services xoa_sanpham_id",
+      EM: "Lỗi services xoa_sanpham_id",
       EC: 1,
       DT: [],
     };

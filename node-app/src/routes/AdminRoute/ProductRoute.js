@@ -44,9 +44,10 @@ const CRUDSanpham = (app) => {
   router.get("/use/5best-expensive", get5BestExpensiveProducts);
 
   router.get("/xemtatca", xemtatca_sanpham);
-  router.get("/xem/use", getAllUseSanPham);
+  // router.get("/xem/use", getAllUseSanPham);
+  router.get("/xem/use", xemtatca_sanpham);
 
-  router.delete("/xoa/:MASP", xoa_sanpham_voi_id);
+  router.delete("/xoa/:ID_PRODUCT", xoa_sanpham_voi_id);
   router.get("/total-quantity/:id", getCartTotalQuantity);
   router.get("/search/name", searchSanPhamDynamic);
   return app.use("/api/v1/admin/sanpham/", router);

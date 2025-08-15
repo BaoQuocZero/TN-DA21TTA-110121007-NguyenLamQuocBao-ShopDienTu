@@ -55,7 +55,7 @@ const UserProfile = () => {
       );
 
       if (response.data.EC === 1) {
-        console.log("Thông tin: ", response.data.DT[0])
+        // console.log("Thông tin: ", response.data.DT[0])
         // {
         //     "ID_USER": 4,
         //     "ID_ROLE": 1,
@@ -109,7 +109,7 @@ const UserProfile = () => {
       enqueueSnackbar("Số điện thoại không hợp lệ", { variant: "error" });
       return; // Ngừng thực hiện tiếp
     }
-    console.log("dataUser: ", dataUser)
+    // console.log("dataUser: ", dataUser)
     // const updatedData = {
     //   TEN_KHACH_HANG: dataUser.TEN_KHACH_HANG,
     //   SDT_KH: dataUser.SDT_KH,

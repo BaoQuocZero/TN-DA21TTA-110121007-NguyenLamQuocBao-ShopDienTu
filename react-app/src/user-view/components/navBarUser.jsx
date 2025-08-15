@@ -82,7 +82,7 @@ const NavBarUser = () => {
           variant="body2"
           sx={{ color: "#888", textAlign: "center", cursor: "pointer" }}
         >
-          {t.NeedHelp || "BẠN CẦN GIÚP ĐỠ?"}
+          BẠN CẦN GIÚP ĐỠ ?
         </Typography>
 
         {isOpenNeedHelp && (

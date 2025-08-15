@@ -205,15 +205,15 @@ const BrowseProduct = () => {
       if (searchQuery) {
         updatedProducts = updatedProducts.filter(
           (product) =>
-            product.TENSP &&
-            product.TENSP.toLowerCase().includes(searchQuery.toLowerCase())
+            product.NAMEPRODUCT &&
+            product.NAMEPRODUCT.toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
       if (selectedCategories.length > 0) {
         updatedProducts = updatedProducts.filter((product) =>
           selectedCategories.some(
             (category) =>
-              product.TENTL && product.TENTL.split(",").includes(category.TENTL)
+              product.NAME_CATEGORY && product.NAME_CATEGORY.split(",").includes(category.NAME_CATEGORY)
           )
         );
       }
@@ -250,7 +250,7 @@ const BrowseProduct = () => {
             >
               {currentProducts.map((product, index) => {
                 const status = productStatus.find(
-                  (ps) => ps.MASP === product.MASP
+                  (ps) => ps.ID_PRODUCT === product.ID_PRODUCT
                 ) || {
                   favoriteStatus: false,
                   buyStatus: false,
@@ -265,52 +265,12 @@ const BrowseProduct = () => {
                         cursor: "pointer",
                         backgroundColor: "#282828",
                       }}
-                      onClick={() => handleBuyProduct(product.MASP)}
+                      onClick={() => handleBuyProduct(product.ID_PRODUCT)}
                     >
-                      {!buyStatus && (
-                        <Tooltip
-                          title={
-                            favoriteStatus ? "Remove from Wish" : "Add to Wish"
-                          }
-                          arrow
-                        >
-                          <IconButton
-                            sx={{
-                              position: "absolute",
-                              top: 8,
-                              right: 8,
-                              color: favoriteStatus ? "red" : "#fff",
-                              borderRadius: "50%",
-                              margin: "8px",
-                              zIndex: 1,
-                              fontSize: "22px",
-                              cursor: "pointer",
-                              transition: "transform 0.3s ease",
-                              "&:hover": {
-                                transform: "scale(1.2)",
-                              },
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (favoriteStatus) {
-                                handleRemoveFromWish(product);
-                              } else {
-                                handleAddToWish(product);
-                              }
-                            }}
-                          >
-                            {favoriteStatus ? (
-                              <FavoriteIcon />
-                            ) : (
-                              <FavoriteBorder />
-                            )}
-                          </IconButton>
-                        </Tooltip>
-                      )}
                       <CardMedia
                         component="img"
-                        image={`${api}/images/${product.ANH_SP}`}
-                        alt={product.ANH_SP}
+                        image={`${api}/images/${product.GALLERYPRODUCT}`}
+                        alt={product.GALLERYPRODUCT}
                         sx={{
                           height: {
                             xs: "210px",
@@ -338,7 +298,7 @@ const BrowseProduct = () => {
                             textOverflow: "ellipsis",
                           }}
                         >
-                          {product.TENSP}
+                          {product.NAMEPRODUCT}
                         </Typography>
                         <Typography
                           gutterBottom
@@ -352,7 +312,8 @@ const BrowseProduct = () => {
                             textOverflow: "ellipsis",
                           }}
                         >
-                          {`${Number(product.DON_GIA).toLocaleString(
+                          {/* Chưa có giá đúng====================================================================================== */}
+                          {`${Number(product.PRICE_PRODUCTDETAILS).toLocaleString(
                             "vi-VN"
                           )}đ`}
                         </Typography>
@@ -366,30 +327,29 @@ const BrowseProduct = () => {
                             textOverflow: "ellipsis",
                           }}
                         >
-                          {product.TENTL}
+                          {product.NAME_CATEGORY}
                         </Typography>
-                        {!buyStatus && (
-                          <Tooltip title="Add to cart" arrow>
-                            <IconButton
-                              sx={{
-                                cursor: "pointer",
-                                mt: 2,
-                                color: "#fff",
-                                transition: "transform 0.3s ease",
-                                "&:hover": {
-                                  color: "#555",
-                                  transform: "scale(1.2)",
-                                },
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddToCart(product);
-                              }}
-                            >
-                              <AddShoppingCart />
-                            </IconButton>
-                          </Tooltip>
-                        )}
+
+                        <Tooltip title="Add to cart" arrow>
+                          <IconButton
+                            sx={{
+                              cursor: "pointer",
+                              mt: 2,
+                              color: "#fff",
+                              transition: "transform 0.3s ease",
+                              "&:hover": {
+                                color: "#555",
+                                transform: "scale(1.2)",
+                              },
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddToCart(product);
+                            }}
+                          >
+                            <AddShoppingCart />
+                          </IconButton>
+                        </Tooltip>
                       </CardContent>
                     </Card>
                   </Grid>
@@ -423,14 +383,14 @@ const BrowseProduct = () => {
                 <Autocomplete
                   multiple
                   options={theLoai}
-                  getOptionLabel={(option) => option.TENTL}
+                  getOptionLabel={(option) => option.NAME_CATEGORY}
                   value={selectedCategories}
                   onChange={handleCategoryChange}
                   renderTags={(tagValue, getTagProps) =>
                     tagValue.map((option, index) => (
                       <Chip
                         key={index}
-                        label={option.TENTL}
+                        label={option.NAME_CATEGORY}
                         {...getTagProps({ index })}
                         sx={{
                           backgroundColor: "#3ccaff",

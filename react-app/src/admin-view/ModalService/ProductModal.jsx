@@ -349,8 +349,8 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
               value={form.ISDELETE}
               onChange={handleChange}
             >
-              <MenuItem value="1">Đang kinh doanh</MenuItem>
-              <MenuItem value="0">Ngưng kinh doanh</MenuItem>
+              <MenuItem value="0">Đang kinh doanh</MenuItem>
+              <MenuItem value="1">Ngưng kinh doanh</MenuItem>
             </Select>
           </Grid>
 
