@@ -156,7 +156,7 @@ const LoginTaikhoan = async (EMAIL, PASSWORD) => {
         EC: 1,
         DT: {
           access_token: token,
-          data: user,
+          userInfo: user,
         },
       };
     } else {

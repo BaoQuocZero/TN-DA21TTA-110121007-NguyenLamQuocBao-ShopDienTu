@@ -63,6 +63,8 @@ const LoginPage = () => {
             const accessToken = response.data.DT.accessToken;
             Cookies.set("accessToken", accessToken, { expires: 7 });
             sessionStorage.setItem("userPicture", user.picture);
+
+            console.log("response.data.DT.userInfo:", response.data.DT.userInfo);
             dispatch(
               login({
                 accessToken,
@@ -103,15 +105,13 @@ const LoginPage = () => {
         `${process.env.REACT_APP_URL_SERVER}/api/v1/admin/taikhoan/dangnhap`,
         { email, password }
       );
-      // console.log("Response:", response.data);
 
       if (response.data.EC === 1) {
         Cookies.remove("accessToken");
         const accessToken = response.data.DT.access_token;
         Cookies.set("accessToken", accessToken, { expires: 7 });
-        // localStorage.setItem("THEMES", response.data.DT.userInfo.THEMES);
 
-        // Cập nhật trạng thái người dùng trong Redux
+        console.log("response.data.DT.userInfo:", response.data.DT.userInfo);
         dispatch(
           login({
             accessToken,
@@ -133,6 +133,7 @@ const LoginPage = () => {
       setLoading(false); // Kết thúc loading
     }
   };
+
   return (
     <Box
       sx={{

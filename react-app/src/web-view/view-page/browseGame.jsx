@@ -108,9 +108,8 @@ const BrowseProduct = () => {
     }
     try {
       const payload = {
-        MASP: product.MASP,
-        MANGUOIDUNG: userInfo.MA_KH,
-        NGAY_CAP_NHAT_GIOHANG: new Date().toISOString(),
+        ID_USER: userInfo?.ID_USER || userInfo[0].ID_USER,
+        ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
       };
       const response = await axios.post(`${api}/api/v1/giohang/them`, payload);
       if (response.data.EC === 1) {

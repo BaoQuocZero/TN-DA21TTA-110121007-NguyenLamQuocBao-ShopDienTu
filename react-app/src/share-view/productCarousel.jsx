@@ -98,7 +98,7 @@ const ProductCarousel = ({ title, products, api }) => {
     try {
       // console.log(userInfo)
       const payload = {
-        ID_USER: userInfo[0].ID_USER,
+        ID_USER: userInfo?.ID_USER || userInfo[0].ID_USER,
         ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
       };
       const response = await axios.post(`${api}/api/v1/giohang/them`, payload);

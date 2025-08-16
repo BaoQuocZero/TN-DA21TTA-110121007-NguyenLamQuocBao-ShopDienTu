@@ -47,8 +47,8 @@ const SelectGame = () => {
     localStorage.getItem("THEMES") || userInfo?.THEMES || "dark"
   );
 
-  const [SHIPPING_ADDRESS, setSHIPPING_ADDRESS] = useState(userInfo.ADDRESS || "");
-  const [SHIPPING_PHONE, setSHIPPING_PHONE] = useState(userInfo.PHONENUMBER || "");
+  const [SHIPPING_ADDRESS, setSHIPPING_ADDRESS] = useState(userInfo?.ADDRESS || "");
+  const [SHIPPING_PHONE, setSHIPPING_PHONE] = useState(userInfo?.PHONENUMBER || "");
   useEffect(() => {
     if (id) {
       fetchProduct(id);
@@ -106,13 +106,12 @@ const SelectGame = () => {
   // THÊM VÀO GIỎ HÀNG
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
-      // Nếu chưa, chuyển hướng đến trang đăng nhập
-      navigate("/login"); // Đảm bảo '/login' là đường dẫn đúng tới trang đăng nhập của bạn
-      return; // Dừng hàm nếu chưa đăng nhập
+      navigate("/login");
+      return;
     }
     try {
       const payload = {
-        ID_USER: userInfo[0].ID_USER,
+        ID_USER: userInfo?.ID_USER || userInfo[0].ID_USER,
         ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
       };
 
@@ -121,8 +120,6 @@ const SelectGame = () => {
       if (response.data.EC === 1) {
         enqueueSnackbar(response.data.EM, { variant: "success" });
         dispatch(setTotalCart(response.data.totalQuantity));
-
-        console.log(response.data.EM); // Thêm vào giỏ hàng thành công
       } else {
         console.log("Lỗi:", response.data.EM); // Xử lý lỗi nếu có
         enqueueSnackbar(response.data.EM, { variant: "error" });
@@ -158,13 +155,13 @@ const SelectGame = () => {
     );
 
     const requestData = {
-      ID_USER: userInfo.ID_USER,
+      ID_USER: userInfo?.ID_USER || userInfo[0].ID_USER,
       idThanhToan: selectPhuongThucThanhToan,
       PRICE_PRODUCTDETAILS: product.PRICE_PRODUCTDETAILS,
-      trangThaiDonHang: "Đang chờ thanh toán",
+      trangThaiDonHang: "Đang chờ xác nhận",
       ID_ODER: orderInfo,
       items: [product],
-      EMAIL: userInfo.EMAIL,
+      EMAIL: userInfo?.EMAIL || userInfo[0].EMAIL,
       ADDRESS: SHIPPING_ADDRESS,
       PHONENUMBER: SHIPPING_PHONE,
       CACH_THANH_TOAN: result.CACH_THANH_TOAN

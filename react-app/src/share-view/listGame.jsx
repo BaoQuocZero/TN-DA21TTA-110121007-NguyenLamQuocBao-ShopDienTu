@@ -60,6 +60,29 @@ const ListGame = ({ title, items, api }) => {
     navigate(`/select-game/${id}`);
   };
 
+  // const handleAddToCartt = async (product) => {
+  //   if (!isAuthenticated) {
+  //     navigate("/login");
+  //     return;
+  //   }
+  //   try {
+  //     const payload = {
+  //       ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
+  //       MANGUOIDUNG: userInfo.MA_KH,
+  //       NGAY_CAP_NHAT_GIOHANG: new Date().toISOString(),
+  //     };
+  //     const response = await axios.post(`${api}/api/v1/giohang/them`, payload);
+  //     if (response.data.EC === 1) {
+  //       enqueueSnackbar(response.data.EM);
+  //       dispatch(setTotalCart(response.data.totalQuantity));
+  //     } else {
+  //       enqueueSnackbar(response.data.EM);
+  //     }
+  //   } catch (error) {
+  //     enqueueSnackbar(error.response.data.EM);
+  //   }
+  // };
+
   const handleAddToCart = async (product) => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -67,19 +90,22 @@ const ListGame = ({ title, items, api }) => {
     }
     try {
       const payload = {
+        ID_USER: userInfo?.ID_USER || userInfo[0].ID_USER,
         ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
-        MANGUOIDUNG: userInfo.MA_KH,
-        NGAY_CAP_NHAT_GIOHANG: new Date().toISOString(),
       };
+
       const response = await axios.post(`${api}/api/v1/giohang/them`, payload);
+
       if (response.data.EC === 1) {
-        enqueueSnackbar(response.data.EM);
+        enqueueSnackbar(response.data.EM, { variant: "success" });
         dispatch(setTotalCart(response.data.totalQuantity));
       } else {
-        enqueueSnackbar(response.data.EM);
+        console.log("Lỗi:", response.data.EM); // Xử lý lỗi nếu có
+        enqueueSnackbar(response.data.EM, { variant: "error" });
       }
     } catch (error) {
-      enqueueSnackbar(error.response.data.EM);
+      console.error("Lỗi hệ thống:", error);
+      enqueueSnackbar(error.response.data.EM, { variant: "error" });
     }
   };
 

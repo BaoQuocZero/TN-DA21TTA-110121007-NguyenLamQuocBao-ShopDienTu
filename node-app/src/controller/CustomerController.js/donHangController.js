@@ -209,14 +209,13 @@ const createDON_HANG = async (req, res) => {
     ADDRESS,
     PHONENUMBER,
   } = req.body;
-
   try {
     const itemsArray = Array.isArray(items) ? items : [items];
     const ngayTaoDonHang = new Date();
 
     // Tính tổng tiền
     const tongTien = itemsArray.reduce((sum, item) => {
-      return sum + (item.PRICE_PRODUCTDETAILS * (item.SO_LUONG || 1));
+      return sum + (item.PRICE_PRODUCTDETAILS * (item.QUANTITY || 1));
     }, 0);
 
     // Thêm vào bảng orders
@@ -241,7 +240,7 @@ const createDON_HANG = async (req, res) => {
 
     // Thêm chi tiết từng sản phẩm
     for (const item of itemsArray) {
-      const soLuong = item.SO_LUONG || 1;
+      const soLuong = item.QUANTITY || 1;
       const unitPrice = item.PRICE_PRODUCTDETAILS;
       const totalPrice = unitPrice * soLuong;
 
@@ -314,7 +313,22 @@ const createDON_HANG = async (req, res) => {
 
     // if (emailResult.EC === 1) {
     if (1) {
-      //Xóa giỏ hàng thêm sau
+      const [cartRows] = await connection.execute(
+        `SELECT ID_CART FROM cart WHERE ID_USER = ?`,
+        [ID_USER]
+      );
+
+      if (cartRows.length > 0) {
+        const cartId = cartRows[0].ID_CART;
+
+        for (const item of items) {
+          await connection.execute(
+            `DELETE FROM cart_item WHERE ID_CART = ? AND ID_PRODUCTDETAILS = ?`,
+            [cartId, item.ID_PRODUCTDETAILS]
+          );
+        }
+      }
+
       return res.status(200).json({
         EM: "Mua hàng thành công, vui lòng kiểm tra đơn hàng",
         EC: 1,

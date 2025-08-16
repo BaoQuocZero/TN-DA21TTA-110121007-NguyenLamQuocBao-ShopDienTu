@@ -153,7 +153,6 @@ const CartSummary = ({
         sx={{ color: "#c9d1d9" }}
       >
         {" "}
-        <MenuItem value="">Xem tất cả</MenuItem>
         {paymentMethods.map((item) => (
           <MenuItem key={item.ID_THANH_TOAN} value={item.MA_THANH_TOAN}>
             {item.CACH_THANH_TOAN}
@@ -191,8 +190,12 @@ const Cart = () => {
   );
   const [tongTienCart, setTongTienCart] = useState("");
   const [loading, setLoading] = useState(true);
-  const [selectPhuongThucThanhToan, setSelectPhuongThucThanhToan] =
-    useState("");
+  const [selectPhuongThucThanhToan, setSelectPhuongThucThanhToan] = useState("");
+  const [paymentMethods, setPaymentMethods] = useState([
+    // { MA_THANH_TOAN: 1, CACH_THANH_TOAN: "Chuyển khoản Momo" },
+    { MA_THANH_TOAN: 2, CACH_THANH_TOAN: "Thanh toán khi nhận hàng COD" },
+    { MA_THANH_TOAN: 3, CACH_THANH_TOAN: "Chuyển khoản VNPAY" },
+  ]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -209,7 +212,7 @@ const Cart = () => {
   const fetchCartItems = async () => {
     try {
       const response = await axios.post(`${api}/api/v1/giohang/xem`, {
-        ID_USER: userInfo[0].ID_USER,
+        ID_USER: userInfo?.ID_USER || userInfo[0].ID_USER,
       });
 
       const data = response.data;
@@ -226,9 +229,8 @@ const Cart = () => {
       console.error("Error fetching cart items:", error);
     }
   };
-
-  const [paymentMethods, setPaymentMethods] = useState([]);
   useEffect(() => {
+    fetchCartItems();
     // fetchPaymentMethods();
   }, []);
 
@@ -283,10 +285,9 @@ const Cart = () => {
   };
 
   const handleRemoveProduct = async (id) => {
-    console.log("handleRemoveProduct", id);
     try {
       const response = await axios.post(`${api}/api/v1/giohang/xoa`, {
-        ID_USER: userInfo[0].ID_USER,
+        ID_USER: userInfo?.ID_USER || userInfo[0].ID_USER,
         ID_PRODUCTDETAILS: id,
       });
 
@@ -299,129 +300,115 @@ const Cart = () => {
   };
 
   const handleSummitThanhToan = async () => {
+    if (!isAuthenticated) {
+      enqueueSnackbar("Vui lòng đăng nhập để tiếp tục!");
+      return;
+    }
     if (selectPhuongThucThanhToan === "") {
       enqueueSnackbar("Vui lòng chọn phương thức thanh toán!!");
       return;
     }
 
-    // Lưu giỏ hàng vào Redux
-    dispatch(setItemCart(items));
-
     // Tạo mã đơn hàng duy nhất
     const orderId = uuidv4();
-    const orderInfo = `Epic Game - Mã đơn hàng: ${orderId}`;
-    const requestData = {
-      idNguoiDung: userInfo.MA_KH,
-      idThanhToan: selectPhuongThucThanhToan,
-      tongTien: tongTienCart,
-      trangThaiDonHang: "Đang chờ thanh toán",
-      ID_ODER: orderInfo,
-      items: items,
-      email: userInfo.TEN_DANG_NHAP,
-      DIA_CHI_DON_HANG: `${userInfo.DIA_CHI_STREETNAME}, ${userInfo.DIA_CHI_Wards}, ${userInfo.DIA_CHI_Districts}, ${userInfo.DIA_CHI_Provinces}`,
-      SO_DIEN_THOAI_DON_HANG: userInfo.SDT_KH,
-    };
+    const orderInfo = `Shop Điện Tử - Mã đơn hàng: ${orderId}`;
 
     let result = paymentMethods.find(
       (payment) => payment.MA_THANH_TOAN === selectPhuongThucThanhToan
     );
 
-    if (result.CACH_THANH_TOAN === "Momo") {
-      try {
-        dispatch(setIdOder(orderId));
-        const response = await axios.post(`${api}/don-hang`, requestData);
-        const responsive = await axios.post(
-          "http://emailserivce.somee.com/api/Momo/CreatePaymentUrl",
-          {
-            fullName: userInfo.TEN_KHACH_HANG,
-            orderId: orderInfo,
-            options: "mutil",
-            orderInfo: orderInfo,
-            returnUrl: "http://localhost:3000/checkout",
-            amount: tongTienCart, // Gửi tổng tiền trong giỏ hàng
-          }
-        );
+    const requestData = {
+      ID_USER: userInfo?.ID_USER || userInfo[0].ID_USER,
+      PHONENUMBER: userInfo?.PHONENUMBER || userInfo[0].PHONENUMBER,
+      ADDRESS: userInfo?.ADDRESS || userInfo[0].ADDRESS,
+      idThanhToan: selectPhuongThucThanhToan,
+      PRICE_PRODUCTDETAILS: tongTienCart,
+      trangThaiDonHang: "Đang chờ xác nhận",
+      ID_ODER: orderInfo,
+      items: items,
+      EMAIL: userInfo?.EMAIL || userInfo[0].EMAIL,
+      CACH_THANH_TOAN: result.CACH_THANH_TOAN
+    };
 
-        const paymentUrl = responsive.data.url;
-
-        if (response.data.EC === 1) {
-          window.location.href = paymentUrl;
-        }
-      } catch (error) {
-        console.error("Error during payment creation:", error);
-        enqueueSnackbar(
-          "Đã xảy ra lỗi khi tạo URL thanh toán. Vui lòng thử lại!",
-          { variant: "error" }
-        );
-      }
-    } else if (result.CACH_THANH_TOAN === "Thanh toán tại nhà") {
-      try {
-        const response = await axios.post(`${api}/don-hang`, requestData);
-        console.log("check ", response.data);
-        if (response.data.EC === 1) {
-          console.log("check ", response.data);
-          fetchCartItems();
-          enqueueSnackbar(response.data.EM, { variant: "success" });
-        } else {
-          enqueueSnackbar(response.data.EM || "Đặt hàng không thành công", {
-            variant: "error",
-          });
-        }
-      } catch (error) {
-        console.error("Error during order submission:", error);
-        enqueueSnackbar(error.response.data.EM, {
-          variant: "error",
-        });
-      }
-    } else if (selectPhuongThucThanhToan == 24) {
-      try {
-        const response = await axios.post(`${api}/don-hang`, requestData);
-        if (response.data.EC === 1) {
+    try {
+      if (result.CACH_THANH_TOAN === "Chuyển khoản Momo") {
+        try {
           const responsive = await axios.post(
-            `${api}/thanh-toan-online/create_payment_url`,
+            "http://emailserivce.somee.com/api/Momo/CreatePaymentUrl",
             {
+              fullName: userInfo.LASTNAME,
               orderId: orderInfo,
-
-              returnUrl: "http://localhost:3000/checkout-vnpay",
-              amount: tongTienCart,
-              bankCode: "NCB",
-              orderType: "fashion",
-              language: "vi",
+              options: "mutil",
+              orderInfo: orderInfo,
+              returnUrl: "http://localhost:3000/checkout",
+              amount: tongTienCart, // Gửi tổng tiền trong giỏ hàng
             }
           );
-
+          await axios.post(`${api}/don-hang/tao`, requestData);
           const paymentUrl = responsive.data.url;
+
           window.location.href = paymentUrl;
-        } else {
-          enqueueSnackbar(response.data.EM, { variant: "info" });
+        } catch (error) {
+          console.error("Error during Momo payment creation:", error);
+          enqueueSnackbar(error.response.data.EM, { variant: "info" });
         }
-        if (response.data.EC === 1) {
-          console.log("check ", response.data);
-          enqueueSnackbar(response.data.EM, { variant: "success" });
-        } else {
-          enqueueSnackbar(response.data.EM || "Đặt hàng không thành công", {
+
+      } else if (result.CACH_THANH_TOAN === "Thanh toán khi nhận hàng COD") {
+        try {
+          const response = await axios.post(`${api}/don-hang/tao`, requestData);
+          if (response.data.EC === 1) {
+            enqueueSnackbar(response.data.EM, { variant: "success" });
+          } else {
+            enqueueSnackbar(response.data.EM, { variant: "info" });
+          }
+        } catch (error) {
+          console.error("Error during Thanh toán tại nhà payment:", error);
+          enqueueSnackbar(error.response.data.EM, { variant: "info" });
+        }
+
+      } else if (selectPhuongThucThanhToan == "Chuyển khoản VNPAY") {
+        try {
+          const response = await axios.post(`${api}/don-hang/tao`, requestData);
+          if (response.data.EC === 1) {
+            const responsive = await axios.post(
+              `${api}/thanh-toan-online/create_payment_url`,
+              {
+                orderId: orderInfo,
+
+                returnUrl: "http://localhost:3000/checkout-vnpay",
+                amount: tongTienCart,
+                bankCode: "",
+                orderType: "fashion",
+                language: "vi",
+              }
+            );
+
+            const paymentUrl = responsive.data.url;
+            window.location.href = paymentUrl;
+          } else {
+            enqueueSnackbar(response.data.EM, { variant: "info" });
+          }
+          if (response.data.EC === 1) {
+            enqueueSnackbar(response.data.EM, { variant: "success" });
+          } else {
+            enqueueSnackbar(response.data.EM || "Đặt hàng không thành công", {
+              variant: "error",
+            });
+          }
+        } catch (error) {
+          console.error("Error during order submission:", error);
+          enqueueSnackbar(error.response.data.EM, {
             variant: "error",
           });
         }
-      } catch (error) {
-        console.error("Error during order submission:", error);
-        enqueueSnackbar(error.response.data.EM, {
-          variant: "error",
-        });
       }
+
+      fetchCartItems();
+    } catch (error) {
+      console.error("Error during handleSummitThanhToan:", error);
     }
   };
 
-  // if (loading) {
-  //   return (
-  //     <div>
-  //       <Skeleton variant="rectangular" width="100%" height={100} />
-  //       <Skeleton variant="text" />
-  //       <Skeleton variant="text" />
-  //     </div>
-  //   );
-  // }
-  console.log("items", items);
   return (
     <Grid
       container
