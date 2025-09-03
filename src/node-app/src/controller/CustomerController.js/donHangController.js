@@ -198,8 +198,6 @@ ORDER BY
 
 // đang sử dụng
 const createDON_HANG = async (req, res) => {
-  console.log("Tạo đơn: ", req.body);
-
   const {
     ID_USER,
     idThanhToan,

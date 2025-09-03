@@ -1,10 +1,7 @@
-// routes/sanPhamRoutes/khuyenMaiRoutes.js
-
 const express = require("express");
 const router = express.Router();
 const moment = require("moment");
 
-// Import controller functions
 router.post("/create_payment_url", function (req, res, next) {
   var ipAddr =
     req.headers["x-forwarded-for"] ||

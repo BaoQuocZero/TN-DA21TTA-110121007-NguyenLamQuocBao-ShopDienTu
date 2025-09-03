@@ -1,5 +1,63 @@
 const pool = require("../../config/database"); // Đảm bảo `connection` được import từ tệp kết nối cơ sở dữ liệu của bạn
 
+const onAddComment = async (req, res) => {
+  // console.log("req.body", req.body);
+
+  try {
+    const {
+      ID_USER,
+      ID_PRODUCTDETAILS,
+      CONTENT_COMMENT,
+      RATING,
+    } = req.body;
+
+    const now = new Date();
+
+    // Insert vào bảng comment
+    const [results] = await pool.execute(
+      `
+      INSERT INTO comment(
+        ID_PRODUCTDETAILS, 
+        ID_USER, 
+        CONTENT_COMMENT, 
+        STATUS, 
+        RATING, 
+        ISSHOW, 
+        CREATEAT, 
+        UPDATEAT, 
+        ISDELETE
+      ) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        ID_PRODUCTDETAILS,
+        ID_USER,
+        CONTENT_COMMENT,
+        "Đã duyệt",   // hoặc "Chờ duyệt" tùy yêu cầu
+        RATING,
+        1,            // hiển thị
+        now,
+        now,
+        0             // chưa xóa
+      ]
+    );
+
+    return res.status(200).json({
+      EM: "Thêm đánh giá và bình luận thành công",
+      EC: 1,
+      DT: {
+        insertedId: results.insertId,
+      },
+    });
+  } catch (error) {
+    console.error("Error when adding review/comment:", error);
+    return res.status(500).json({
+      EM: "Lỗi hệ thống khi Thêm đánh giá và bình luận",
+      EC: -1,
+    });
+  }
+};
+
 // 1. Lấy danh sách bình luận
 const getProductReviews = async (req, res) => {
   const { id } = req.params; // Lấy MASP từ URL
@@ -79,6 +137,7 @@ const updateProductReview = async (req, res) => {
   }
 };
 module.exports = {
+  onAddComment,
   getProductReviews,
   updateProductReview,
 };

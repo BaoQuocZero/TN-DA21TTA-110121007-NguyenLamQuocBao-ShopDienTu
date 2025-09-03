@@ -18,7 +18,7 @@ import { getThemeConfig } from "../../service/themeService";
 import { useSelector, useDispatch } from "react-redux";
 import { enqueueSnackbar } from "notistack";
 
-const CommentsSection = ({ reviews, onAddComment }) => {
+const CommentsSection = ({ reviews = [], onAddComment = () => { } }) => {
   const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
 
   const [expanded, setExpanded] = useState(false);

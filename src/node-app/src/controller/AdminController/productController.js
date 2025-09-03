@@ -362,14 +362,18 @@ const get2LatestProducts = async (req, res) => {
     // Truy vấn 2 sản phẩm mới nhất theo thời gian thêm vào
     const [results] = await pool.execute(`
       SELECT 
-        MASP, TENSP, DON_GIA, ANH_SP, GHI_CHU_SP
-      FROM sanpham
-      ORDER BY NGAY_RA_MAT DESC
+        product_details.*,
+        product.*,
+        brand.*, 
+        category.*
+      FROM product_details
+      JOIN product ON product_details.ID_PRODUCT = product.ID_PRODUCT
+      JOIN brand ON product.ID_BRAND = brand.ID_BRAND
+      JOIN category ON product.ID_CATEGORY = category.ID_CATEGORY
+      WHERE product.ISDELETE != 1
+      ORDER BY product.CREATEAT DESC
       LIMIT 2
     `);
-
-    // Log sản phẩm mới nhất để kiểm tra
-    console.log("last2Products:", results);
 
     return res.status(200).json({
       EM: "Lấy 2 sản phẩm mới nhất thành công",

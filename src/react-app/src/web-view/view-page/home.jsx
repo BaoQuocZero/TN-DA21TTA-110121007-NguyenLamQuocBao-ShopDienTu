@@ -62,15 +62,14 @@ const Home = () => {
         carouselResponse,
       ] = await Promise.all([
         // axios.get(`${api}/api/v1/admin/sanpham/adventure`),
-        // axios.get(`${api}/api/v1/admin/sanpham/last2Products`),
+        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
+        axios.get(`${api}/api/v1/admin/sanpham/last2Products`),
         // axios.get(`${api}/api/v1/admin/sanpham/rpg`),
         // axios.get(`${api}/api/v1/admin/sanpham/simulation`),
         // axios.get(`${api}/api/v1/admin/sanpham/use/5best-selling`),
         // axios.get(`${api}/api/v1/admin/sanpham/use/5best-favorite`),
         // axios.get(`${api}/api/v1/admin/sanpham/use/5best-expensive`),
         // axios.get(`${api}/api/v1/admin/sanphamuutien/xemtatca`), //đổi tý sửa
-        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
-        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
         axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
         axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
         axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
@@ -133,7 +132,6 @@ const Home = () => {
           <CarouselHead carouselProducts={carouselProducts} api={api} />
 
           <ProductCarousel
-            // title={t.Adventure ? t.Adventure : "Adventure"}
             title={"Sản phẩm bán chạy"}
             products={adventureProducts}
             api={api}
