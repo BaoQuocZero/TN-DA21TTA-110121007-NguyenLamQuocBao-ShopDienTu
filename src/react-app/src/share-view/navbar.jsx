@@ -268,8 +268,8 @@ const Navbar = () => {
               products.map((product) => (
                 <Box
                   ref={searchBoxRef} // Gán ref vào Box chứa kết quả
-                  key={product.MASP}
-                  onClick={() => handleBuyProduct(product.MASP)}
+                  key={product.ID_PRODUCTDETAILS}
+                  onClick={() => handleBuyProduct(product.ID_PRODUCTDETAILS)}
                   sx={{
                     display: "flex",
                     alignItems: "center",
@@ -288,7 +288,7 @@ const Navbar = () => {
                         fontSize: "13px",
                       }}
                     >
-                      {product.TENSP}
+                      {product.NAME_PRODUCTDETAILS}
                     </Typography>
                     <Typography
                       variant="body2"
@@ -297,12 +297,12 @@ const Navbar = () => {
                       {new Intl.NumberFormat("vi-VN", {
                         style: "currency",
                         currency: "VND",
-                      }).format(product.DON_GIA)}
+                      }).format(product.PRICE_PRODUCTDETAILS)}
                     </Typography>
                   </Box>
                   <img
-                    src={`${api}/images/${product.ANH_SP}`}
-                    alt={product.ANH_SP}
+                    src={`${api}/images/${product.GALLERYPRODUCT_DETAILS}`}
+                    alt={product.GALLERYPRODUCT_DETAILS}
                     style={{
                       width: 50,
                       height: 50,

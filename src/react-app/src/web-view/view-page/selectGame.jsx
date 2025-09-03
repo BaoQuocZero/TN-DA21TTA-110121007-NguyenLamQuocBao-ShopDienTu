@@ -13,6 +13,7 @@ import {
   Divider,
   TextField,
 } from "@mui/material";
+import moment from "moment";
 import StarIcon from "@mui/icons-material/Star";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios"; // Make sure to import axios
@@ -147,8 +148,8 @@ const SelectGame = () => {
     }
 
     // Tạo mã đơn hàng duy nhất
-    const orderId = uuidv4();
-    const orderInfo = `Shop Điện Tử - Mã đơn hàng: ${orderId}`;
+    const orderId = moment().format("HHmmss") + Math.floor(Math.random() * 1000);
+    const orderInfo = `${orderId}`;
 
     let result = paymentMethods.find(
       (payment) => payment.MA_THANH_TOAN === selectPhuongThucThanhToan
@@ -168,6 +169,7 @@ const SelectGame = () => {
     };
 
     try {
+      console.log("result.CACH_THANH_TOAN:::", result.CACH_THANH_TOAN)
       if (result.CACH_THANH_TOAN === "Chuyển khoản Momo") {
         try {
           const responsive = await axios.post(
@@ -205,21 +207,18 @@ const SelectGame = () => {
           enqueueSnackbar(error.response.data.EM, { variant: "info" });
         }
 
-      } else if (selectPhuongThucThanhToan == "Chuyển khoản VNPAY") {
+      } else if (result.CACH_THANH_TOAN == "Chuyển khoản VNPAY") {
         try {
           const response = await axios.post(`${api}/don-hang/tao`, requestData);
           if (response.data.EC === 1) {
-            const responsive = await axios.post(
-              `${api}/thanh-toan-online/create_payment_url`,
-              {
-                orderId: orderInfo,
-
-                returnUrl: "http://localhost:3000/checkout-vnpay",
-                amount: product.PRICE_PRODUCTDETAILS,
-                bankCode: "",
-                orderType: "fashion",
-                language: "vi",
-              }
+            const responsive = await axios.post(`${api}/thanh-toan-online/create_payment_url`, {
+              orderId: orderInfo,
+              returnUrl: "http://localhost:3000",
+              amount: product.PRICE_PRODUCTDETAILS,
+              bankCode: "NCB",
+              orderType: "fashion",
+              language: "vi",
+            }
             );
 
             const paymentUrl = responsive.data.url;

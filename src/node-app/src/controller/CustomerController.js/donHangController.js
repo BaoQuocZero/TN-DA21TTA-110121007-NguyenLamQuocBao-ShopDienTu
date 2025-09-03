@@ -835,7 +835,6 @@ const getDonHangGiaoDichThanhCong = async (req, res) => {
             user.ADDRESS,
             orders.*
         FROM orders
-        JOIN order_item ON order_item.ID_ORDER = orders.ID_ORDER
         JOIN user ON user.ID_USER = orders.ID_USER
         WHERE orders.ISDELETE = 0 AND orders.STATUS != "Đang chờ xác nhận"
         ORDER BY orders.CREATEAT DESC;
@@ -863,7 +862,6 @@ const getDonHangGiaoDichProcess = async (req, res) => {
       user.ID_USER, user.EMAIL, user.FIRSTNAME, user.LASTNAME, user.PHONENUMBER, user.ADDRESS,
       orders.*
       FROM orders 
-      JOIN order_item ON order_item.ID_ORDER = orders.ID_ORDER
       JOIN user ON user.ID_USER = orders.ID_USER
       WHERE orders.STATUS = "Đang chờ xác nhận"
     `);

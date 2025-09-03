@@ -404,9 +404,10 @@ const searchSanPhamDynamic = async (req, res) => {
     // Tìm kiếm sản phẩm chưa bị xóa
     let [results] = await pool.execute(
       `
-      SELECT product.*
+      SELECT product_details.*
       FROM product
-      WHERE product.NAMEPRODUCT LIKE ? 
+      JOIN product_details ON product_details.ID_PRODUCT = product.ID_PRODUCT
+      WHERE product_details.NAME_PRODUCTDETAILS LIKE ?
         AND product.ISDELETE = 0
       LIMIT 5
       `,

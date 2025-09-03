@@ -24,15 +24,9 @@ import ProductDetailModal from "../../admin-view/pages/modal/chiTietDonHang"
 
 const categoryOptions = [
   "Tất cả",
-  "Action",
-  "RPG",
-  "Adventure",
-  "Family",
-  "Strategy",
-  "Simulation",
-  "Battle Royale",
-  "Shooter",
-  "Open World",
+  "Đang chờ xác nhận",
+  "Đang giao",
+  "Đã giao hàng",
 ];
 
 const sortOptions = [{ label: "Title", value: "title" }];
@@ -78,38 +72,10 @@ const LibraryComponent = () => {
     }
   };
 
-  const fetchGamewishList = async () => {
-    try {
-      // Lấy MA_KH từ accessToken
-      const accessToken = getAccessToken();
-
-      // Decode accessToken để lấy thông tin từ payload
-      const decodedToken = jwtDecode(accessToken);
-      const MA_KH = decodedToken?.MA_KH; // Lấy MA_KH từ decoded payload
-
-      if (!MA_KH) throw new Error("MA_KH không tồn tại trong accessToken!");
-
-      // Gửi request đến API
-      const response = await axios.post(
-        "http://localhost:8081/api/use/laydanhsachgamecanhanwishlist",
-        { MA_KH }
-      );
-
-      if (response.data.EC === 1) {
-        console.log("Danh sách game:", response.data.DT);
-        setWishlistGame(response.data.DT);
-      } else {
-        throw new Error("API trả về lỗi!");
-      }
-    } catch (error) {
-      console.error("Lỗi khi fetch danh sách game:", error.message);
-    }
-  };
-
   useEffect(() => {
     fetchGameList();
-    // fetchGamewishList();
   }, []);
+
   const handleCategoryChange = (event) => {
     const value = event.target.value;
     // Nếu value chỉ là chuỗi, biến thành mảng
@@ -136,15 +102,23 @@ const LibraryComponent = () => {
     setTabValue(newValue);
   };
 
-  // Lọc dữ liệu đơn hàng (chưa cần wishlistGame nếu chỉ hiển thị đơn hàng)
   const filteredDonHang = donHang
-    .filter((order) =>
-      searchTerm
+    .filter((order) => {
+      // Tìm kiếm theo searchTerm
+      const matchesSearch = searchTerm
         ? order.STATUS.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.PAYMENTSTATUS.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.ID_ORDER.toString().includes(searchTerm)
-        : true
-    )
+        : true;
+
+      // Lọc theo category
+      const matchesCategory =
+        selectedCategories.includes("Tất cả") || selectedCategories.length === 0
+          ? true
+          : selectedCategories.includes(order.STATUS);
+
+      return matchesSearch && matchesCategory;
+    })
     .sort((a, b) => {
       if (sortOption === "price") {
         return b.TOTALORDERPRICE - a.TOTALORDERPRICE; // sắp xếp theo giá
@@ -233,7 +207,7 @@ const LibraryComponent = () => {
               <TextField
                 select
                 variant="outlined"
-                label="Thể loại"
+                label="Trạng thái"
                 value={selectedCategories}
                 onChange={handleCategoryChange}
                 fullWidth
@@ -277,33 +251,6 @@ const LibraryComponent = () => {
             >
               Lịch sử mua hàng
             </Typography>
-
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              indicatorColor="primary"
-              textColor="inherit"
-              sx={{
-                marginBottom: "20px",
-                borderBottom: "2px solid #444444", // Border dưới tab để tạo sự phân tách
-              }}
-              TabIndicatorProps={{ sx: { backgroundColor: "#00bcd4" } }}
-            >
-              <Tab
-                label="Tất cả đơn"
-                sx={{
-                  color: tabValue === 0 ? "#00bcd4" : "#999999",
-                  fontWeight: tabValue === 0 ? "bold" : "normal", // Làm nổi bật tab đang được chọn
-                }}
-              />
-              <Tab
-                label="Yêu thích"
-                sx={{
-                  color: tabValue === 1 ? "#00bcd4" : "#999999",
-                  fontWeight: tabValue === 1 ? "bold" : "normal",
-                }}
-              />
-            </Tabs>
 
             <Grid container spacing={3}>
               <>

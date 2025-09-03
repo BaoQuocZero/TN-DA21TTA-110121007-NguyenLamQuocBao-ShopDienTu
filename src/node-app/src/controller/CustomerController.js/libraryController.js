@@ -15,12 +15,13 @@ const LichSuMuaHangCaNhan = async (req, res) => {
 
     const [results] = await connection.execute(
       `
-      SELECT 
-      user.ID_USER,
-      orders.*
-      FROM user 
-      JOIN orders
-      WHERE user.ID_USER = ?
+SELECT 
+    user.ID_USER,
+    orders.*
+FROM user
+JOIN orders ON user.ID_USER = orders.ID_USER
+WHERE user.ID_USER = ?
+ORDER BY orders.CREATEAT DESC;
       `,
       [ID_USER]
     );

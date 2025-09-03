@@ -366,7 +366,7 @@ const Cart = () => {
           enqueueSnackbar(error.response.data.EM, { variant: "info" });
         }
 
-      } else if (selectPhuongThucThanhToan == "Chuyển khoản VNPAY") {
+      } else if (result.CACH_THANH_TOAN == "Chuyển khoản VNPAY") {
         try {
           const response = await axios.post(`${api}/don-hang/tao`, requestData);
           if (response.data.EC === 1) {
@@ -377,7 +377,7 @@ const Cart = () => {
 
                 returnUrl: "http://localhost:3000/checkout-vnpay",
                 amount: tongTienCart,
-                bankCode: "",
+                bankCode: "NCB",
                 orderType: "fashion",
                 language: "vi",
               }

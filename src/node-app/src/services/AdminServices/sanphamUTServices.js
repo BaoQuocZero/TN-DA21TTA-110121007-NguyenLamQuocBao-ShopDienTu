@@ -57,26 +57,16 @@ const tao_danhsach_uu_tien = async (
 // Xem tất cả sản phẩm trong danh sách ưu tiên
 const xem_tatca_danhsach_uu_tien = async () => {
   try {
-    let [results] = await pool.execute(`SELECT
-        danhsachsanphamuutien.MASANPHAMUUTIEN,
-        sanpham.TENSP,
-        sanpham.DON_GIA,
-        sanpham.NHA_SAN_XUAT,
-        sanpham.ANH_SP,
-    
-        sanpham.MASP,
-        danhsachsanphamuutien.GHI_CHU_UT,
-        danhsachsanphamuutien.HINH_ANH_BIA,
-        danhsachsanphamuutien.HINH_ANH_LOGO,
-        danhsachsanphamuutien.HINH_ANH_NAVBAR,
-        GROUP_CONCAT(DISTINCT theloai.TENTL) AS TENTL,
-        danhsachsanphamuutien.THOI_GIAN_BAT_DAU_UT,
-        danhsachsanphamuutien.THOI_GIAN_KET_THUC_UT
-      FROM danhsachsanphamuutien
-      JOIN sanpham ON danhsachsanphamuutien.MASP = sanpham.MASP
-      LEFT JOIN thuoc_loai ON sanpham.MASP = thuoc_loai.MASP
-      LEFT JOIN theloai ON thuoc_loai.MATL = theloai.MATL
-      GROUP BY danhsachsanphamuutien.MASANPHAMUUTIEN;`);
+    let [results] = await pool.execute(`
+SELECT pd.* 
+FROM product p
+JOIN category c ON c.ID_CATEGORY = p.ID_CATEGORY
+JOIN product_details pd ON pd.ID_PRODUCT = p.ID_PRODUCT
+WHERE c.ID_CATEGORY IN (1, 2, 4, 5, 6, 7, 8)
+ORDER BY p.CREATEAT DESC
+LIMIT 10;
+
+      `);
 
     return {
       EM: "Xem tất cả danh sách ưu tiên thành công",

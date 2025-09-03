@@ -61,21 +61,14 @@ const Home = () => {
         bestExpensiveResponse,
         carouselResponse,
       ] = await Promise.all([
-        // axios.get(`${api}/api/v1/admin/sanpham/adventure`),
         axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
         axios.get(`${api}/api/v1/admin/sanpham/last2Products`),
-        // axios.get(`${api}/api/v1/admin/sanpham/rpg`),
-        // axios.get(`${api}/api/v1/admin/sanpham/simulation`),
-        // axios.get(`${api}/api/v1/admin/sanpham/use/5best-selling`),
-        // axios.get(`${api}/api/v1/admin/sanpham/use/5best-favorite`),
-        // axios.get(`${api}/api/v1/admin/sanpham/use/5best-expensive`),
-        // axios.get(`${api}/api/v1/admin/sanphamuutien/xemtatca`), //đổi tý sửa
         axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
         axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
         axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
         axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
         axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
-        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
+        axios.get(`${api}/api/v1/admin/sanphamuutien/xemtatca`)
       ]);
 
       if (adventureResponse.data.EC === 1) {
