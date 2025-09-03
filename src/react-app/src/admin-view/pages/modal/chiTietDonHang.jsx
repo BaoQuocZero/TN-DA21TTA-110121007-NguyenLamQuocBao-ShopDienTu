@@ -19,6 +19,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  Divider,
 } from "@mui/material";
 import { getThemeConfig } from "../../../service/themeService";
 import * as XLSX from "xlsx";
@@ -35,54 +36,53 @@ const ProductDetailModal = ({ productId, onClose }) => {
         setProductDetails(response.data.DT.chiTietHoaDon); // Lưu dữ liệu vào state
         setOrderInfo(response.data.DT.hoaDon)
       }
-      console.log("response.data.DT:::::", response.data.DT.chiTietHoaDon)
     } catch (error) {
       console.error("Error fetching product details:", error);
     }
   };
 
   const handleExportToExcel = () => {
-    if (!productDetails) return;
-
-    const { chiTietHoaDon, MAHD, TONG_TIEN, TEN_DANG_NHAP, DIA_CHI_SHIP } =
-      productDetails;
+    if (!productDetails || productDetails.length === 0) return;
 
     // Tạo dữ liệu bảng sản phẩm
-    const data = chiTietHoaDon.map((item) => ({
-      "Tên sản phẩm": item.TENSP,
-      "Giá sản phẩm": item.DON_GIA,
-      "Số lượng": item.SO_LUONG,
-      "Thành tiền": item.GIA_SP_KHI_MUA * item.SO_LUONG,
-      "Nhà sản xuất": item.NHA_SAN_XUAT,
-      "Thể loại": item.TENTL,
-      "Mô tả": item.MO_TA_TL,
+    const data = productDetails.map((item) => ({
+      "Tên sản phẩm": item.NAME_PRODUCTDETAILS,
+      "Giá sản phẩm": item.UNIT_PRICE,
+      "Số lượng": item.QUANTITY,
+      "Thành tiền": item.TOTAL_PRICE,
+      "Thương hiệu": item.BRAND_NAME,
+      "Danh mục": item.NAME_CATEGORY,
+      "Mô tả": item.SHORTDESCRIPTION,
+      "Ảnh": item.GALLERYPRODUCT_DETAILS,
     }));
 
-    // Tạo dữ liệu thông tin hóa đơn dưới dạng một hàng duy nhất
+    // Nếu có thêm thông tin hóa đơn thì mock 1 row tóm tắt
     const summaryData = [
       {
-        "Mã hóa đơn": MAHD || "",
-        "Khách hàng": TEN_DANG_NHAP || "",
-        "Địa chỉ": DIA_CHI_SHIP || "",
-        "Tổng tiền": TONG_TIEN || 0,
+        "Tổng tiền đơn hàng": productDetails.reduce(
+          (sum, item) => sum + item.TOTAL_PRICE,
+          0
+        ),
+        "Tổng số lượng": productDetails.reduce(
+          (sum, item) => sum + item.QUANTITY,
+          0
+        ),
       },
     ];
 
     // Tạo workbook
     const workbook = XLSX.utils.book_new();
 
-    // Tạo sheet thông tin hóa đơn (hiển thị trên cùng một dòng)
+    // Sheet 1: Thông tin hóa đơn
     const summarySheet = XLSX.utils.json_to_sheet(summaryData);
-
-    // Tạo sheet chi tiết sản phẩm
-    const productSheet = XLSX.utils.json_to_sheet(data);
-
-    // Thêm các sheet vào workbook
     XLSX.utils.book_append_sheet(workbook, summarySheet, "Thông tin hóa đơn");
+
+    // Sheet 2: Chi tiết sản phẩm
+    const productSheet = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(workbook, productSheet, "Chi tiết sản phẩm");
 
     // Xuất file Excel
-    XLSX.writeFile(workbook, `HoaDon_${MAHD || "khachhang"}.xlsx`);
+    XLSX.writeFile(workbook, `HoaDon_${Date.now()}.xlsx`);
   };
 
   // Fetch thông tin chi tiết khi productId thay đổi
@@ -96,64 +96,60 @@ const ProductDetailModal = ({ productId, onClose }) => {
 
   const { chiTietHoaDon } = productDetails;
 
+  // Hàm định dạng tiền VND
+  const formatCurrency = (value) =>
+    new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(value || 0);
+
+  // Hàm định dạng ngày
+  const formatDate = (date) =>
+    new Date(date).toLocaleString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
   return (
     <Dialog open={Boolean(productId)} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle>Chi Tiết Đơn Hàng</DialogTitle>
 
       <DialogContent>
+        <Typography variant="h6" gutterBottom>
+          Thông tin khách hàng
+        </Typography>
         <Grid container spacing={2}>
-          {/* Cột bên trái chứa thông tin khách hàng */}
-          <Grid item xs={12} md={8}>
-            <Typography variant="h6">Thông tin khách hàng:</Typography>
+          {/* Cột trái */}
+          <Grid item xs={12} md={6}>
             <Typography>Email: {orderInfo.EMAIL}</Typography>
-            <Typography>
-              Số điện thoại: {orderInfo.PHONENUMBER}
-            </Typography>
-            <Typography>
-              Địa chỉ đơn hàng: {orderInfo.ADDRESS}
-            </Typography>
-            <Typography>
-              Ngày tạo đơn hàng:{" "}
-              {new Date(orderInfo.CREATEAT).toLocaleString(
-                "vi-VN"
-              )}
-            </Typography>
-            <Typography>
-              Phương thức thanh toán: {orderInfo.PAYMENTMETHOD}
-            </Typography>
-            <Typography>
-              Trạng thái đơn hàng: {orderInfo.STATUS}
-            </Typography>
-            <Typography>Mã đơn hàng: {orderInfo.ID_ORDER || ""}</Typography>
-            <Typography>
-              Tổng tiền đơn hàng:{" "}
-              <b>
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(orderInfo.TOTALORDERPRICE || 0)}
-              </b>
-            </Typography>
+            <Typography>Số điện thoại: {orderInfo.PHONENUMBER}</Typography>
+            <Typography>Địa chỉ: {orderInfo.ADDRESS}</Typography>
+            <Typography>Ngày tạo: {formatDate(orderInfo.CREATEAT)}</Typography>
           </Grid>
 
-          {/* Cột bên phải chứa Avatar */}
-          <Grid item xs={12} md={4}>
-            <Typography variant="h6">Thông tin người dùng:</Typography>
-            <Avatar
-              src={`${api}/images/${orderInfo.AVATAR}`}
-              alt="Avatar"
-              sx={{ width: 100, height: 100 }}
-            />
+          {/* Cột phải */}
+          <Grid item xs={12} md={6}>
+            <Typography>Khách hàng: {orderInfo.FIRSTNAME} {orderInfo.LASTNAME}</Typography>
+            <Typography>Phương thức thanh toán: {orderInfo.PAYMENTMETHOD}</Typography>
+            <Typography>Trạng thái: <b>{orderInfo.STATUS}</b></Typography>
+            <Typography>Mã đơn hàng: {orderInfo.ID_ORDER}</Typography>
             <Typography>
-              Họ tên: {orderInfo.FIRSTNAME} {orderInfo.LASTNAME}
+              Tổng tiền: <b>{formatCurrency(orderInfo.TOTALORDERPRICE)}</b>
             </Typography>
           </Grid>
         </Grid>
 
-        <Typography variant="h6" sx={{ mt: 2 }}>
-          Thông tin sản phẩm:
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* Bảng sản phẩm */}
+        <Typography variant="h6" gutterBottom>
+          Thông tin sản phẩm
         </Typography>
-        <TableContainer component={Paper} sx={{ mb: 2 }}>
+        <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
@@ -171,19 +167,9 @@ const ProductDetailModal = ({ productId, onClose }) => {
               {productDetails.map((item, index) => (
                 <TableRow key={index}>
                   <TableCell>{item.NAME_PRODUCTDETAILS}</TableCell>
-                  <TableCell>
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(item.UNIT_PRICE || 0)}
-                  </TableCell>
+                  <TableCell>{formatCurrency(item.UNIT_PRICE)}</TableCell>
                   <TableCell>{item.QUANTITY}</TableCell>
-                  <TableCell>
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(item.UNIT_PRICE * item.QUANTITY || 0)}
-                  </TableCell>
+                  <TableCell>{formatCurrency(item.UNIT_PRICE * item.QUANTITY)}</TableCell>
                   <TableCell>{item.BRAND_NAME}</TableCell>
                   <TableCell>{item.NAME_CATEGORY}</TableCell>
                   <TableCell>{item.SHORTDESCRIPTION}</TableCell>
@@ -192,9 +178,10 @@ const ProductDetailModal = ({ productId, onClose }) => {
                       src={`${api}/images/${item.GALLERYPRODUCT_DETAILS}`}
                       alt="Sản phẩm"
                       style={{
-                        width: "100px",
-                        height: "100px",
+                        width: "80px",
+                        height: "80px",
                         objectFit: "contain",
+                        borderRadius: "4px",
                       }}
                     />
                   </TableCell>
@@ -204,11 +191,12 @@ const ProductDetailModal = ({ productId, onClose }) => {
           </Table>
         </TableContainer>
       </DialogContent>
+
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={onClose} color="primary" variant="outlined">
           Đóng
         </Button>
-        <Button onClick={handleExportToExcel} color="secondary">
+        <Button onClick={() => handleExportToExcel()} color="secondary" variant="contained">
           Xuất Excel
         </Button>
       </DialogActions>

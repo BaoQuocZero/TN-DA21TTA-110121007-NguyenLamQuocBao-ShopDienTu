@@ -311,7 +311,6 @@ const BrowseProduct = () => {
                             textOverflow: "ellipsis",
                           }}
                         >
-                          {/* Chưa có giá đúng====================================================================================== */}
                           {`${Number(product.PRICE_PRODUCTDETAILS).toLocaleString(
                             "vi-VN"
                           )}đ`}

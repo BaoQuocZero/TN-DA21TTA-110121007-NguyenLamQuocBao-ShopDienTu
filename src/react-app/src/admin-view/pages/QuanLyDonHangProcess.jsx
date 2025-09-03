@@ -42,6 +42,7 @@ const TatCaDonHangAdminProcess = () => {
 
   const fetchOrders = async () => {
     try {
+      console.log("DDDDDDDDDDDDDDDDDD")
       const response = await axios.get(`${api}/don-hang/dang-cho-xu-ly`);
       if (response.data.EC === 1) {
         setOrders(response.data.DT);

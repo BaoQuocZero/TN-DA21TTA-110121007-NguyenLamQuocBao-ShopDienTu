@@ -1,13 +1,13 @@
 const connection = require("../../config/database");
 
-const laydanhsachgamecanhan = async (req, res) => {
+const LichSuMuaHangCaNhan = async (req, res) => {
   try {
-    const { MA_KH } = req.body;
+    const { ID_USER } = req.body;
 
     // Kiểm tra dữ liệu đầu vào
-    if (!MA_KH) {
+    if (!ID_USER) {
       return res.status(400).json({
-        EM: "Thiếu MA_KH trong yêu cầu",
+        EM: "Thiếu ID_USER trong yêu cầu",
         EC: 0,
         DT: [],
       });
@@ -16,41 +16,13 @@ const laydanhsachgamecanhan = async (req, res) => {
     const [results] = await connection.execute(
       `
       SELECT 
-        hoadon.MAHD,
-        hoadon.MA_KH,
-        sanpham.MASP,
-        sanpham.TENSP AS title,
-        sanpham.ANH_SP AS image,
-        chi_tiet_hoa_don.SO_LUONG,
-        chi_tiet_hoa_don.GIA_SP_KHI_MUA,
-        chi_tiet_hoa_don.GIAM_GIA_KHI_MUA,
-        chi_tiet_hoa_don.GHI_CHU_CTHD,
-        chi_tiet_hoa_don.BINH_LUAN,
-        chi_tiet_hoa_don.DANH_GIA,
-        chi_tiet_hoa_don.MA_CTHD,
-        GROUP_CONCAT(DISTINCT theloai.TENTL ORDER BY theloai.TENTL SEPARATOR ', ') AS categories
-      FROM 
-        hoadon
-      JOIN 
-        chi_tiet_hoa_don ON hoadon.MAHD = chi_tiet_hoa_don.MAHD
-      JOIN 
-        sanpham ON sanpham.MASP = chi_tiet_hoa_don.MASP
-      LEFT JOIN 
-        thuoc_loai ON sanpham.MASP = thuoc_loai.MASP
-      LEFT JOIN 
-        theloai ON theloai.MATL = thuoc_loai.MATL
-      WHERE 
-        hoadon.MA_KH = ?
-        AND hoadon.GHI_CHU_HOA_DON = 'Giao dịch thành công'
-      GROUP BY 
-        chi_tiet_hoa_don.MA_CTHD,
-        hoadon.MAHD,
-        hoadon.MA_KH,
-        sanpham.MASP,
-        sanpham.TENSP,
-        sanpham.ANH_SP;
+      user.ID_USER,
+      orders.*
+      FROM user 
+      JOIN orders
+      WHERE user.ID_USER = ?
       `,
-      [MA_KH]
+      [ID_USER]
     );
 
     return res.status(200).json({
@@ -66,6 +38,7 @@ const laydanhsachgamecanhan = async (req, res) => {
     });
   }
 };
+
 const laydanhsachgamecanhanwishlist = async (req, res) => {
   try {
     const MA_KH = req.body.MA_KH;
@@ -106,4 +79,4 @@ GROUP BY
   }
 };
 
-module.exports = { laydanhsachgamecanhan, laydanhsachgamecanhanwishlist };
+module.exports = { LichSuMuaHangCaNhan, laydanhsachgamecanhanwishlist };

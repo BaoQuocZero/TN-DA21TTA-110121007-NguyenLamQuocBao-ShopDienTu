@@ -198,7 +198,7 @@ ORDER BY
 
 // đang sử dụng
 const createDON_HANG = async (req, res) => {
-  // console.log("Tạo đơn: ", req.body);
+  console.log("Tạo đơn: ", req.body);
 
   const {
     ID_USER,
@@ -208,8 +208,15 @@ const createDON_HANG = async (req, res) => {
     items,
     ADDRESS,
     PHONENUMBER,
+    CACH_THANH_TOAN,
   } = req.body;
+  //CACH_THANH_TOAN: 'Thanh toán khi nhận hàng COD'
   try {
+    // Xác định phương thức thanh toán
+    const paymentMethod =
+      CACH_THANH_TOAN === "Thanh toán khi nhận hàng COD"
+        ? "Thanh toán COD"
+        : "Chuyển khoản";
     const itemsArray = Array.isArray(items) ? items : [items];
     const ngayTaoDonHang = new Date();
 
@@ -228,7 +235,7 @@ const createDON_HANG = async (req, res) => {
         itemsArray.length,
         "Đang chờ xác nhận",
         "Chưa thanh toán",
-        "Chuyển khoản",
+        paymentMethod,
         tongTien,
         ADDRESS,
         PHONENUMBER,
@@ -771,10 +778,14 @@ const updatePAYMENTSTATUSSuccess = async (req, res) => {
 
     // Cập nhật trạng thái đơn hàng
     const [result] = await conn.execute(
-      `UPDATE orders 
-       SET PAYMENTSTATUS = 'Đã thanh toán', 
-           UPDATEAT = NOW() 
-       WHERE ID_ORDER  = ?`,
+      `
+      UPDATE orders 
+       SET 
+       PAYMENTSTATUS = 'Đã thanh toán', 
+       STATUS = 'Đã giao hàng',
+       UPDATEAT = NOW() 
+       WHERE ID_ORDER  = ?
+       `,
       [orderId]
     );
 
@@ -828,7 +839,7 @@ const getDonHangGiaoDichThanhCong = async (req, res) => {
         FROM orders
         JOIN order_item ON order_item.ID_ORDER = orders.ID_ORDER
         JOIN user ON user.ID_USER = orders.ID_USER
-        WHERE orders.ISDELETE = 0
+        WHERE orders.ISDELETE = 0 AND orders.STATUS != "Đang chờ xác nhận"
         ORDER BY orders.CREATEAT DESC;
     `);
 

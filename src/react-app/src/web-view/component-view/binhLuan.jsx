@@ -10,19 +10,53 @@ import {
   Rating,
   MenuItem,
   Select,
+  TextField,
 } from "@mui/material";
+import StarIcon from "@mui/icons-material/Star";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { getThemeConfig } from "../../service/themeService";
+import { useSelector, useDispatch } from "react-redux";
+import { enqueueSnackbar } from "notistack";
 
-const CommentsSection = ({ reviews }) => {
+const CommentsSection = ({ reviews, onAddComment }) => {
+  const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
+
   const [expanded, setExpanded] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [showReviews, setShowReviews] = useState([]); // Khởi tạo rỗng
   const [starFilter, setStarFilter] = useState("Tất cả");
   const [timeFilter, setTimeFilter] = useState("latest");
-  console.log("reviews", reviews);
+  // State cho comment mới
+  const [newRating, setNewRating] = useState(0);
+  const [newComment, setNewComment] = useState("");
+
   const currentTheme = getThemeConfig(localStorage.getItem("THEMES") || "dark");
   const api = process.env.REACT_APP_URL_SERVER;
+
+  // Hàm gửi bình luận
+  const handleAddComment = () => {
+    if (!newComment.trim() || newRating === 0) {
+      enqueueSnackbar("Vui lòng nhập nội dung và chọn số sao");
+      return;
+    }
+
+    const newReview = {
+      ID_USER: userInfo?.ID_USER || userInfo[0].ID_USER,
+      FIRSTNAME: userInfo?.FIRSTNAME || userInfo[0].FIRSTNAME || "",
+      LASTNAME: userInfo?.LASTNAME || userInfo[0].LASTNAME || "",
+      CONTENT_COMMENT: newComment,
+      RATING: newRating,
+      CREATEAT: new Date().toISOString(),
+    };
+
+    if (onAddComment) {
+      onAddComment(newReview); // callback để cập nhật danh sách ngoài parent
+    }
+
+    // reset form
+    setNewRating(0);
+    setNewComment("");
+  };
 
   // Hàm lọc theo số sao
   const handleStarFilterChange = (event) => {
@@ -50,11 +84,11 @@ const CommentsSection = ({ reviews }) => {
     let filteredReviews = [...data];
     if (option === "latest") {
       filteredReviews.sort(
-        (a, b) => new Date(b.NGAY_MUA) - new Date(a.NGAY_MUA)
+        (a, b) => new Date(b.CREATEAT) - new Date(a.CREATEAT)
       );
     } else if (option === "oldest") {
       filteredReviews.sort(
-        (a, b) => new Date(a.NGAY_MUA) - new Date(b.NGAY_MUA)
+        (a, b) => new Date(a.CREATEAT) - new Date(b.CREATEAT)
       );
     }
     setShowReviews(
@@ -79,7 +113,7 @@ const CommentsSection = ({ reviews }) => {
       let filteredReviews = [...reviews];
       if (starFilter !== "Tất cả") {
         filteredReviews = filteredReviews.filter(
-          (review) => parseInt(review.DANH_GIA) === parseInt(starFilter)
+          (review) => parseInt(review.RATING) === parseInt(starFilter)
         );
       }
       filterByTime(filteredReviews, timeFilter);
@@ -146,6 +180,73 @@ const CommentsSection = ({ reviews }) => {
               </Box>
             </Box>
 
+            {/* Form thêm bình luận */}
+            <Box sx={{ marginBottom: 3 }}>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                sx={{ color: "primary.main", fontWeight: "bold" }}
+              >
+                Viết bình luận của bạn
+              </Typography>
+
+              <Rating
+                value={newRating}
+                onChange={(e, newValue) => setNewRating(newValue)}
+                precision={1}
+                sx={{
+                  marginBottom: 1,
+                  color: "#ffb400", // màu sao khi đã chọn
+                }}
+                emptyIcon={
+                  <StarIcon style={{ color: "rgba(255, 255, 255, 0.5)" }} fontSize="inherit" />
+                }
+              />
+
+
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Nhập nội dung bình luận..."
+                InputProps={{
+                  sx: {
+                    color: "#fff", // chữ nhập vào trắng
+                  },
+                }}
+                InputLabelProps={{
+                  sx: {
+                    color: "rgba(255,255,255,0.7)", // label sáng hơn
+                  },
+                }}
+                sx={{
+                  marginBottom: 1,
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
+                    "&:hover fieldset": { borderColor: "#3ccaff" }, // hover sáng
+                    "&.Mui-focused fieldset": { borderColor: "#3ccaff" }, // khi focus
+                  },
+                }}
+              />
+
+              <Button
+                variant="contained"
+                onClick={handleAddComment}
+                sx={{
+                  backgroundColor: "#3ccaff",
+                  color: "#121212",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    backgroundColor: "#1ea8d9",
+                  },
+                }}
+              >
+                Gửi bình luận
+              </Button>
+            </Box>
+
             {/* Danh sách bình luận */}
             {showReviews.length === 0 ? (
               <Typography
@@ -161,7 +262,7 @@ const CommentsSection = ({ reviews }) => {
             ) : (
               showReviews.map((review, index) => (
                 <Box
-                  key={index}
+                  key={review.ID_COMMENT}
                   sx={{
                     marginBottom: 2,
                     padding: 2,
@@ -169,33 +270,40 @@ const CommentsSection = ({ reviews }) => {
                     borderRadius: 1,
                   }}
                 >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: 1,
-                    }}
-                  >
-                    <Avatar
-                      alt={review.HO_TEN}
-                      src={`${api}/images/${review.AVATAR}`}
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        marginRight: 2,
-                      }}
-                    />
-                    <Typography variant="body1">{review.HO_TEN}</Typography>
+                  {/* Thông tin người bình luận */}
+                  <Box sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}>
+                    {review.AVATAR ? (
+                      <Avatar
+                        alt={`${review.FIRSTNAME} ${review.LASTNAME}`}
+                        src={`${api}/images/${review.AVATAR}`}
+                        sx={{ width: 40, height: 40, marginRight: 2 }}
+                      />
+                    ) : (
+                      <Avatar sx={{ width: 40, height: 40, marginRight: 2 }}>
+                        {review.FIRSTNAME?.charAt(0)}
+                      </Avatar>
+                    )}
+
+                    <Box>
+                      <Typography variant="body1">
+                        {review.FIRSTNAME} {review.LASTNAME}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(review.CREATEAT).toLocaleDateString("vi-VN")}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Box sx={{ marginBottom: 1 }}>
-                    <Rating
-                      value={parseFloat(review.DANH_GIA)}
-                      readOnly
-                      precision={0.5}
-                      sx={{ marginTop: 0.5, fontSize: 13 }}
-                    />
-                  </Box>
-                  <Typography variant="body2">{review.BINH_LUAN}</Typography>
+
+                  {/* Số sao */}
+                  <Rating
+                    value={parseFloat(review.RATING)}
+                    readOnly
+                    precision={0.5}
+                    sx={{ marginBottom: 1, fontSize: 16 }}
+                  />
+
+                  {/* Nội dung bình luận */}
+                  <Typography variant="body2">{review.CONTENT_COMMENT}</Typography>
                 </Box>
               ))
             )}

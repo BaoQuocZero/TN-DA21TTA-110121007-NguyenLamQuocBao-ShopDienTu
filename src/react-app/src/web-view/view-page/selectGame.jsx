@@ -79,12 +79,12 @@ const SelectGame = () => {
       }
 
       // Gọi API lấy danh sách bình luận
-      // const responseBinhLuan = await axios.get(`${api}/binh-luan/${id}`);
-      // if (responseBinhLuan.data.EC === 1) {
-      //   setBinhLuan(responseBinhLuan.data.DT);
-      // } else {
-      //   console.error("Lỗi khi lấy bình luận:", responseBinhLuan.data.EM);
-      // }
+      const responseBinhLuan = await axios.get(`${api}/binh-luan/${id}`);
+      if (responseBinhLuan.data.EC === 1) {
+        setBinhLuan(responseBinhLuan.data.DT);
+      } else {
+        console.error("Lỗi khi lấy bình luận:", responseBinhLuan.data.EM);
+      }
 
       // Gọi API lấy phương thức thanh toán
       // const responsePayment = await axios.get(
@@ -178,7 +178,7 @@ const SelectGame = () => {
               options: "mutil",
               orderInfo: orderInfo,
               returnUrl: "http://localhost:3000/checkout",
-              amount: product.PRICE_PRODUCTDETAILS, // Gửi tổng tiền trong giỏ hàng
+              amount: product.PRICE_PRODUCTDETAILS,
             }
           );
           await axios.post(`${api}/don-hang/tao`, requestData);

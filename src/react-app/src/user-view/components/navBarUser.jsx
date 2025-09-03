@@ -16,6 +16,8 @@ import {
   Divider,
 } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+
 import EmailIcon from "@mui/icons-material/Email";
 import PaymentIcon from "@mui/icons-material/Payment";
 import LockIcon from "@mui/icons-material/Lock";
@@ -58,7 +60,21 @@ const NavBarUser = () => {
             primary={t.UserInfo ? t.UserInfo : "Thông tin người dùng"}
           />
         </ListItem>
-
+        <ListItem
+          button
+          component={Link}
+          to="/profile/lich-su-mua-hang"
+          sx={{ color: "#f0f6fc" }}
+        >
+          <ListItemIcon>
+            <ReceiptLongIcon sx={{ color: "#ffffff" }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              "Lịch sử mua hàng"
+            }
+          />
+        </ListItem>
         <ListItem
           button
           component={Link}

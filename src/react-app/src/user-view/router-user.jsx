@@ -16,6 +16,10 @@ const UserRouter = () => {
       element: <DonHangUser />,
     },
     {
+      path: "/lich-su-mua-hang",
+      element: <DonHangUser />,
+    },
+    {
       path: "/mat-khau-cai-dat",
       element: <PasswordAndSetting />,
     },

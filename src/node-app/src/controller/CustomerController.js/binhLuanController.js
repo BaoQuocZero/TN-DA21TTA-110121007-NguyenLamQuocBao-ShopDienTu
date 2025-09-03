@@ -6,24 +6,13 @@ const getProductReviews = async (req, res) => {
   console.log("id", id);
 
   try {
-    // Truy vấn đánh giá, bình luận và thông tin khách hàng theo MASP
     const [results] = await pool.execute(
-      `SELECT 
-        kh.TEN_KHACH_HANG AS HO_TEN, 
-        kh.SDT_KH AS SDT,
-        kh.AVATAR,
-        kh.DIA_CHI AS DIA_CHI,
-        kh.MA_PHAN_QUYEN, 
-        pq.TEN_PHAN_QUYEN AS VAI_TRO,
-        hd.NGAY_LAP_HOA_DON AS NGAY_MUA,  
-        cthd.DANH_GIA, 
-        cthd.BINH_LUAN
-      FROM chi_tiet_hoa_don cthd
-      JOIN hoadon hd ON cthd.MAHD = hd.MAHD
-      JOIN khachhang kh ON hd.MA_KH = kh.MA_KH
-      LEFT JOIN phan_quyen pq ON kh.MA_PHAN_QUYEN = pq.MA_PHAN_QUYEN
-      WHERE cthd.MASP = ? 
-      AND (cthd.DANH_GIA IS NOT NULL OR cthd.BINH_LUAN IS NOT NULL)`,
+      `
+SELECT comment.*, user.FIRSTNAME, user.LASTNAME 
+FROM comment
+JOIN user ON user.ID_USER = comment.ID_USER
+WHERE comment.ID_PRODUCTDETAILS = ?
+      `,
       [id]
     );
 
