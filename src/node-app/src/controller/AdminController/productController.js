@@ -69,11 +69,11 @@ const xem_sanpham_voi_id = async (req, res) => {
 
 const sua_sanpham_voi_id = async (req, res) => {
   try {
-    const MASP = req.params.MASP;
+    const ID_PRODUCTDETAILS = req.params.ID_PRODUCTDETAILS;
     const datasanpham = req.body;
     const filename = req.file ? req.file.filename : null;
 
-    let results = await sua_sanpham_id(MASP, datasanpham, filename);
+    let results = await sua_sanpham_id(ID_PRODUCTDETAILS, datasanpham, filename);
     return res.status(200).json({
       EM: results.EM,
       EC: results.EC,
@@ -390,6 +390,61 @@ const get2LatestProducts = async (req, res) => {
   }
 };
 
+const GamingGearProduct = async (req, res) => {
+  try {
+    // Truy vấn 2 sản phẩm mới nhất theo thời gian thêm vào
+    const [results] = await pool.execute(`
+SELECT pd.* 
+FROM product p
+JOIN category c ON c.ID_CATEGORY = p.ID_CATEGORY
+JOIN product_details pd ON pd.ID_PRODUCT = p.ID_PRODUCT
+WHERE c.ID_CATEGORY IN (3, 9, 10, 11, 12)
+ORDER BY p.CREATEAT DESC
+LIMIT 10;
+    `);
+
+    return res.status(200).json({
+      EM: "Lấy 2 sản phẩm mới nhất thành công",
+      EC: 1,
+      DT: results, // Trả về 2 sản phẩm mới nhất
+    });
+  } catch (error) {
+    console.error("Error getting latest products:", error);
+    return res.status(500).json({
+      EM: "Có lỗi xảy ra khi lấy 2 sản phẩm mới nhất",
+      EC: 0,
+      DT: [],
+    });
+  }
+};
+
+const PCGaming = async (req, res) => {
+  try {
+    // Truy vấn 2 sản phẩm mới nhất theo thời gian thêm vào
+    const [results] = await pool.execute(`
+SELECT pd.* 
+FROM product p
+JOIN category c ON c.ID_CATEGORY = p.ID_CATEGORY
+JOIN product_details pd ON pd.ID_PRODUCT = p.ID_PRODUCT
+WHERE c.ID_CATEGORY = 2
+ORDER BY p.CREATEAT DESC
+LIMIT 10;
+    `);
+
+    return res.status(200).json({
+      EM: "Lấy 2 sản phẩm mới nhất thành công",
+      EC: 1,
+      DT: results, // Trả về 2 sản phẩm mới nhất
+    });
+  } catch (error) {
+    console.error("Error getting latest products:", error);
+    return res.status(500).json({
+      EM: "Có lỗi xảy ra khi lấy 2 sản phẩm mới nhất",
+      EC: 0,
+      DT: [],
+    });
+  }
+};
 const searchSanPhamDynamic = async (req, res) => {
   try {
     const { query } = req.query; // Từ khóa tìm kiếm
@@ -449,4 +504,7 @@ module.exports = {
   getCartTotalQuantity,
   get2LatestProducts,
   searchSanPhamDynamic,
+
+  GamingGearProduct,
+  PCGaming,
 };

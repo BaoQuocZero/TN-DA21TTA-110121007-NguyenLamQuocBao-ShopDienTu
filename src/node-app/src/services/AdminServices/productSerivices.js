@@ -142,87 +142,76 @@ const xem_sanpham_id = async (ID_PRODUCTDETAILS, ID_USER) => {
   }
 };
 
-const sua_sanpham_id = async (MASP, datasanpham, anhsp) => {
+const sua_sanpham_id = async (ID_PRODUCTDETAILS, datasanpham, GALLERYPRODUCT) => {
   try {
-    let categories = JSON.parse(datasanpham.selectedCategories);
     console.log("check datasp:", datasanpham);
+    console.log("ID_PRODUCTDETAILS: ", ID_PRODUCTDETAILS);
 
-    let [results1] = await pool.execute(
-      "SELECT * FROM sanpham WHERE MASP = ?",
-      [MASP]
-    );
+    // Hàm giúp convert undefined => null
+    const safeValue = (val) => (val === undefined ? null : val);
 
-    if (results1.length > 0) {
-      if (anhsp === null) {
-        let [results] = await pool.execute(
-          `UPDATE sanpham 
-           SET TENSP = ?, DON_GIA = ?, NHA_SAN_XUAT = ?, GHI_CHU_SP = ?, TRANG_THAI_SAN_PHAM = ?, NGAY_CAP_NHAT = NOW() 
-           WHERE MASP = ?`,
-          [
-            datasanpham.TENSP,
-            datasanpham.DON_GIA,
-            datasanpham.NHA_SAN_XUAT,
-            datasanpham.GHI_CHU_SP,
-            datasanpham.TRANG_THAI_SAN_PHAM,
-            MASP,
-          ]
-        );
+    // 1. Cập nhật bảng product_details
+    const fieldsProductDetails = [
+      "NAME_PRODUCTDETAILS",
+      "PRICE_PRODUCTDETAILS",
+      "Import_Price",
+      "AMOUNT_AVAILABLE",
+      "SPECIFICATION",
+      "ISDELETE"
+    ];
 
-        if (Array.isArray(categories) && categories.length > 0) {
-          await pool.execute("DELETE FROM thuoc_loai WHERE MASP = ?", [MASP]);
+    let valuesProductDetails = fieldsProductDetails.map(f => safeValue(datasanpham[f]));
 
-          for (const matl of categories) {
-            await pool.execute(
-              "INSERT INTO thuoc_loai (MASP, MATL) VALUES (?, ?)",
-              [MASP, matl]
-            );
-          }
-        }
-
-        return {
-          EM: "Sửa sản phẩm thành công",
-          EC: 1,
-          DT: results,
-        };
-      }
-
-      let [results] = await pool.execute(
-        `UPDATE sanpham 
-         SET TENSP = ?, DON_GIA = ?, NHA_SAN_XUAT = ?, GHI_CHU_SP = ?, ANH_SP = ?, TRANG_THAI_SAN_PHAM = ?, NGAY_CAP_NHAT = NOW() 
-         WHERE MASP = ?`,
-        [
-          datasanpham.TENSP,
-          datasanpham.DON_GIA,
-          datasanpham.NHA_SAN_XUAT,
-          datasanpham.GHI_CHU_SP,
-          anhsp,
-          datasanpham.TRANG_THAI_SAN_PHAM,
-          MASP,
-        ]
-      );
-
-      if (Array.isArray(categories) && categories.length > 0) {
-        await pool.execute("DELETE FROM thuoc_loai WHERE MASP = ?", [MASP]);
-        for (const matl of categories) {
-          await pool.execute(
-            "INSERT INTO thuoc_loai (MASP, MATL) VALUES (?, ?)",
-            [MASP, matl]
-          );
-        }
-      }
-
-      return {
-        EM: "Sửa sản phẩm thành công",
-        EC: 1,
-        DT: results,
-      };
+    let galleryQuery = "";
+    if (GALLERYPRODUCT && GALLERYPRODUCT.trim() !== "") {
+      galleryQuery = ", GALLERYPRODUCT_DETAILS = ?";
+      valuesProductDetails.push(GALLERYPRODUCT);
     }
 
+    valuesProductDetails.push(ID_PRODUCTDETAILS);
+
+    const sqlProductDetails = `
+      UPDATE product_details
+      SET ${fieldsProductDetails.map(f => `${f} = ?`).join(", ")} ${galleryQuery}
+      WHERE ID_PRODUCTDETAILS = ?
+    `;
+
+    await pool.execute(sqlProductDetails, valuesProductDetails);
+
+    // 2. Cập nhật bảng product
+    const fieldsProduct = [
+      "NAMEPRODUCT",
+      "UNIT",
+      "METATITLE",
+      "SHORTDESCRIPTION",
+      "DESCRIPTION",
+      "METADESCRIPTION",
+      "ISDELETE"
+    ];
+    let valuesProduct = fieldsProduct.map(f => safeValue(datasanpham[f]));
+
+    let galleryProductQuery = "";
+    if (GALLERYPRODUCT && GALLERYPRODUCT.trim() !== "") {
+      galleryProductQuery = ", GALLERYPRODUCT = ?";
+      valuesProduct.push(GALLERYPRODUCT);
+    }
+
+    valuesProduct.push(safeValue(datasanpham.ID_PRODUCT));
+
+    const sqlProduct = `
+      UPDATE product
+      SET ${fieldsProduct.map(f => `${f} = ?`).join(", ")} ${galleryProductQuery}
+      WHERE ID_PRODUCT = ?
+    `;
+
+    await pool.execute(sqlProduct, valuesProduct);
+
     return {
-      EM: "Sản phẩm không tồn tại",
-      EC: 0,
-      DT: [],
+      EM: "Sửa sản phẩm thành công",
+      EC: 1,
+      DT: datasanpham,
     };
+
   } catch (error) {
     console.error("Lỗi:", error);
     return {
@@ -232,6 +221,7 @@ const sua_sanpham_id = async (MASP, datasanpham, anhsp) => {
     };
   }
 };
+
 
 const xoa_sanpham_id = async (ID_PRODUCT) => {
   try {

@@ -66,14 +66,20 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
   useEffect(() => {
     if (product) {
       const selectedCategory = product.ID_CATEGORY || null;
+      const selectedPromotion1 = product.ID_PROMOTION || null;
+      const selectedBrand1 = product.ID_BRAND || null;
+      const GALLERYPRODUCT_DETAILS1 = product.GALLERYPRODUCT_DETAILS
 
       setForm({
         ...product,
-        selectedCategories: selectedCategory, // chỉ 1 ID
+        selectedCategories: selectedCategory,
+        selectedPromotion: selectedPromotion1,
+        selectedBrand: selectedBrand1,
+        GALLERYPRODUCT_DETAILS: GALLERYPRODUCT_DETAILS1,
       });
     } else {
       setForm({
-        selectedCategories: null, // không phải mảng nữa
+        selectedCategories: null,
         selectedPromotion: null,
         selectedBrand: null,
 
@@ -103,6 +109,7 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
       console.error("Error fetching categories:", error);
     }
   };
+
   const fetchBrand = async () => {
     try {
       const response = await axios.get(`${api}/api/v1/admin/brand/getAllBrand`);
@@ -111,6 +118,7 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
       console.error("Error fetching fetchBrand:", error);
     }
   };
+
   const fetchPromotion = async () => {
     try {
       const response = await axios.get(`${api}/api/v1/admin/promotion/getAllPromotion`);
@@ -128,6 +136,7 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
+
   const handleSubmit = async () => {
     const requiredFields = [
       "NAME_PRODUCTDETAILS",
@@ -193,6 +202,26 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
       if (response.data.EC === 1) {
         fetchProducts();
         onClose();
+        setForm({
+          selectedCategories: null,
+          selectedPromotion: null,
+          selectedBrand: null,
+
+          UNIT: "Máy",
+          METATITLE: "",
+          SHORTDESCRIPTION: "",
+          DESCRIPTION: "",
+          METADESCRIPTION: "",
+
+          NAME_PRODUCTDETAILS: "",
+          PRICE_PRODUCTDETAILS: 0,
+          AMOUNT_AVAILABLE: 0,
+          SPECIFICATION: "",
+          Import_Price: 0,
+
+          GALLERYPRODUCT_DETAILS: null,
+          ISDELETE: 1,
+        });
       } else {
         alert(response.data.EM || "Lỗi không xác định từ server.");
       }

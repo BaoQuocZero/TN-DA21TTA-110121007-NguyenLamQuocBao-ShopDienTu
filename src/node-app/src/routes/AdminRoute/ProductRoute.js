@@ -22,6 +22,9 @@ const {
   getCartTotalQuantity,
   get2LatestProducts,
   searchSanPhamDynamic,
+
+  GamingGearProduct,
+  PCGaming,
 } = require("../../controller/AdminController/productController.js");
 
 //multer---------------------------------------------------------------------
@@ -29,7 +32,7 @@ const { upload } = require("../../config/multerConfig.js");
 //------------------------------------------------------------------------------
 
 const CRUDSanpham = (app) => {
-  router.put("/sua/:MASP", upload.single("GALLERYPRODUCT_DETAILS"), sua_sanpham_voi_id);
+  router.put("/sua/:ID_PRODUCTDETAILS", upload.single("GALLERYPRODUCT_DETAILS"), sua_sanpham_voi_id);
   router.post("/tao", upload.single("GALLERYPRODUCT_DETAILS"), tao_new_sanpham);
 
   router.post("/xem-id", xem_sanpham_voi_id);
@@ -37,6 +40,8 @@ const CRUDSanpham = (app) => {
   router.get("/action", getSanPhamByTheLoai_Action);
   router.get("/rpg", getSanPhamByRPG);
   router.get("/last2Products", get2LatestProducts);
+  router.get("/GamingGear", GamingGearProduct);
+  router.get("/PCGaming", PCGaming);
 
   router.get("/simulation", getSanPhamBySimulation);
   router.get("/use/5best-selling", get5BestSellingProducts);

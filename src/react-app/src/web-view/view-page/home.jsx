@@ -35,6 +35,10 @@ const Home = () => {
   const [bestExpensive, setBestExpensive] = useState([]); // Sản phẩm đắt nhất
   const [loading, setLoading] = useState(true); // Trạng thái loading
   const [carouselProducts, setCarouselProducts] = useState([]);
+
+  const [GamingGear, setGamingGear] = useState([]); // Sản phẩm bán chạy nhất
+
+
   const navigate = useNavigate();
 
   const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
@@ -61,13 +65,13 @@ const Home = () => {
         bestExpensiveResponse,
         carouselResponse,
       ] = await Promise.all([
+        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),//adventureResponse
+        axios.get(`${api}/api/v1/admin/sanpham/last2Products`), //last2Response
+        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`), //rpgResponse
+        axios.get(`${api}/api/v1/admin/sanpham/GamingGear`), //simulationResponse
+        axios.get(`${api}/api/v1/admin/sanpham/GamingGear`), //bestSellingResponse
         axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
-        axios.get(`${api}/api/v1/admin/sanpham/last2Products`),
-        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
-        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
-        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
-        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
-        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
+        axios.get(`${api}/api/v1/admin/sanpham/PCGaming`), //bestExpensiveResponse
         axios.get(`${api}/api/v1/admin/sanphamuutien/xemtatca`)
       ]);
 
@@ -223,7 +227,7 @@ const Home = () => {
               <Grid item xs={12} sm={6} md={4}>
                 {bestSellingProducts && bestSellingProducts.length > 0 && (
                   <ListGame
-                    title={t.BestSellers}
+                    title="Gaming Gear"
                     api={api}
                     items={bestSellingProducts}
                   />
@@ -233,7 +237,7 @@ const Home = () => {
               <Grid item xs={12} sm={6} md={4}>
                 {bestExpensive && bestExpensive.length > 0 && (
                   <ListGame
-                    title={t.HighestValue}
+                    title="PC Gaming Hiệu Năng Cao"
                     api={api}
                     items={bestExpensive}
                   />
@@ -243,7 +247,7 @@ const Home = () => {
               <Grid item xs={12} sm={6} md={4}>
                 {bestFavorite && bestFavorite.length > 0 ? (
                   <ListGame
-                    title={t.MostPopularProducts}
+                    title="Linh Kiện Nâng Cấp"
                     items={bestFavorite}
                     api={api}
                   />

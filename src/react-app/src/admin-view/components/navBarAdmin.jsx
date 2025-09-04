@@ -178,14 +178,16 @@ const NavBarAdmin = () => {
                 >
                   <ListItemText primary="Thêm sản phẩm" />
                 </ListItem>{" "}
-                <ListItem
+
+                {/* <ListItem
                   button
                   component={Link}
                   to="/admin/sanpham-uutien"
                   sx={{ pl: 4, color: "#f0f6fc" }}
                 >
                   <ListItemText primary="Carousel Sản Phẩm" />
-                </ListItem>
+                </ListItem> */}
+
                 <List>
                   <ListItem
                     button
@@ -242,14 +244,16 @@ const NavBarAdmin = () => {
                 >
                   <ListItemText primary="Lịch sử đơn hàng" />
                 </ListItem>{" "}
-                <ListItem
+
+                {/* <ListItem
                   button
                   component={Link}
                   to="/admin/quanlythanhtoan"
                   sx={{ pl: 4, color: "#f0f6fc" }}
                 >
                   <ListItemText primary="Phương Thức Thanh Toán" />
-                </ListItem>
+                </ListItem> */}
+
               </List>
             </Collapse>
           </List>

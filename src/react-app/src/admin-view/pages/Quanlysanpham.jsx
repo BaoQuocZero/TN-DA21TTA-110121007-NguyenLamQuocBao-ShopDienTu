@@ -88,18 +88,16 @@ const ProductManagement = () => {
 
   // Logic lọc sản phẩm
   const filteredProducts = products.filter((product) => {
-    // Lọc theo từ khóa tìm kiếm (TENSP)
     const matchesSearchQuery =
       searchQuery.trim() === "" ||
-      (product.TENSP &&
-        product.TENSP.toLowerCase().includes(searchQuery.toLowerCase()));
+      (product.NAME_PRODUCTDETAILS &&
+        product.NAME_PRODUCTDETAILS.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    // Lọc theo thể loại (TENTL)
-    const productCategories = product.TENTL ? product.TENTL.split(",") : [];
+    const productCategories = product.NAME_CATEGORY ? product.NAME_CATEGORY.split(",") : [];
     const matchesCategory =
       selectedCategories.length === 0 ||
       selectedCategories.some((category) =>
-        productCategories.includes(category.TENTL)
+        productCategories.includes(category.NAME_CATEGORY)
       );
 
     // Sản phẩm phải khớp cả hai điều kiện
@@ -156,14 +154,14 @@ const ProductManagement = () => {
         <Autocomplete
           multiple
           options={categories}
-          getOptionLabel={(option) => option.TENTL}
+          getOptionLabel={(option) => option.NAME_CATEGORY}
           value={selectedCategories}
           onChange={handleCategoryChange}
           renderTags={(tagValue, getTagProps) =>
             tagValue.map((option, index) => (
               <Chip
                 key={index}
-                label={option.TENTL}
+                label={option.NAME_CATEGORY}
                 {...getTagProps({ index })}
                 sx={{
                   backgroundColor: "#3ccaff",

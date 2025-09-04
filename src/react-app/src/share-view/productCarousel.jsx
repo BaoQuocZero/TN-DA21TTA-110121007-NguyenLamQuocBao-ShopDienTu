@@ -273,14 +273,15 @@ const ProductCarousel = ({ title, products, api }) => {
                 <Card
                   key={index}
                   sx={{
-                    height: 380, // Chiều cao cố định
+                    flex: `0 0 ${100 / 5}%`, // mỗi card chiếm 1 phần theo số visibleItems
+                    maxWidth: `${100 / 5}%`,
+                    height: 380,
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
                     backgroundColor: currentTheme.backgroundColor,
                     color: currentTheme.color,
                     padding: 1,
-                    width: { xs: "100%", sm: "20%", md: "15%x" },
                     borderRadius: "10px",
                     transition: "transform 0.3s ease",
                     "&:hover": {

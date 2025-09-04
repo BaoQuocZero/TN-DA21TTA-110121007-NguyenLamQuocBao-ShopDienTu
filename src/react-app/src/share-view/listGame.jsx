@@ -60,29 +60,6 @@ const ListGame = ({ title, items, api }) => {
     navigate(`/select-game/${id}`);
   };
 
-  // const handleAddToCartt = async (product) => {
-  //   if (!isAuthenticated) {
-  //     navigate("/login");
-  //     return;
-  //   }
-  //   try {
-  //     const payload = {
-  //       ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
-  //       MANGUOIDUNG: userInfo.MA_KH,
-  //       NGAY_CAP_NHAT_GIOHANG: new Date().toISOString(),
-  //     };
-  //     const response = await axios.post(`${api}/api/v1/giohang/them`, payload);
-  //     if (response.data.EC === 1) {
-  //       enqueueSnackbar(response.data.EM);
-  //       dispatch(setTotalCart(response.data.totalQuantity));
-  //     } else {
-  //       enqueueSnackbar(response.data.EM);
-  //     }
-  //   } catch (error) {
-  //     enqueueSnackbar(error.response.data.EM);
-  //   }
-  // };
-
   const handleAddToCart = async (product) => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -220,8 +197,16 @@ const ListGame = ({ title, items, api }) => {
                   }}
                   className="thumbnail"
                 />
-                <Box sx={{ marginLeft: 2, flexGrow: 1 }}>
-                  <Typography variant="body2" noWrap>
+                <Box sx={{ marginLeft: 2, flexGrow: 1, minWidth: 0 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                    title={item.NAME_PRODUCTDETAILS} // hiển thị tooltip khi hover
+                  >
                     {item.NAME_PRODUCTDETAILS}
                   </Typography>
                   <Typography variant="caption" sx={{ color: "#bbb" }}>
@@ -231,6 +216,7 @@ const ListGame = ({ title, items, api }) => {
                     }).format(item.PRICE_PRODUCTDETAILS)}
                   </Typography>
                 </Box>
+
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   {!buyStatus && (
                     <>
@@ -251,36 +237,6 @@ const ListGame = ({ title, items, api }) => {
                           }}
                         >
                           <AddShoppingCartIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip
-                        title={favoriteStatus ? t.RemoveFromWish : t.AddToWish}
-                        arrow
-                      >
-                        <IconButton
-                          sx={{
-                            color: favoriteStatus ? "red" : currentTheme.color,
-                            position: "relative",
-                            fontSize: "20px",
-                            transition: "transform 0.3s ease",
-                            "&:hover": {
-                              transform: "scale(1.2)",
-                            },
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (favoriteStatus) {
-                              handleRemoveFromWish(item); // Xóa khỏi yêu thích
-                            } else {
-                              handleAddToWish(item); // Thêm vào yêu thích
-                            }
-                          }}
-                        >
-                          {favoriteStatus ? (
-                            <FavoriteIcon />
-                          ) : (
-                            <FavoriteBorderIcon />
-                          )}
                         </IconButton>
                       </Tooltip>
                     </>

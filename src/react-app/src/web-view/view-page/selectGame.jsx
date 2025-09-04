@@ -86,19 +86,6 @@ const SelectGame = () => {
       } else {
         console.error("Lỗi khi lấy bình luận:", responseBinhLuan.data.EM);
       }
-
-      // Gọi API lấy phương thức thanh toán
-      // const responsePayment = await axios.get(
-      //   `${api}/api/v1/admin/thanhtoan/use`
-      // );
-      // if (responsePayment.data.EC === 1) {
-      //   setPaymentMethods(responsePayment.data.DT);
-      // } else {
-      //   console.error(
-      //     "Lỗi khi lấy phương thức thanh toán:",
-      //     responsePayment.data.EM
-      //   );
-      // }
     } catch (error) {
       console.error("Error fetching product data:", error);
     }
@@ -282,18 +269,60 @@ const SelectGame = () => {
         <Grid item xs={12} sm={6} md={8} lg={8}>
           <Box
             sx={{
-              textAlign: "left",
-              borderRadius: 1,
               display: "flex",
-              alignItems: "center",
+              justifyContent: "center", // căn giữa ngang
+              alignItems: "center",     // căn giữa dọc
+              width: "100%",
+              height: 300,              // chiều cao cố định cho tất cả ảnh
+              overflow: "hidden",       // nếu ảnh lớn hơn sẽ cắt
+              borderRadius: "13px",
+              backgroundColor: "#222",  // nền nếu ảnh nhỏ hơn khung
             }}
           >
             <img
               src={`${api}/images/${product.GALLERYPRODUCT_DETAILS}`}
               alt={product.NAME_PRODUCTDETAILS}
-              style={{ maxWidth: "70%", height: "auto", borderRadius: "13px" }}
+              style={{
+                width: "100%",           // chiếm đầy chiều ngang
+                height: "100%",          // chiếm đầy chiều cao
+                objectFit: "cover",      // giữ tỷ lệ và cắt phần thừa
+                borderRadius: "13px",
+              }}
             />
-          </Box>{" "}
+          </Box>
+
+          <Box
+            sx={{
+              mt: 2,
+              p: 2,
+              backgroundColor: "#1f1f1f",
+              borderRadius: 2,
+              color: "#fff",
+              textAlign: "left", // đảm bảo tất cả text căn trái
+              display: "block",  // bỏ flex nếu có
+            }}
+          >
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Thông số kỹ thuật
+            </Typography>
+
+            {product.SPECIFICATION.split("-").map((spec, index) => (
+              <Typography
+                key={index}
+                variant="body2"
+                sx={{
+                  mb: 1,
+                  pl: 1, // thụt đầu dòng
+                  borderLeft: "3px solid #26bbff",
+                  textAlign: "left", // đảm bảo căn trái
+                  color: "#fff",
+                }}
+              >
+                {spec.trim()}
+              </Typography>
+            ))}
+          </Box>
+
           <Box
             sx={{
               textAlign: "left",
@@ -304,33 +333,6 @@ const SelectGame = () => {
               mt: 2,
             }}
           >
-            {/* <Box
-              sx={{
-                textAlign: "left",
-                borderRadius: 1,
-                display: "flex",
-                alignItems: "center",
-                mt: 2,
-              }}
-            >
-              <Typography sx={{ color: currentTheme.color, mr: 1 }}>
-                Thể loại:
-              </Typography>
-              {product.categories.map((category, index) => (
-                <Typography
-                  key={index}
-                  sx={{
-                    color: currentTheme.color,
-                    display: "inline",
-                    mr: index < product.categories.length - 1 ? 1 : 0, // Thêm khoảng cách trừ mục cuối
-                  }}
-                >
-                  {category.NAME_CATEGORY}
-                  {index < product.categories.length - 1 && ","}{" "}
-                </Typography>
-              ))}
-            </Box>{" "} */}
-
             <Box
               sx={{
                 borderRadius: 1,
