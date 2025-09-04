@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./server
+    container_name: myapp-backend
+    ports:
+      - "8081:8081"
+    environment:
+      NODE_ENV: production
+
+  frontend:
+    build: ./client
+    container_name: myapp-frontend
+    ports:
+      - "3001:80"   # React sẽ chạy trên Nginx port 80, map ra 3000

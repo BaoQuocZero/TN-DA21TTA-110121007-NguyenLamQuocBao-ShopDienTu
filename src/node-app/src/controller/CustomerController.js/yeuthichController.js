@@ -199,6 +199,12 @@ const addCartRemoveWish = async (req, res) => {
 };
 const checkProductStatus = async (req, res) => {
   try {
+    return res.status(200).json({
+      EC: 1,
+      EM: "Kiểm tra trạng thái sản phẩm thành công",
+      data: "",
+    });
+
     const { userId, productIds } = req.body;
     console.log("productIds", productIds);
 
