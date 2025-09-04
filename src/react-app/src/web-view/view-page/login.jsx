@@ -15,6 +15,8 @@ import { login } from "../../redux/authSlice";
 import { enqueueSnackbar } from "notistack";
 import { getThemeConfig } from "../../service/themeService";
 
+import ReCAPTCHA from "react-google-recaptcha";
+
 const LoginPage = () => {
   const [user, setUser] = useState(null);
   const [tokenGoogle, setTokenGoogle] = useState(null);
@@ -22,8 +24,18 @@ const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const [captchaToken, setCaptchaToken] = useState(null);
+
+  const handleCaptchaChange = (token) => {
+    setCaptchaToken(token);
+  };
+
   const loginGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
+      if (!captchaToken) {
+        enqueueSnackbar("Vui lòng xác nhận CAPTCHA");
+        return;
+      }
       setTokenGoogle(tokenResponse.access_token);
 
       // Lấy thông tin người dùng từ Google API
@@ -95,7 +107,12 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
-      enqueueSnackbar("Please fill in all fields");
+      enqueueSnackbar("Nhập đầy đủ thông tin");
+      return;
+    }
+
+    if (!captchaToken) {
+      enqueueSnackbar("Vui lòng xác nhận CAPTCHA");
       return;
     }
     setLoading(true); // Bắt đầu loading
@@ -103,7 +120,7 @@ const LoginPage = () => {
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_URL_SERVER}/api/v1/admin/taikhoan/dangnhap`,
-        { email, password }
+        { email, password, captchaToken }
       );
 
       if (response.data.EC === 1) {
@@ -212,6 +229,19 @@ const LoginPage = () => {
           >
             Forgot password?
           </Typography>
+
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              marginY: 2, // khoảng cách trên dưới
+            }}
+          >
+            <ReCAPTCHA
+              sitekey={"6Le6bL0rAAAAAPmLZUEzDtwu0iODK1Xmiw7FDiLQ"} // site key từ Google
+              onChange={handleCaptchaChange}
+            />
+          </Box>
 
           <Button
             variant="contained"

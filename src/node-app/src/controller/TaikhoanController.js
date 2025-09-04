@@ -7,6 +7,7 @@ const {
   updateTaiKhoan_avatar,
   verify_adminService,
 } = require("../services/TaikhoanServices");
+const axios = require("axios");
 const JWT_SECRET = process.env.SECRETKEYADMIN;
 const jwt = require("jsonwebtoken");
 const pool = require("../config/database");
@@ -34,8 +35,16 @@ const dangnhap_taikhoan = async (req, res) => {
   try {
     const EMAIL = req.body.email;
     const PASSWORD = req.body.password;
+    const captchaToken = req.body.captchaToken;
+    if (!captchaToken) return res.status(400).json({ EM: "Missing CAPTCHA", EC: 0 });
 
-    // console.log("req.body:", req.body)
+    const secretKey = '6Le6bL0rAAAAAHW8zPA1Sw37ohuySUblxPODK_yd';
+    const { data } = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`
+    );
+
+    if (!data.success) return res.status(400).json({ EM: "CAPTCHA verification failed", EC: 0 });
+
     let results = await LoginTaikhoan(EMAIL, PASSWORD);
     return res.status(200).json({
       EM: results.EM,
