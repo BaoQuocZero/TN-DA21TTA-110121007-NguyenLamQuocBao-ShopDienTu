@@ -223,9 +223,9 @@ const sua_sanpham_id = async (ID_PRODUCTDETAILS, datasanpham, GALLERYPRODUCT) =>
       WHERE ID_PRODUCT = ?
   `,
       [
-        datasanpham.ID_CATEGORY,
-        datasanpham.ID_BRAND,
-        datasanpham.ID_PROMOTION,
+        datasanpham.selectedCategories,
+        datasanpham.selectedBrand,
+        datasanpham.selectedPromotion,
         datasanpham.NAME_PRODUCTDETAILS,
         datasanpham.UNIT,
         datasanpham.METATITLE,

@@ -35,7 +35,7 @@ const modalStyle = {
 const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
   const [form, setForm] = useState({
     selectedCategories: [],
-    selectedPromotion: [],
+    selectedPromotion: 1,
     selectedBrand: [],
 
     UNIT: 0,
@@ -87,7 +87,7 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
     } else {
       setForm({
         selectedCategories: null,
-        selectedPromotion: null,
+        selectedPromotion: 1,
         selectedBrand: null,
 
         UNIT: "Máy",
@@ -217,7 +217,7 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
         onClose();
         setForm({
           selectedCategories: null,
-          selectedPromotion: null,
+          selectedPromotion: 1,
           selectedBrand: null,
 
           UNIT: "Máy",
@@ -285,7 +285,7 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
           </Grid>
 
           {/* 2 cột */}
-          <Grid item xs={6}>
+          {/* <Grid item xs={6}>
             <FormControl fullWidth>
               <Autocomplete
                 options={promotion}
@@ -306,7 +306,7 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
                 )}
               />
             </FormControl>
-          </Grid>
+          </Grid> */}
 
           <Grid item xs={6}>
             <FormControl fullWidth>
@@ -336,7 +336,7 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
             <TextField fullWidth label="Đơn vị" name="UNIT" value={form.UNIT} onChange={handleChange} required />
           </Grid>
 
-          <Grid item xs={6}>
+          <Grid item xs={12}>
             <TextField fullWidth label="Tiêu đề" name="METATITLE" value={form.METATITLE} onChange={handleChange} required />
           </Grid>
 
