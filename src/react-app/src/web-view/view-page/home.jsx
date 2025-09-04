@@ -26,10 +26,7 @@ import { getThemeConfig } from "../../service/themeService";
 const api = process.env.REACT_APP_URL_SERVER;
 
 const Home = () => {
-  const [adventureProducts, setAdventureProducts] = useState([]); // Sản phẩm phiêu lưu
-  const [rpgProducts, setRpgProducts] = useState([]); // Sản phẩm RPG (nam)
   const [last2Products, setLast2Products] = useState([]); // 2 sản phẩm mới nhất
-  const [simulationProducts, setSimulationProducts] = useState([]); // Sản phẩm trẻ em
   const [bestSellingProducts, setBestSellingProducts] = useState([]); // Sản phẩm bán chạy nhất
   const [bestFavorite, setBestFavorite] = useState([]); // Sản phẩm yêu thích nhất
   const [bestExpensive, setBestExpensive] = useState([]); // Sản phẩm đắt nhất
@@ -56,36 +53,21 @@ const Home = () => {
     try {
       setLoading(true);
       const [
-        adventureResponse,
         last2Response,
-        rpgResponse,
-        simulationResponse,
         bestSellingResponse,
         bestFavoriteResponse,
         bestExpensiveResponse,
         carouselResponse,
       ] = await Promise.all([
-        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),//adventureResponse
         axios.get(`${api}/api/v1/admin/sanpham/last2Products`), //last2Response
-        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`), //rpgResponse
-        axios.get(`${api}/api/v1/admin/sanpham/GamingGear`), //simulationResponse
         axios.get(`${api}/api/v1/admin/sanpham/GamingGear`), //bestSellingResponse
-        axios.get(`${api}/api/v1/admin/sanpham/xemtatca`),
+        axios.get(`${api}/api/v1/admin/sanpham/LinhKien`), //bestFavoriteResponse
         axios.get(`${api}/api/v1/admin/sanpham/PCGaming`), //bestExpensiveResponse
-        axios.get(`${api}/api/v1/admin/sanphamuutien/xemtatca`)
+        axios.get(`${api}/api/v1/admin/sanphamuutien/xemtatca`) //carouselResponse
       ]);
 
-      if (adventureResponse.data.EC === 1) {
-        setAdventureProducts(adventureResponse.data.DT);
-      }
-      if (rpgResponse.data.EC === 1) {
-        setRpgProducts(rpgResponse.data.DT);
-      }
       if (last2Response.data.EC === 1) {
         setLast2Products(last2Response.data.DT);
-      }
-      if (simulationResponse.data.EC === 1) {
-        setSimulationProducts(simulationResponse.data.DT);
       }
       if (bestSellingResponse.data.EC === 1) {
         setBestSellingProducts(bestSellingResponse.data.DT);
@@ -129,8 +111,8 @@ const Home = () => {
           <CarouselHead carouselProducts={carouselProducts} api={api} />
 
           <ProductCarousel
-            title={"Sản phẩm bán chạy"}
-            products={adventureProducts}
+            title={"PC Gaming Hiệu Năng Cao"}
+            products={bestExpensive}
             api={api}
           />
 
@@ -212,8 +194,8 @@ const Home = () => {
           </Box>{" "}
 
           <ProductCarousel
-            title={"Dành cho bạn"}
-            products={simulationProducts}
+            title={"Phụ kiện chơi game"}
+            products={bestSellingProducts}
             api={api}
           />
           <Box

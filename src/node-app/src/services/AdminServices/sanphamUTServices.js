@@ -64,7 +64,7 @@ JOIN category c ON c.ID_CATEGORY = p.ID_CATEGORY
 JOIN product_details pd ON pd.ID_PRODUCT = p.ID_PRODUCT
 WHERE c.ID_CATEGORY IN (1, 2, 4, 5, 6, 7, 8)
 ORDER BY p.CREATEAT DESC
-LIMIT 10;
+LIMIT 4;
 
       `);
 

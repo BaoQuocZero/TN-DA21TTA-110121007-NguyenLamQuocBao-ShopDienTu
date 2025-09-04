@@ -25,6 +25,7 @@ const {
 
   GamingGearProduct,
   PCGaming,
+  LinhKien,
 } = require("../../controller/AdminController/productController.js");
 
 //multer---------------------------------------------------------------------
@@ -42,6 +43,8 @@ const CRUDSanpham = (app) => {
   router.get("/last2Products", get2LatestProducts);
   router.get("/GamingGear", GamingGearProduct);
   router.get("/PCGaming", PCGaming);
+  router.get("/LinhKien", LinhKien);
+
 
   router.get("/simulation", getSanPhamBySimulation);
   router.get("/use/5best-selling", get5BestSellingProducts);

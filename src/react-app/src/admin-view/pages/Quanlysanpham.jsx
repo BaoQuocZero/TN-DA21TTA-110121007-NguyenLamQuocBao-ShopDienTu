@@ -216,7 +216,7 @@ const ProductManagement = () => {
                   {product.PRICE_PRODUCTDETAILS ? product.PRICE_PRODUCTDETAILS.toLocaleString() : "N/A"}₫
                 </TableCell>
                 <TableCell sx={{ color: "#c9d1d9" }}>
-                  {product.BRAND_NAME || "N/A"}
+                  {product.NAME || "N/A"}
                 </TableCell>
                 <TableCell sx={{ color: "#c9d1d9" }}>
                   <img

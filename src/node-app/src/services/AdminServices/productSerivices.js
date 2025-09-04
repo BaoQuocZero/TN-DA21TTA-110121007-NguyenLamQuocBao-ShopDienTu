@@ -144,84 +144,107 @@ const xem_sanpham_id = async (ID_PRODUCTDETAILS, ID_USER) => {
 
 const sua_sanpham_id = async (ID_PRODUCTDETAILS, datasanpham, GALLERYPRODUCT) => {
   try {
-    console.log("check datasp:", datasanpham);
-    console.log("ID_PRODUCTDETAILS: ", ID_PRODUCTDETAILS);
-
-    // Hàm giúp convert undefined => null
-    const safeValue = (val) => (val === undefined ? null : val);
-
-    // 1. Cập nhật bảng product_details
-    const fieldsProductDetails = [
-      "NAME_PRODUCTDETAILS",
-      "PRICE_PRODUCTDETAILS",
-      "Import_Price",
-      "AMOUNT_AVAILABLE",
-      "SPECIFICATION",
-      "ISDELETE"
-    ];
-
-    let valuesProductDetails = fieldsProductDetails.map(f => safeValue(datasanpham[f]));
-
-    let galleryQuery = "";
-    if (GALLERYPRODUCT && GALLERYPRODUCT.trim() !== "") {
-      galleryQuery = ", GALLERYPRODUCT_DETAILS = ?";
-      valuesProductDetails.push(GALLERYPRODUCT);
-    }
-
-    valuesProductDetails.push(ID_PRODUCTDETAILS);
-
-    const sqlProductDetails = `
-      UPDATE product_details
-      SET ${fieldsProductDetails.map(f => `${f} = ?`).join(", ")} ${galleryQuery}
+    console.log("ID_PRODUCTDETAILS:", ID_PRODUCTDETAILS);
+    console.log("check datas:", datasanpham);
+    let [product_details, fields2] = await pool.execute(
+      `
+        SELECT * FROM product_details WHERE ID_PRODUCTDETAILS  = ?
+      `,
+      [
+        ID_PRODUCTDETAILS,
+      ]
+    );
+    // -------- 1. Cập nhật bảng product_details --------
+    let [upProductdetai, fields1] = await pool.execute(
+      `
+      UPDATE product_details 
+      SET NAME_PRODUCTDETAILS= ?,PRICE_PRODUCTDETAILS= ?, AMOUNT_AVAILABLE= ?, SPECIFICATION= ?,Import_Price= ?,
+      GALLERYPRODUCT_DETAILS= ?,UPDATEAT= now(),ISDELETE= ?
       WHERE ID_PRODUCTDETAILS = ?
-    `;
+      `,
+      [
+        datasanpham.NAME_PRODUCTDETAILS,
+        datasanpham.PRICE_PRODUCTDETAILS,
+        datasanpham.AMOUNT_AVAILABLE,
+        datasanpham.SPECIFICATION,
+        datasanpham.Import_Price,
+        GALLERYPRODUCT ? GALLERYPRODUCT : product_details[0].GALLERYPRODUCT_DETAILS,
+        datasanpham.ISDELETE,
+        ID_PRODUCTDETAILS,
+      ]
+    );
 
-    await pool.execute(sqlProductDetails, valuesProductDetails);
+    let [product, fields] = await pool.execute(
+      `
+      SELECT 
+        product.*
+      FROM product
+      WHERE product.ID_PRODUCT = ?;
+      `,
+      [product_details[0].ID_PRODUCT]
+    );
+    // -------- 2. Cập nhật bảng product --------
+    const ID_PRODUCT = product[0]?.ID_PRODUCT; // Lấy ID_PRODUCT từ bản ghi product_details
 
-    // 2. Cập nhật bảng product
-    const fieldsProduct = [
-      "NAMEPRODUCT",
-      "UNIT",
-      "METATITLE",
-      "SHORTDESCRIPTION",
-      "DESCRIPTION",
-      "METADESCRIPTION",
-      "ISDELETE"
-    ];
-    let valuesProduct = fieldsProduct.map(f => safeValue(datasanpham[f]));
-
-    let galleryProductQuery = "";
-    if (GALLERYPRODUCT && GALLERYPRODUCT.trim() !== "") {
-      galleryProductQuery = ", GALLERYPRODUCT = ?";
-      valuesProduct.push(GALLERYPRODUCT);
+    console.log("DDDDD::::", [
+      datasanpham.selectedCategories,
+      datasanpham.selectedBrand,
+      datasanpham.selectedPromotion,
+      datasanpham.NAME_PRODUCTDETAILS,
+      datasanpham.UNIT,
+      datasanpham.METATITLE,
+      datasanpham.SHORTDESCRIPTION,
+      datasanpham.DESCRIPTION,
+      datasanpham.METADESCRIPTION,
+      GALLERYPRODUCT ? GALLERYPRODUCT : product_details[0].GALLERYPRODUCT_DETAILS,
+      datasanpham.ISDELETE,
+      ID_PRODUCT,
+    ])
+    if (!ID_PRODUCT) {
+      return { EM: "Không tìm thấy sản phẩm để cập nhật", EC: 0, DT: [] };
     }
 
-    valuesProduct.push(safeValue(datasanpham.ID_PRODUCT));
-
-    const sqlProduct = `
+    await pool.execute(
+      `
       UPDATE product
-      SET ${fieldsProduct.map(f => `${f} = ?`).join(", ")} ${galleryProductQuery}
+      SET 
+        ID_CATEGORY = ?, 
+        ID_BRAND = ?, 
+        ID_PROMOTION = ?, 
+        NAMEPRODUCT = ?, 
+        UNIT = ?, 
+        METATITLE = ?, 
+        SHORTDESCRIPTION = ?, 
+        DESCRIPTION = ?, 
+        METADESCRIPTION = ?, 
+        GALLERYPRODUCT = ?, 
+        UPDATEAT = NOW(), 
+        ISDELETE = ?
       WHERE ID_PRODUCT = ?
-    `;
+  `,
+      [
+        datasanpham.ID_CATEGORY,
+        datasanpham.ID_BRAND,
+        datasanpham.ID_PROMOTION,
+        datasanpham.NAME_PRODUCTDETAILS,
+        datasanpham.UNIT,
+        datasanpham.METATITLE,
+        datasanpham.SHORTDESCRIPTION,
+        datasanpham.DESCRIPTION,
+        datasanpham.METADESCRIPTION,
+        GALLERYPRODUCT ? GALLERYPRODUCT : product_details[0].GALLERYPRODUCT_DETAILS,
+        datasanpham.ISDELETE,
+        ID_PRODUCT,
+      ]
+    );
 
-    await pool.execute(sqlProduct, valuesProduct);
-
-    return {
-      EM: "Sửa sản phẩm thành công",
-      EC: 1,
-      DT: datasanpham,
-    };
+    return { EM: "Sửa sản phẩm thành công", EC: 1, DT: datasanpham };
 
   } catch (error) {
     console.error("Lỗi:", error);
-    return {
-      EM: "Lỗi trong services sua_sanpham_id",
-      EC: 0,
-      DT: [],
-    };
+    return { EM: "Lỗi trong services sua_sanpham_id", EC: 0, DT: [] };
   }
 };
-
 
 const xoa_sanpham_id = async (ID_PRODUCT) => {
   try {

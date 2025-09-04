@@ -52,6 +52,9 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
 
     GALLERYPRODUCT_DETAILS: null,
     ISDELETE: 1,
+    ID_CATEGORY: null,
+    ID_BRAND: null,
+    ID_PROMOTION: null
   });
   const [categories, setCategories] = useState([]);
   const [brand, setBrand] = useState([]);
@@ -75,6 +78,10 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
         selectedCategories: selectedCategory,
         selectedPromotion: selectedPromotion1,
         selectedBrand: selectedBrand1,
+
+        ID_CATEGORY: selectedCategory,
+        ID_PROMOTION: selectedPromotion1,
+        ID_BRAND: selectedBrand1,
         GALLERYPRODUCT_DETAILS: GALLERYPRODUCT_DETAILS1,
       });
     } else {
@@ -97,6 +104,9 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
 
         GALLERYPRODUCT_DETAILS: null,
         ISDELETE: 1,
+        ID_CATEGORY: null,
+        ID_BRAND: null,
+        ID_PROMOTION: null
       });
     }
   }, [product]);
@@ -185,6 +195,9 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
     formData.append("selectedCategories", JSON.stringify(form.selectedCategories));
     formData.append("selectedBrand", JSON.stringify(form.selectedBrand));
     formData.append("selectedPromotion", JSON.stringify(form.selectedPromotion));
+    formData.append("ID_CATEGORY", JSON.stringify(form.ID_CATEGORY));
+    formData.append("ID_BRAND", JSON.stringify(form.ID_BRAND));
+    formData.append("ID_PROMOTION", JSON.stringify(form.ID_PROMOTION));
 
     try {
       const url = product
@@ -221,6 +234,9 @@ const ProductModal = ({ product, fetchProducts, onDelete, open, onClose }) => {
 
           GALLERYPRODUCT_DETAILS: null,
           ISDELETE: 1,
+          ID_CATEGORY: null,
+          ID_BRAND: null,
+          ID_PROMOTION: null
         });
       } else {
         alert(response.data.EM || "Lỗi không xác định từ server.");

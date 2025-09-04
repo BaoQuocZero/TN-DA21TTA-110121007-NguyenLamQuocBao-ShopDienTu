@@ -445,6 +445,35 @@ LIMIT 10;
     });
   }
 };
+
+const LinhKien = async (req, res) => {
+  try {
+    // Truy vấn 2 sản phẩm mới nhất theo thời gian thêm vào
+    const [results] = await pool.execute(`
+SELECT pd.* 
+FROM product p
+JOIN category c ON c.ID_CATEGORY = p.ID_CATEGORY
+JOIN product_details pd ON pd.ID_PRODUCT = p.ID_PRODUCT
+WHERE c.ID_CATEGORY IN (13, 14, 17)
+ORDER BY p.CREATEAT DESC
+LIMIT 10;
+    `);
+
+    return res.status(200).json({
+      EM: "Lấy 2 sản phẩm mới nhất thành công",
+      EC: 1,
+      DT: results, // Trả về 2 sản phẩm mới nhất
+    });
+  } catch (error) {
+    console.error("Error getting latest products:", error);
+    return res.status(500).json({
+      EM: "Có lỗi xảy ra khi lấy 2 sản phẩm mới nhất",
+      EC: 0,
+      DT: [],
+    });
+  }
+};
+
 const searchSanPhamDynamic = async (req, res) => {
   try {
     const { query } = req.query; // Từ khóa tìm kiếm
@@ -507,4 +536,5 @@ module.exports = {
 
   GamingGearProduct,
   PCGaming,
+  LinhKien,
 };
