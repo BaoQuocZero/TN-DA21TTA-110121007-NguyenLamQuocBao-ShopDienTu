@@ -10,7 +10,7 @@ const themeConfigs = {
     colorTitle: "#1976d2", //Nhấn đậm title
   },
   dark: {
-    backgroundColor: "#101014",
+    backgroundColor: "#1E1E1E",
     color: "#ffffff",
     secondaryColor: "#3ccaf0",
     accentColor: "#515157",

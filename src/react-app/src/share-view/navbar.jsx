@@ -41,7 +41,7 @@ const Navbar = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchTotalCart();
+      // fetchTotalCart();
     }
   }, [userInfo, dispatch]);
 
@@ -300,7 +300,7 @@ const Navbar = () => {
           </Box>
         </Box>
 
-        {/* {isMobile ? (
+        {isMobile ? (
           <>
             <IconButton
               color="inherit"
@@ -336,7 +336,7 @@ const Navbar = () => {
             {menuItems}
             <Box sx={{ flexGrow: 1 }} />
           </>
-        )} */}
+        )}
       </Toolbar>
     </AppBar>
   );
