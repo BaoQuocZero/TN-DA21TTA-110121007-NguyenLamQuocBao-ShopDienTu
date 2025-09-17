@@ -273,7 +273,7 @@ const SelectGame = () => {
               justifyContent: "center", // căn giữa ngang
               alignItems: "center",     // căn giữa dọc
               width: "100%",
-              height: 300,              // chiều cao cố định cho tất cả ảnh
+              height: 400,              // chiều cao cố định cho tất cả ảnh
               overflow: "hidden",       // nếu ảnh lớn hơn sẽ cắt
               borderRadius: "13px",
               backgroundColor: "#222",  // nền nếu ảnh nhỏ hơn khung
@@ -285,7 +285,7 @@ const SelectGame = () => {
               style={{
                 width: "100%",           // chiếm đầy chiều ngang
                 height: "100%",          // chiếm đầy chiều cao
-                objectFit: "cover",      // giữ tỷ lệ và cắt phần thừa
+                objectFit: "contain",
                 borderRadius: "13px",
               }}
             />
@@ -378,11 +378,6 @@ const SelectGame = () => {
             <Typography variant="h6" sx={{ mb: 1 }}>
               {product.NAME_PRODUCTDETAILS}
             </Typography>
-            {/* <Box>
-              <Typography sx={{ color: currentTheme.color }} variant="body2">
-                Nhà sản xuất: {product.NAME || "N/A"}
-              </Typography>
-            </Box> */}
             <Typography sx={{ color: currentTheme.color }} variant="h6">
               {new Intl.NumberFormat("vi-VN", {
                 style: "currency",
