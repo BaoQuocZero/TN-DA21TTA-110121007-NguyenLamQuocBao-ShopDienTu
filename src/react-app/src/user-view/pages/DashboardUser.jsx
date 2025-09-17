@@ -39,7 +39,6 @@ const UserProfile = () => {
     }
     fetchDataUser();
   }, []);
-
   const fetchDataUser = async () => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -55,21 +54,6 @@ const UserProfile = () => {
       );
 
       if (response.data.EC === 1) {
-        // console.log("Thông tin: ", response.data.DT[0])
-        // {
-        //     "ID_USER": 4,
-        //     "ID_ROLE": 1,
-        //     "EMAIL": "baoquoczero@gmail.com",
-        //     "FIRSTNAME": "Nguyễn",
-        //     "LASTNAME": "Bảo",
-        //     "PHONENUMBER": "0372701722",
-        //     "CODEADDRESS": "0",
-        //     "ADDRESS": "W8JX+46R, Đường D5, Phường 5, Trà Vinh, Việt Nam",
-        //     "PASSWORD": "$2b$10$1m7ccgXwL7c5c7Cp8Cf8Hu/fPotcQ.H.qdaXZnDs8FWGfmW9wVBEO",
-        //     "CREATEAT": null,
-        //     "UPDATEAT": null,
-        //     "ISDELETE": 0
-        // }
         setDataUser(response.data.DT[0]);
 
 
@@ -96,11 +80,6 @@ const UserProfile = () => {
     }
   };
 
-  // Hàm callback để cập nhật avatar mới từ AvatarChanger
-  const handleAvatarChange = (newAvatar) => {
-    setCurrentAvatar(URL.createObjectURL(newAvatar));
-  };
-
   const handleProfileUpdate = async () => {
 
     // Kiểm tra định dạng số điện thoại (đảm bảo là một chuỗi số hợp lệ)
@@ -109,17 +88,6 @@ const UserProfile = () => {
       enqueueSnackbar("Số điện thoại không hợp lệ", { variant: "error" });
       return; // Ngừng thực hiện tiếp
     }
-    // console.log("dataUser: ", dataUser)
-    // const updatedData = {
-    //   TEN_KHACH_HANG: dataUser.TEN_KHACH_HANG,
-    //   SDT_KH: dataUser.SDT_KH,
-    //   NGAY_SINH: selectedDate,
-    //   DIA_CHI_Provinces: selectedProvince.full_name,
-    //   DIA_CHI_Districts: selectedDistrict.full_name,
-    //   DIA_CHI_Wards: selectedWards.full_name,
-    //   DIA_CHI_STREETNAME: selectStreetName,
-    //   MA_KH: userInfo.MA_KH,
-    // };
 
     try {
       const response = await axios.post(
@@ -152,10 +120,6 @@ const UserProfile = () => {
     }
   };
 
-  const formattedDate = moment(dataUser?.NGAY_TAO_USER).format(
-    "YYYY-MM-DD HH:mm:ss"
-  );
-
   return (
     <Box
       display="flex"
@@ -173,12 +137,6 @@ const UserProfile = () => {
           color: "#fff", // Màu chữ
         }}
       >
-        {/* <AvatarChanger
-          userId={userInfo?.MA_KH}
-          currentAvatar={`${api}/images/${currentAvatar}`}
-          onAvatarChange={handleAvatarChange}
-        /> */}
-
         <Box
           display="flex"
           alignItems="center"

@@ -201,16 +201,18 @@ const Cart = () => {
 
   useEffect(() => {
     if (!isAuthenticated || !userInfo) {
-      // Redirect to login if user is not authenticated or userInfo is missing
       navigate("/login");
       return;
     }
-
     fetchCartItems();
   }, [isAuthenticated, userInfo, navigate]);
 
   const fetchCartItems = async () => {
     try {
+      if (!isAuthenticated) {
+        enqueueSnackbar("Vui lòng đăng nhập để tiếp tục!");
+        return;
+      }
       const response = await axios.post(`${api}/api/v1/giohang/xem`, {
         ID_USER: userInfo?.ID_USER || userInfo[0].ID_USER,
       });
@@ -231,7 +233,6 @@ const Cart = () => {
   };
   useEffect(() => {
     fetchCartItems();
-    // fetchPaymentMethods();
   }, []);
 
   const fetchPaymentMethods = async () => {

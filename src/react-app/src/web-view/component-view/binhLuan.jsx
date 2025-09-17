@@ -36,6 +36,10 @@ const CommentsSection = ({ reviews = [], product = {} }) => {
 
   // Hàm gửi bình luận
   const handleAddComment = async () => {
+    if (!isAuthenticated) {
+      enqueueSnackbar("Vui lòng đăng nhập để tiếp tục!");
+      return;
+    }
     if (!newComment.trim() || newRating === 0) {
       enqueueSnackbar("Vui lòng nhập nội dung và chọn số sao");
       return;
