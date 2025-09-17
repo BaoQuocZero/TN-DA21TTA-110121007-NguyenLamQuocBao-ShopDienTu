@@ -42,29 +42,6 @@ const ProductCarousel = ({ title, products, api }) => {
     }
   }, [products]);
 
-  // useEffect(() => {
-  //   const fetchProductStatus = async () => {
-  //     if (isAuthenticated && userInfo?.ID_USER && products.length > 0) {
-  //       const productIds = products.map((item) => item.ID_PRODUCTDETAILS);
-  //       try {
-  //         const response = await axios.post(
-  //           `${api}/api/v1/yeuthich/check-product-status`,
-  //           {
-  //             userId: userInfo.ID_USER,
-  //             productIds,
-  //           }
-  //         );
-  //         if (response.data.EC === 1) {
-  //           setProductStatus(response.data.data); // Lưu trạng thái sản phẩm
-  //         }
-  //       } catch (error) {
-  //         console.error("Lỗi khi kiểm tra trạng thái sản phẩm:", error);
-  //       }
-  //     }
-  //   };
-  //   fetchProductStatus();
-  // }, [isAuthenticated, userInfo, products, api]);
-
   const nextSlide = () => {
     if (currentIndex + 5 < productLength) {
       setCurrentIndex((prevIndex) => prevIndex + 5);
@@ -287,7 +264,7 @@ const ProductCarousel = ({ title, products, api }) => {
                       transform: "translateY(-4px)",
                     },
                   }}
-                  onClick={() => handleBuyProduct(product.ID_PRODUCTDETAILS)}
+                  onClick={() => handleBuyProduct(product.ID_PRODUCT)}
                 >
                   <Box sx={{ position: "relative" }}>
                     <CardMedia

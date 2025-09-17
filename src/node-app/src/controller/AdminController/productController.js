@@ -398,9 +398,9 @@ SELECT p.ID_PRODUCT, pd.*
 FROM product p
 JOIN category c ON c.ID_CATEGORY = p.ID_CATEGORY
 JOIN product_details pd ON pd.ID_PRODUCT = p.ID_PRODUCT
-WHERE c.ID_CATEGORY IN (3, 9, 10, 11, 12)
+WHERE c.ID_CATEGORY IN (3, 9, 10, 12)
 ORDER BY p.CREATEAT DESC
-LIMIT 5;
+LIMIT 10;
     `);
 
     return res.status(200).json({

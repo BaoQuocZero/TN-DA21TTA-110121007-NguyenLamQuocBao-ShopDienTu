@@ -13,6 +13,7 @@ const onAddComment = async (req, res) => {
 
     const now = new Date();
 
+    console.log("asdsadasdasd:  ", req.body)
     // Insert vào bảng comment
     const [results] = await pool.execute(
       `
@@ -60,18 +61,29 @@ const onAddComment = async (req, res) => {
 
 // 1. Lấy danh sách bình luận
 const getProductReviews = async (req, res) => {
-  const { id } = req.params; // Lấy MASP từ URL
-  console.log("id", id);
+  const { id } = req.params; // Lấy ID_PRODUCT từ URL
+  console.log("bình luận của sản phẩm", id);
 
   try {
     const [results] = await pool.execute(
       `
-SELECT comment.*, user.FIRSTNAME, user.LASTNAME 
-FROM comment
-JOIN user ON user.ID_USER = comment.ID_USER
-WHERE comment.ID_PRODUCTDETAILS = ?
+      SELECT 
+          c.*, 
+          u.FIRSTNAME, 
+          u.LASTNAME,
+          (
+            SELECT AVG(c2.RATING) 
+            FROM comment c2 
+            JOIN product_details pd2 
+              ON pd2.ID_PRODUCTDETAILS = c2.ID_PRODUCTDETAILS 
+            WHERE pd2.ID_PRODUCT = ?
+          ) AS AVG_RATING
+      FROM comment c
+      JOIN user u ON u.ID_USER = c.ID_USER
+      JOIN product_details pd ON pd.ID_PRODUCTDETAILS = c.ID_PRODUCTDETAILS
+      WHERE pd.ID_PRODUCT = ?;
       `,
-      [id]
+      [id, id] // truyền 2 lần vì query có 2 dấu ?
     );
 
     if (results.length === 0) {
@@ -95,6 +107,7 @@ WHERE comment.ID_PRODUCTDETAILS = ?
     });
   }
 };
+
 // 2. Cập nhật bình luận và đánh giá
 const updateProductReview = async (req, res) => {
   const { id } = req.params; // MA_CTHD

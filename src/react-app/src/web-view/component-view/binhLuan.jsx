@@ -17,8 +17,9 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { getThemeConfig } from "../../service/themeService";
 import { useSelector, useDispatch } from "react-redux";
 import { enqueueSnackbar } from "notistack";
+import axios from "axios";
 
-const CommentsSection = ({ reviews = [], onAddComment = () => { } }) => {
+const CommentsSection = ({ reviews = [], product = {}, onAddComment = () => { } }) => {
   const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
 
   const [expanded, setExpanded] = useState(false);
@@ -34,7 +35,7 @@ const CommentsSection = ({ reviews = [], onAddComment = () => { } }) => {
   const api = process.env.REACT_APP_URL_SERVER;
 
   // Hàm gửi bình luận
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!newComment.trim() || newRating === 0) {
       enqueueSnackbar("Vui lòng nhập nội dung và chọn số sao");
       return;
@@ -42,12 +43,22 @@ const CommentsSection = ({ reviews = [], onAddComment = () => { } }) => {
 
     const newReview = {
       ID_USER: userInfo?.ID_USER || userInfo[0].ID_USER,
+      ID_PRODUCTDETAILS: product?.ID_PRODUCTDETAILS,
       FIRSTNAME: userInfo?.FIRSTNAME || userInfo[0].FIRSTNAME || "",
       LASTNAME: userInfo?.LASTNAME || userInfo[0].LASTNAME || "",
       CONTENT_COMMENT: newComment,
       RATING: newRating,
       CREATEAT: new Date().toISOString(),
     };
+
+    const response = await axios.post(`${api}/binh-luan/tao`, newReview);
+
+    if (response.data.EC === 1) {
+      enqueueSnackbar(response.data.EM, { variant: "success" });
+    } else {
+      console.log("Lỗi:", response.data.EM);
+      enqueueSnackbar(response.data.EM, { variant: "error" });
+    }
 
     if (onAddComment) {
       onAddComment(newReview); // callback để cập nhật danh sách ngoài parent
@@ -137,7 +148,20 @@ const CommentsSection = ({ reviews = [], onAddComment = () => { } }) => {
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
-          <Typography variant="h6">Xem bình luận ({reviews.length})</Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography variant="h6">
+              {reviews[0]?.AVG_RATING ? reviews[0].AVG_RATING.toFixed(1) : "N/A"}
+            </Typography>
+            <Rating
+              name="avg-rating"
+              value={reviews[0]?.AVG_RATING || 0}
+              precision={0.1}
+              readOnly
+            />
+            <Typography variant="body2" sx={{ ml: 1 }}>
+              Xem ({reviews.length} đánh giá)
+            </Typography>
+          </Box>
         </AccordionSummary>
         <AccordionDetails>
           <Box

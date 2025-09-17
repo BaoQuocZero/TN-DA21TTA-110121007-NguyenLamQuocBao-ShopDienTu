@@ -161,7 +161,7 @@ const Home = () => {
                       <Box>
                         {" "}
                         <Typography
-                          onClick={() => handleBuyProduct(product.ID_PRODUCTDETAILS)}
+                          onClick={() => handleBuyProduct(product.ID_PRODUCT)}
                           sx={{
                             marginBottom: 2,
                             cursor: "pointer",
@@ -169,11 +169,11 @@ const Home = () => {
                             display: "inline-block",
                           }}
                         >
-                          Xem thêm
+                          Xem Thêm
                         </Typography>
                       </Box>
                       <Button
-                        onClick={() => handleBuyProduct(product.ID_PRODUCTDETAILS)}
+                        onClick={() => handleBuyProduct(product.ID_PRODUCT)}
                         variant="contained"
                         sx={{
                           backgroundColor: "#343437",
@@ -184,7 +184,7 @@ const Home = () => {
                           },
                         }}
                       >
-                        {t.BuyNow}
+                        Mua ngay
                       </Button>
                     </CardContent>
                   </Card>

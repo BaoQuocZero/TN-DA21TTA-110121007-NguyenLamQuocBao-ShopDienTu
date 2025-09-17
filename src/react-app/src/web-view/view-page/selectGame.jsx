@@ -48,8 +48,22 @@ const SelectGame = () => {
     localStorage.getItem("THEMES") || userInfo?.THEMES || "dark"
   );
 
-  const [SHIPPING_ADDRESS, setSHIPPING_ADDRESS] = useState(userInfo?.ADDRESS || userInfo[0].ADDRESS || "");
-  const [SHIPPING_PHONE, setSHIPPING_PHONE] = useState(userInfo?.PHONENUMBER || userInfo[0].PHONENUMBER || "");
+  const [SHIPPING_ADDRESS, setSHIPPING_ADDRESS] = useState(
+    userInfo
+      ? Array.isArray(userInfo)
+        ? userInfo[0]?.ADDRESS || ""
+        : userInfo.ADDRESS || ""
+      : ""
+  );
+
+  const [SHIPPING_PHONE, setSHIPPING_PHONE] = useState(
+    userInfo
+      ? Array.isArray(userInfo)
+        ? userInfo[0]?.PHONENUMBER || ""
+        : userInfo.PHONENUMBER || ""
+      : ""
+  );
+
   useEffect(() => {
     if (id) {
       fetchProduct(id);
@@ -356,7 +370,7 @@ const SelectGame = () => {
           >
 
             {/* ----------------------BÌNH LUẬN GAME----------------------------------- */}
-            <CommentsSection reviews={binhLuan} />
+            <CommentsSection reviews={binhLuan} product={product} />
           </Box>{" "}
         </Grid>
 
