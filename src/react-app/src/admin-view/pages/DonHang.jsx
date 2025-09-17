@@ -1,4 +1,7 @@
 import React from "react";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import dayjs from "dayjs";
 import { Line } from "react-chartjs-2";
 import "chart.js/auto"; // Để tránh lỗi khi dùng Chart.js 3+
 import Plot from "react-plotly.js";
@@ -6,6 +9,7 @@ import { useEffect, useState } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { Bar } from "react-chartjs-2";
 import { Doughnut, Pie } from "react-chartjs-2";
+import { Chart } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -27,6 +31,17 @@ import {
   Paper,
   IconButton,
   Grid,
+  Box,
+  Button,
+  Divider,
+  Typography,
+  Card,
+  FormControl,
+  Select,
+  MenuItem,
+  Switch,
+  InputLabel,
+  Skeleton,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import axios from "axios";
@@ -39,35 +54,36 @@ ChartJS.register(
   Legend,
   LineElement
 );
-
 const api = process.env.REACT_APP_URL_SERVER;
 const DonHangGame = () => {
-  const [chartData2, setChartData2] = useState(null);
+  const [LineData, setLineData] = useState([]);
   const [userData, setUserData] = useState([]);
   const [donutData, setDonutData] = useState([]);
   const [barData, setBarData] = useState([]);
   const [totalData, settotalData] = useState([]);
+  const [endDate, setEndDate] = React.useState(dayjs().endOf("month"));
+  const [startDate, setStartDate] = React.useState(dayjs().subtract(12, 'month').startOf("month"));
 
   const cards = [
     {
       icon: "bi-graph-up",
       title: "Tiền bán hôm nay",
-      amount: (totalData?.results3?.[0]?.tong_tien_hom_nay || 0).toLocaleString("vi-VN") + " VNĐ",
+      amount: (totalData?.HomNay?.[0]?.tong_tien_hom_nay || 0).toLocaleString("vi-VN") + " VNĐ",
     },
     {
       icon: "bi-bar-chart",
       title: "Tiền bán tháng này",
-      amount: (totalData?.results4?.[0]?.tong_tien_thang_nay || 0).toLocaleString("vi-VN") + " VNĐ",
+      amount: (totalData?.TienThanh?.[0]?.tong_tien_thang_nay || 0).toLocaleString("vi-VN") + " VNĐ",
     },
     {
       icon: "bi-graph-down",
       title: "Tổng tiền",
-      amount: (totalData?.results?.[0]?.tong_tien || 0).toLocaleString("vi-VN") + " VNĐ",
+      amount: (totalData?.TongTien?.[0]?.tong_tien || 0).toLocaleString("vi-VN") + " VNĐ",
     },
     {
       icon: "bi-pie-chart-fill",
       title: "Khách mua nhiều nhất",
-      amount: totalData?.results2?.[0]?.LASTNAME || "không có",
+      amount: totalData?.KhachMuaNhieuNhat?.[0]?.LASTNAME || "không có",
     },
   ];
 
@@ -157,34 +173,18 @@ const DonHangGame = () => {
     marginRight: "1rem",
   };
 
-  // useEffect(() => {
-  // Gọi API từ server Python để lấy dữ liệu biểu đồ
-  // fetch("http://localhost:5000/api/chart")
-  //   .then((response) => response.json())
-  //   .then((data) => {
-  //     if (data.EM === "Success") {
-  //       // Kiểm tra xem dữ liệu biểu đồ có đúng không
-  //       console.log(data.DT);
-  //       try {
-  //         setChartData2(data.DT);
-  //       } catch (e) {
-  //         console.error("Error parsing chart data:", e);
-  //       }
-  //     } else {
-  //       console.error("Error fetching chart:", data.EM);
-  //     }
-  //   })
-  //   .catch((error) => console.error("Error fetching chart data:", error));
-  // }, []);
-
   const fetchDatatable = async () => {
+    const postData = {
+      startDate: startDate,
+      endDate: endDate
+    };
     const [responsedatauser, responsedatadonut, Responsebar, responseTotal, DuLieu_chartData] =
       await Promise.all([
         axios.get(`${api}/api/home/use/danhsachkhachhang`),
         axios.get(`${api}/api/home/use/tongsoluongcuatop3`),
-        axios.get(`${api}/api/home/use/danhsachordertheotime`),
+        axios.post(`${api}/api/home/use/danhsachordertheotime`, postData), //Responsebar
         axios.get(`${api}/api/home/use/laytongsoluongnhieunhat`),
-        axios.get(`${api}/api/home/use/DuLieu_chartData`),
+        axios.post(`${api}/api/home/use/DuLieu_chartData`, postData), //DuLieu_chartData
       ]);
 
     if (responsedatauser.data.EC === 1) {
@@ -201,13 +201,13 @@ const DonHangGame = () => {
       settotalData(responseTotal.data.DT);
     }
     if (DuLieu_chartData.data.EC === 1) {
-      setChartData2(DuLieu_chartData.data.DT);
+      setLineData(DuLieu_chartData.data.DT);
     }
   };
 
   useEffect(() => {
     fetchDatatable();
-  }, []);
+  }, [startDate, endDate]);
 
   const doughnutData = {
     labels:
@@ -263,16 +263,6 @@ const DonHangGame = () => {
     setPage(0);
   };
 
-  const handleEdit = (user) => {
-    // Logic for editing user
-    console.log("Editing", user);
-  };
-
-  const handleDelete = (user) => {
-    // Logic for deleting user
-    console.log("Deleting", user);
-  };
-
   return (
     <>
       {" "}
@@ -296,10 +286,8 @@ const DonHangGame = () => {
                   }}
                 >
                   <i className={`card-icon ${card.icon}`} style={iconStyle}></i>
-                  <div style={{ marginLeft: "1rem" }}>
-                    <h5 style={{ margin: 0, color: "#c9d1d9" }}>
-                      {card.title}
-                    </h5>
+                  <div style={{ marginLeft: "1rem", flex: 1 }}>
+                    <h5 style={{ margin: 0, color: "#c9d1d9" }}>{card.title}</h5>
                     <p style={{ margin: 0, color: "#c9d1d9" }}>{card.amount}</p>
                   </div>
                 </div>
@@ -307,22 +295,145 @@ const DonHangGame = () => {
             </Grid>
           ))}
         </Grid>
-
+        <Grid container spacing={3} marginTop={3}>
+          <Grid item xs={12} md={6}>
+            <DatePicker
+              label="Từ ngày"
+              value={startDate}
+              onChange={(newValue) => setStartDate(newValue)}
+              slotProps={{
+                openPickerButton: {
+                  sx: {
+                    color: 'white', // Đổi màu icon
+                  },
+                },
+                textField: {
+                  sx: {
+                    "& .MuiInputBase-input": { color: "white" }, // Đổi màu chữ
+                    "& .MuiInputLabel-root": { color: "white" }, // Đổi màu label
+                    "& .MuiInput-underline:before": { borderBottomColor: "white" }, // Đổi màu gạch dưới
+                    "& .MuiInput-underline:hover:not(.Mui-disabled):before": { borderBottomColor: "white" },
+                  },
+                },
+              }}
+            />
+            <DatePicker
+              label="Đến ngày"
+              value={endDate}
+              onChange={(newValue) => setEndDate(newValue)}
+              slotProps={{
+                openPickerButton: {
+                  sx: {
+                    color: 'white', // Đổi màu icon
+                  },
+                },
+                textField: {
+                  sx: {
+                    "& .MuiInputBase-input": { color: "white" }, // Đổi màu chữ
+                    "& .MuiInputLabel-root": { color: "white" }, // Đổi màu label
+                    "& .MuiInput-underline:before": { borderBottomColor: "white" }, // Đổi màu gạch dưới
+                    "& .MuiInput-underline:hover:not(.Mui-disabled):before": { borderBottomColor: "white" },
+                  },
+                },
+              }}
+            />
+          </Grid>
+        </Grid>
         {/* Charts Section */}
         <Grid container spacing={3} marginTop={3}>
           <Grid item xs={12} md={6}>
-            {chartData2 ? (
-              <Plot
-                data={chartData2.data}
-                layout={chartData2.layout}
-                style={{ width: "100%", height: "465px" }}
-              />
-            ) : (
-              <p>Loading chart with python server...</p>
-            )}
+            <Plot
+              data={[
+                {
+                  x: LineData.map(item => "Tháng " + item.month.split("-")[1]),
+                  y: LineData.map(item => item.total_revenue),
+                  type: "scatter",
+                  mode: "lines+markers",
+                  name: "Doanh thu", // label khi hover + chú thích
+                  marker: { color: "#1f77b4" },
+                  line: { width: 3 },
+                },
+                {
+                  x: LineData.map(item => "Tháng " + item.month.split("-")[1]),
+                  y: LineData.map(item => item.total_import_cost),
+                  type: "scatter",
+                  mode: "lines+markers",
+                  name: "Giá vốn",
+                  marker: { color: "#ff7f0e" },
+                  line: { width: 3 },
+                },
+                {
+                  x: LineData.map(item => "Tháng " + item.month.split("-")[1]),
+                  y: LineData.map(item => item.profit),
+                  type: "scatter",
+                  mode: "lines+markers",
+                  name: "Lợi nhuận",
+                  marker: { color: "#2ca02c" },
+                  line: { width: 3 },
+                },
+              ]}
+              layout={{
+                title: {
+                  text: "Biểu đồ Doanh thu - Giá vốn - Lợi nhuận",
+                  font: { size: 20, color: "#c9d1d9" },
+                },
+                xaxis: {
+                  title: "Tháng",
+                  tickfont: { color: "#c9d1d9" },
+                  titlefont: { color: "#c9d1d9" },
+                },
+                yaxis: {
+                  title: "VNĐ",
+                  tickfont: { color: "#c9d1d9" },
+                  titlefont: { color: "#c9d1d9" },
+                },
+                legend: {
+                  x: 0.05,
+                  y: 1.1,
+                  orientation: "h",
+                  font: { color: "#c9d1d9" },
+                },
+                paper_bgcolor: "#191C24",
+                plot_bgcolor: "#191C24",
+                font: { color: "#c9d1d9" },
+              }}
+              style={{ width: "100%", height: "400px" }}
+            />
           </Grid>
           <Grid item xs={12} md={6}>
-            <Paper
+            <Plot
+              data={[
+                {
+                  x: barData.map(item => "Tháng " + item.month.split("-")[1]),// mảng tháng
+                  y: barData.map(item => item.total_revenue),                 // mảng doanh thu
+                  type: "bar",
+                  marker: {
+                    color: "#456adaff", // màu cột
+                  },
+                },
+              ]}
+              layout={{
+                title: {
+                  text: "Biểu đồ cột doanh số bán ra",
+                  font: { size: 20, color: "#c9d1d9" },
+                },
+                xaxis: {
+                  title: "Tháng",
+                  tickfont: { color: "#c9d1d9" },
+                  titlefont: { color: "#c9d1d9" },
+                },
+                yaxis: {
+                  title: "Tổng doanh thu (VNĐ)",
+                  tickfont: { color: "#c9d1d9" },
+                  titlefont: { color: "#c9d1d9" },
+                },
+                paper_bgcolor: "#191C24",
+                plot_bgcolor: "#191C24",
+                font: { color: "#c9d1d9" },
+              }}
+              style={{ width: "100%", height: "400px" }}
+            />
+            {/* <Paper
               style={{
                 height: "100%",
                 backgroundColor: "#191C24",
@@ -337,7 +448,7 @@ const DonHangGame = () => {
                   backgroundColor: "#191C24",
                 }}
               />
-            </Paper>
+            </Paper> */}
           </Grid>
         </Grid>
 

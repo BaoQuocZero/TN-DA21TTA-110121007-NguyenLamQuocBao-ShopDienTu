@@ -19,7 +19,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { enqueueSnackbar } from "notistack";
 import axios from "axios";
 
-const CommentsSection = ({ reviews = [], product = {}, onAddComment = () => { } }) => {
+const CommentsSection = ({ reviews = [], product = {} }) => {
   const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
 
   const [expanded, setExpanded] = useState(false);
@@ -58,10 +58,6 @@ const CommentsSection = ({ reviews = [], product = {}, onAddComment = () => { } 
     } else {
       console.log("Lỗi:", response.data.EM);
       enqueueSnackbar(response.data.EM, { variant: "error" });
-    }
-
-    if (onAddComment) {
-      onAddComment(newReview); // callback để cập nhật danh sách ngoài parent
     }
 
     // reset form
@@ -150,7 +146,7 @@ const CommentsSection = ({ reviews = [], product = {}, onAddComment = () => { } 
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Typography variant="h6">
-              {reviews[0]?.AVG_RATING ? reviews[0].AVG_RATING.toFixed(1) : "N/A"}
+              {reviews[0]?.AVG_RATING ? reviews[0].AVG_RATING.toFixed(1) : "0.0"}
             </Typography>
             <Rating
               name="avg-rating"
@@ -226,8 +222,6 @@ const CommentsSection = ({ reviews = [], product = {}, onAddComment = () => { } 
                   <StarIcon style={{ color: "rgba(255, 255, 255, 0.5)" }} fontSize="inherit" />
                 }
               />
-
-
               <TextField
                 fullWidth
                 multiline

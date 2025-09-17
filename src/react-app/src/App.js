@@ -13,7 +13,8 @@ import NavBarUser from "./user-view/components/navBarUser";
 import RouterAdmin from "./admin-view/router-admin";
 import GuardRoute from "./authentication/guardRoute";
 import NavBarAdmin from "./admin-view/components/navBarAdmin";
-
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 function App() {
   return (
     <SnackbarProvider
@@ -24,18 +25,20 @@ function App() {
       }}
       autoHideDuration={2000}
     >
-      <div className="App">
-        <Router>
-          <Routes>
-            <Route path="/*" element={<MainLayout />} />
-            <Route
-              path="/admin/*"
-              element={<GuardRoute element={AdminLayout} />}
-            />
-            <Route path="/profile/*" element={<RouterUser />} />
-          </Routes>
-        </Router>
-      </div>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <div className="App">
+          <Router>
+            <Routes>
+              <Route path="/*" element={<MainLayout />} />
+              <Route
+                path="/admin/*"
+                element={<GuardRoute element={AdminLayout} />}
+              />
+              <Route path="/profile/*" element={<RouterUser />} />
+            </Routes>
+          </Router>
+        </div>
+      </LocalizationProvider>
     </SnackbarProvider>
   );
 }

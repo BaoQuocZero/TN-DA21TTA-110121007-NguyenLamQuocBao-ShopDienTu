@@ -477,7 +477,8 @@ LIMIT 5;
 const searchSanPhamDynamic = async (req, res) => {
   try {
     const { query } = req.query; // Từ khóa tìm kiếm
-    if (!query || query.trim().length < 3) {
+    console.log("searchSanPhamDynamic:  ", query)
+    if (!query || query.trim().length < 1) {
       return res.status(400).json({
         EM: "Từ khóa tìm kiếm phải có ít nhất 3 ký tự",
         EC: 0,
@@ -488,7 +489,7 @@ const searchSanPhamDynamic = async (req, res) => {
     // Tìm kiếm sản phẩm chưa bị xóa
     let [results] = await pool.execute(
       `
-      SELECT product_details.*
+      SELECT product.ID_PRODUCT, product_details.*
       FROM product
       JOIN product_details ON product_details.ID_PRODUCT = product.ID_PRODUCT
       WHERE product_details.NAME_PRODUCTDETAILS LIKE ?

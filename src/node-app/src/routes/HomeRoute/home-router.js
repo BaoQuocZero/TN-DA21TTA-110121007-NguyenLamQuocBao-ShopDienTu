@@ -24,9 +24,9 @@ router.get("/use/5game-macnhat", laydanhsach5gamemacnhat);
 router.get("/use/5game-yeuthich", danhsach5gameyeuthichnhat);
 router.get("/use/danhsachkhachhang", danhsachusermuahang);
 router.get("/use/tongsoluongcuatop3", tongsoluongcuatop3);
-router.get("/use/danhsachordertheotime", danhsachordertheotime);
+router.post("/use/danhsachordertheotime", danhsachordertheotime);
 router.get("/use/laytongsoluongnhieunhat", laytongsoluongnhieunhat);
 
-router.get("/use/DuLieu_chartData", DuLieu_chartData);
+router.post("/use/DuLieu_chartData", DuLieu_chartData);
 router.post("/use/timkiem", timkiem5gametheoten); // tìm kiếm 5 sản phẩm theo tên, ĐÂY LÀ CÁI SEARCH
 module.exports = router;

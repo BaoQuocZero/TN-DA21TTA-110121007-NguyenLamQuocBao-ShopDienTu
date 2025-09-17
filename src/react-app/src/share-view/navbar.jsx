@@ -66,6 +66,7 @@ const Navbar = () => {
     setAnchorEl(null);
   };
   const handleBuyProduct = (id) => {
+    console.log("handleBuyProduct: ", id)
     setSearchTerm("");
     setProducts([]);
     navigate(`/select-game/${id}`);
@@ -108,24 +109,6 @@ const Navbar = () => {
               Sản Phẩm
             </Typography>
           </Box>
-
-          {/* <Box
-            component={RouterLink}
-            to="/news"
-            sx={{ textDecoration: "none" }}
-          >
-            <Typography
-              variant="body1"
-              component="div"
-              sx={{
-                mx: 2,
-                cursor: "pointer",
-                color: isActive("/news") ? "#3ccaff" : "#fff",
-              }}
-            >
-              {t.News}
-            </Typography>
-          </Box> */}
         </Box>
 
         <Box sx={{ display: "flex" }}>
@@ -253,30 +236,31 @@ const Navbar = () => {
 
           {/* Hiển thị kết quả tìm kiếm */}
           <Box
+            ref={searchBoxRef} // ✅ để ngoài, bao hết results
             sx={{
               marginTop: "20px",
               top: 20,
               display: "flex",
               flexDirection: "column",
               gap: 0.5,
-              position: "absolute", // Đặt kết quả tìm kiếm dưới ô input
-              zIndex: 100, // Đảm bảo kết quả tìm kiếm hiển thị phía trên các phần tử khác
-              width: "100%", // Đảm bảo phần tử con chiếm toàn bộ chiều rộng của phần tử cha
+              position: "absolute",
+              zIndex: 100,
+              width: "100%",
             }}
           >
-            {products.length > 0 ? (
+            {products.length > 0 &&
               products.map((product) => (
                 <Box
-                  ref={searchBoxRef} // Gán ref vào Box chứa kết quả
-                  key={product.ID_PRODUCTDETAILS}
-                  onClick={() => handleBuyProduct(product.ID_PRODUCTDETAILS)}
+                  key={product.ID_PRODUCT}
+                  onClick={() => handleBuyProduct(product.ID_PRODUCT)}
                   sx={{
                     display: "flex",
                     alignItems: "center",
                     backgroundColor: "#ffffff",
                     borderRadius: 2,
                     boxShadow: 2,
-                    padding: 1, // Thêm một chút padding để không bị dính sát vào nhau
+                    padding: 1,
+                    cursor: "pointer",   // ✅ thêm cursor để rõ ràng
                   }}
                 >
                   <Box sx={{ flex: 1, textAlign: "left" }}>
@@ -312,14 +296,11 @@ const Navbar = () => {
                     }}
                   />
                 </Box>
-              ))
-            ) : (
-              <></>
-            )}
+              ))}
           </Box>
         </Box>
 
-        {isMobile ? (
+        {/* {isMobile ? (
           <>
             <IconButton
               color="inherit"
@@ -355,7 +336,7 @@ const Navbar = () => {
             {menuItems}
             <Box sx={{ flexGrow: 1 }} />
           </>
-        )}
+        )} */}
       </Toolbar>
     </AppBar>
   );

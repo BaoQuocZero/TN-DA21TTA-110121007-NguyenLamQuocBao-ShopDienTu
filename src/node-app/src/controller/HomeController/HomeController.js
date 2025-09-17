@@ -246,21 +246,18 @@ ORDER BY TOTAL_SOLD DESC;
 
 const danhsachordertheotime = async (req, res) => {
   try {
+    const { startDate, endDate } = req.body;
     const [results, fields] = await connection.execute(
       `
 SELECT 
-    DATE_FORMAT(oi.CREATEAT, '%Y-%m') AS MONTH,
-    SUM(oi.QUANTITY) AS TOTAL_SOLD,
-    SUM(oi.TOTAL_PRICE) AS TOTAL_REVENUE,
-    SUM(oi.QUANTITY * pd.Import_Price) AS TOTAL_COST,
-    SUM(oi.TOTAL_PRICE) - SUM(oi.QUANTITY * pd.Import_Price) AS PROFIT
-FROM order_item oi
-JOIN product_details pd ON oi.ID_PRODUCTDETAILS = pd.ID_PRODUCTDETAILS
-JOIN product p ON pd.ID_PRODUCT = p.ID_PRODUCT
-JOIN orders o ON o.ID_ORDER = oi.ID_ORDER
-GROUP BY DATE_FORMAT(oi.CREATEAT, '%Y-%m')
-ORDER BY MONTH DESC;
-`
+    DATE_FORMAT(CREATEAT, '%Y-%m') AS month, 
+    SUM(TOTALORDERPRICE) AS total_revenue
+FROM orders
+WHERE orders.ISDELETE = 0
+  AND orders.CREATEAT BETWEEN ? AND ?
+GROUP BY DATE_FORMAT(CREATEAT, '%Y-%m')
+ORDER BY month;
+`, [startDate, endDate]
     );
 
     // Trả về danh sách sản phẩm trong giỏ hàng
@@ -280,7 +277,7 @@ ORDER BY MONTH DESC;
 
 const laytongsoluongnhieunhat = async (req, res) => {
   try {
-    const [results, fields] = await connection.execute(
+    const [TongTien, fields] = await connection.execute(
       `
 SELECT 
     SUM(o.TOTALORDERPRICE) AS tong_tien
@@ -288,7 +285,7 @@ FROM orders o;
 `
     );
 
-    const [results2, fields2] = await connection.execute(
+    const [KhachMuaNhieuNhat, fields2] = await connection.execute(
       `
 SELECT 
     u.ID_USER,
@@ -302,11 +299,10 @@ JOIN orders o ON o.ID_USER = u.ID_USER
 GROUP BY u.ID_USER, u.FIRSTNAME, u.LASTNAME, u.EMAIL, u.PHONENUMBER
 ORDER BY TOTAL_ORDERS DESC
 LIMIT 1;
-
 `
     );
 
-    const [results3, fields3] = await connection.execute(
+    const [HomNay, fields3] = await connection.execute(
       `
 SELECT 
     SUM(order_item.TOTAL_PRICE) AS tong_tien_hom_nay
@@ -319,7 +315,7 @@ WHERE
 `
     );
 
-    const [results4, fields4] = await connection.execute(
+    const [TienThanh, fields4] = await connection.execute(
       `
 SELECT 
     SUM(oi.TOTAL_PRICE) AS tong_tien_thang_nay
@@ -335,7 +331,7 @@ WHERE YEAR(o.CREATEAT) = YEAR(CURDATE())
     return res.status(200).json({
       EM: "Xem thông tin sản phẩm ngẫu nhiên thành công",
       EC: 1,
-      DT: { results, results2, results3, results4 },
+      DT: { TongTien, KhachMuaNhieuNhat, HomNay, TienThanh },
     });
   } catch (error) {
     console.error(error.message);
@@ -348,59 +344,30 @@ WHERE YEAR(o.CREATEAT) = YEAR(CURDATE())
 
 const DuLieu_chartData = async (req, res) => {
   try {
-    const [results] = await connection.execute(`
+    const { startDate, endDate } = req.body;
+
+    const [results] = await connection.execute(
+      `
       SELECT 
-          b.NAME AS BRAND,
-          DATE_FORMAT(oi.CREATEAT, '%Y-%m') AS MONTH,
-          COUNT(*) AS TOTAL_SOLD
-      FROM order_item oi
-      JOIN product_details pd ON oi.ID_PRODUCTDETAILS = pd.ID_PRODUCTDETAILS
-      JOIN product p ON pd.ID_PRODUCT = p.ID_PRODUCT
-      JOIN brand b ON b.ID_BRAND = p.ID_BRAND
-      GROUP BY b.NAME, DATE_FORMAT(oi.CREATEAT, '%Y-%m')
-      ORDER BY MONTH ASC;
-    `);
-
-    const months = [...new Set(results.map(r => r.MONTH))].sort();
-    const brands = [...new Set(results.map(r => r.BRAND))];
-
-    // Tạo map để lookup nhanh
-    const map = new Map();
-    for (const r of results) {
-      map.set(`${r.BRAND}|${r.MONTH}`, Number(r.TOTAL_SOLD) || 0);
-    }
-
-    // Tạo ma trận z (brands × months)
-    const z = brands.map(brand =>
-      months.map(month => map.get(`${brand}|${month}`) || 0)
+          DATE_FORMAT(o.CREATEAT, '%Y-%m') AS month,
+          SUM(oi.UNIT_PRICE * oi.QUANTITY) AS total_revenue,
+          SUM(pd.Import_Price * oi.QUANTITY) AS total_import_cost,
+          SUM((oi.UNIT_PRICE - pd.Import_Price) * oi.QUANTITY) AS profit
+      FROM orders o
+      JOIN order_item oi ON oi.ID_ORDER = o.ID_ORDER
+      JOIN product_details pd ON pd.ID_PRODUCTDETAILS = oi.ID_PRODUCTDETAILS
+      WHERE o.ISDELETE = 0
+        AND o.CREATEAT BETWEEN ? AND ?
+      GROUP BY DATE_FORMAT(o.CREATEAT, '%Y-%m')
+      ORDER BY month;
+      `,
+      [startDate, endDate]
     );
 
     return res.status(200).json({
       EC: 1,
-      EM: "Lấy dữ liệu heatmap thành công",
-      DT: {
-        data: [
-          {
-            z,
-            x: months,
-            y: brands,
-            type: "heatmap",
-            colorscale: "YlGnBu",
-            colorbar: {
-              title: { text: "Số lượng" },
-              tickformat: ",.0f"
-            },
-            hovertemplate:
-              "Hãng: %{y}<br>Tháng: %{x}<br>Số lượng: %{z:.0f}<extra></extra>"
-          }
-        ],
-        layout: {
-          title: "Số lượng bán theo hãng và tháng",
-          xaxis: { title: "Tháng" },
-          yaxis: { title: "Hãng" },
-          autosize: true
-        }
-      }
+      EM: "Lấy dữ liệu theo tháng thành công",
+      DT: results,
     });
 
   } catch (error) {
@@ -408,7 +375,7 @@ const DuLieu_chartData = async (req, res) => {
     return res.status(500).json({
       EC: -1,
       EM: "Lỗi server nội bộ",
-      error: error.message
+      error: error.message,
     });
   }
 };
