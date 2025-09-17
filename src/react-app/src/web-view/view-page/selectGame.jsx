@@ -378,11 +378,11 @@ const SelectGame = () => {
             <Typography variant="h6" sx={{ mb: 1 }}>
               {product.NAME_PRODUCTDETAILS}
             </Typography>
-            <Box>
+            {/* <Box>
               <Typography sx={{ color: currentTheme.color }} variant="body2">
                 Nhà sản xuất: {product.NAME || "N/A"}
               </Typography>
-            </Box>
+            </Box> */}
             <Typography sx={{ color: currentTheme.color }} variant="h6">
               {new Intl.NumberFormat("vi-VN", {
                 style: "currency",

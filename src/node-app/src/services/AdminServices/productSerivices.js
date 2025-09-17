@@ -102,9 +102,25 @@ const xem_tatca_sanpham = async () => {
 
 const xem_sanpham_id = async (ID_PRODUCTDETAILS, ID_USER) => {
   try {
-    console.log("xem_sanpham_id: ", ID_PRODUCTDETAILS)
-    // Truy vấn thông tin sản phẩm và thể loại
-    let [results, fields] = await pool.execute(
+    console.log("xem_sanpham_id: ", ID_PRODUCTDETAILS);
+
+    // Truy vấn theo product.ID_PRODUCT
+    let [results] = await pool.execute(
+      `
+      SELECT 
+        product_details.*,
+        product.*
+      FROM product_details
+      LEFT JOIN product ON product_details.ID_PRODUCT = product.ID_PRODUCT
+      LEFT JOIN brand ON product.ID_BRAND = brand.ID_BRAND
+      LEFT JOIN category ON product.ID_CATEGORY = category.ID_CATEGORY
+      WHERE product.ID_PRODUCT = ?;
+      `,
+      [ID_PRODUCTDETAILS]
+    );
+
+    // Truy vấn theo product_details.ID_PRODUCTDETAILS
+    let [results1] = await pool.execute(
       `
       SELECT 
         product_details.*,
@@ -118,18 +134,29 @@ const xem_sanpham_id = async (ID_PRODUCTDETAILS, ID_USER) => {
       [ID_PRODUCTDETAILS]
     );
 
-    if (results.length === 0) {
+    // Ưu tiên trả về results
+    if (results.length > 0) {
       return {
-        EM: "Sản phẩm không tồn tại",
-        EC: 0,
-        DT: [],
+        EM: "Xem sản phẩm thành công",
+        EC: 1,
+        DT: results,
       };
     }
 
+    // Nếu results trống nhưng results1 có dữ liệu
+    if (results1.length > 0) {
+      return {
+        EM: "Xem sản phẩm thành công",
+        EC: 1,
+        DT: results1,
+      };
+    }
+
+    // Cả hai đều trống
     return {
-      EM: "Xem sản phẩm thành công",
-      EC: 1,
-      DT: results,
+      EM: "Sản phẩm không tồn tại",
+      EC: 0,
+      DT: [],
     };
   } catch (error) {
     console.error("Error in xem_sanpham_id:", error);

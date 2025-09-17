@@ -32,30 +32,6 @@ const ListGame = ({ title, items, api }) => {
     localStorage.getItem("THEMES") || userInfo?.THEMES || "dark"
   );
 
-  // Gọi API kiểm tra trạng thái sản phẩm khi component load
-  useEffect(() => {
-    const fetchProductStatus = async () => {
-      if (isAuthenticated && userInfo?.MA_KH) {
-        const productIds = items.map((item) => item.ID_PRODUCTDETAILS);
-        try {
-          const response = await axios.post(
-            `${api}/api/v1/yeuthich/check-product-status`,
-            {
-              userId: userInfo.MA_KH,
-              productIds,
-            }
-          );
-          if (response.data.EC === 1) {
-            setProductStatus(response.data.data); // Lưu trạng thái sản phẩm
-          }
-        } catch (error) {
-          console.error("Lỗi khi kiểm tra trạng thái sản phẩm:", error);
-        }
-      }
-    };
-    fetchProductStatus();
-  }, [isAuthenticated, userInfo, items, api]);
-
   const handleBuyProduct = (id) => {
     navigate(`/select-game/${id}`);
   };
@@ -83,65 +59,6 @@ const ListGame = ({ title, items, api }) => {
     } catch (error) {
       console.error("Lỗi hệ thống:", error);
       enqueueSnackbar(error.response.data.EM, { variant: "error" });
-    }
-  };
-
-  const handleAddToWish = async (product) => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-    try {
-      const payload = {
-        ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
-        MA_KH: userInfo.MA_KH,
-      };
-      const response = await axios.post(`${api}/api/v1/yeuthich/them`, payload);
-      if (response.data.EC === 1) {
-        enqueueSnackbar(response.data.EM);
-        setProductStatus((prevStatus) =>
-          prevStatus.map((status) =>
-            status.ID_PRODUCTDETAILS === product.ID_PRODUCTDETAILS
-              ? { ...status, favoriteStatus: true }
-              : status
-          )
-        );
-      } else if (response.data.EC === 0) {
-        enqueueSnackbar(response.data.EM, { variant: "info" });
-      }
-    } catch (error) {
-      if (error.response?.data?.EC === 0) {
-        enqueueSnackbar(error.response.data.EM, { variant: "info" });
-      }
-    }
-  };
-
-  const handleRemoveFromWish = async (product) => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-    try {
-      const payload = {
-        MA_KH: userInfo.MA_KH,
-        ID_PRODUCTDETAILS: product.ID_PRODUCTDETAILS,
-      };
-      const response = await axios.post(`${api}/api/v1/yeuthich/xoa`, payload);
-      if (response.data.EC === 1) {
-        enqueueSnackbar(response.data.EM);
-        setProductStatus((prevStatus) =>
-          prevStatus.map((status) =>
-            status.ID_PRODUCTDETAILS === product.ID_PRODUCTDETAILS
-              ? { ...status, favoriteStatus: false }
-              : status
-          )
-        );
-      } else {
-        enqueueSnackbar(response.data.EM, { variant: "warning" });
-      }
-    } catch (error) {
-      console.error("Lỗi khi xóa sản phẩm yêu thích:", error);
-      enqueueSnackbar("Lỗi khi xóa sản phẩm yêu thích", { variant: "error" });
     }
   };
 
@@ -173,7 +90,7 @@ const ListGame = ({ title, items, api }) => {
           return (
             <Card
               key={index}
-              onClick={() => handleBuyProduct(item.ID_PRODUCTDETAILS)}
+              onClick={() => handleBuyProduct(item.ID_PRODUCT)}
               sx={{
                 cursor: "pointer",
                 marginBottom: 2,

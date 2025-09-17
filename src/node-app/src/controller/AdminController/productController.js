@@ -394,13 +394,13 @@ const GamingGearProduct = async (req, res) => {
   try {
     // Truy vấn 2 sản phẩm mới nhất theo thời gian thêm vào
     const [results] = await pool.execute(`
-SELECT pd.* 
+SELECT p.ID_PRODUCT, pd.* 
 FROM product p
 JOIN category c ON c.ID_CATEGORY = p.ID_CATEGORY
 JOIN product_details pd ON pd.ID_PRODUCT = p.ID_PRODUCT
 WHERE c.ID_CATEGORY IN (3, 9, 10, 11, 12)
 ORDER BY p.CREATEAT DESC
-LIMIT 10;
+LIMIT 5;
     `);
 
     return res.status(200).json({
@@ -422,13 +422,13 @@ const PCGaming = async (req, res) => {
   try {
     // Truy vấn 2 sản phẩm mới nhất theo thời gian thêm vào
     const [results] = await pool.execute(`
-SELECT pd.* 
+SELECT p.ID_PRODUCT, pd.* 
 FROM product p
 JOIN category c ON c.ID_CATEGORY = p.ID_CATEGORY
 JOIN product_details pd ON pd.ID_PRODUCT = p.ID_PRODUCT
 WHERE c.ID_CATEGORY IN (2, 7)
 ORDER BY p.CREATEAT DESC
-LIMIT 10;
+LIMIT 5;
     `);
 
     return res.status(200).json({
@@ -450,13 +450,13 @@ const LinhKien = async (req, res) => {
   try {
     // Truy vấn 2 sản phẩm mới nhất theo thời gian thêm vào
     const [results] = await pool.execute(`
-SELECT pd.* 
+SELECT p.ID_PRODUCT, pd.* 
 FROM product p
 JOIN category c ON c.ID_CATEGORY = p.ID_CATEGORY
 JOIN product_details pd ON pd.ID_PRODUCT = p.ID_PRODUCT
 WHERE c.ID_CATEGORY IN (13, 14, 17)
 ORDER BY p.CREATEAT DESC
-LIMIT 10;
+LIMIT 5;
     `);
 
     return res.status(200).json({

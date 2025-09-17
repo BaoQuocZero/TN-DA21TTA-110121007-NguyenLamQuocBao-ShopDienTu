@@ -71,32 +71,6 @@ const BrowseProduct = () => {
       console.error("Error fetching data:", error);
     }
   };
-
-  // Hàm kiểm tra trạng thái sản phẩm
-  const fetchProductStatus = async () => {
-    if (isAuthenticated && userInfo?.MA_KH && products.length > 0) {
-      const productIds = products.map((item) => item.MASP);
-      try {
-        const response = await axios.post(
-          `${api}/api/v1/yeuthich/check-product-status`,
-          {
-            userId: userInfo.MA_KH,
-            productIds,
-          }
-        );
-        if (response.data.EC === 1) {
-          setProductStatus(response.data.data); // Lưu trạng thái sản phẩm
-        }
-      } catch (error) {
-        console.error("Lỗi khi kiểm tra trạng thái sản phẩm:", error);
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchProductStatus();
-  }, [isAuthenticated, userInfo, products]);
-
   const handleBuyProduct = (id) => {
     navigate(`/select-Game/${id}`);
   };
@@ -154,35 +128,6 @@ const BrowseProduct = () => {
       });
     }
   };
-
-  const handleRemoveFromWish = async (product) => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-    try {
-      const payload = {
-        MA_KH: userInfo.MA_KH,
-        MASP: product.MASP,
-      };
-      const response = await axios.post(`${api}/api/v1/yeuthich/xoa`, payload);
-      if (response.data.EC === 1) {
-        enqueueSnackbar(response.data.EM, { variant: "success" });
-        setProductStatus((prevStatus) =>
-          prevStatus.map((status) =>
-            status.MASP === product.MASP
-              ? { ...status, favoriteStatus: false }
-              : status
-          )
-        );
-      } else {
-        enqueueSnackbar(response.data.EM, { variant: "warning" });
-      }
-    } catch (error) {
-      enqueueSnackbar("Lỗi khi xóa sản phẩm yêu thích", { variant: "error" });
-    }
-  };
-
   // Filter products
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
