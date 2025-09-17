@@ -102,18 +102,17 @@ const xem_tatca_sanpham = async () => {
 
 const xem_sanpham_id = async (ID_PRODUCTDETAILS, ID_USER) => {
   try {
+    console.log("xem_sanpham_id: ", ID_PRODUCTDETAILS)
     // Truy vấn thông tin sản phẩm và thể loại
     let [results, fields] = await pool.execute(
       `
       SELECT 
         product_details.*,
-        product.*,
-        brand.*, 
-        category.*
+        product.*
       FROM product_details
-      JOIN product ON product_details.ID_PRODUCT = product.ID_PRODUCT
-      JOIN brand ON product.ID_BRAND = brand.ID_BRAND
-      JOIN category ON product.ID_CATEGORY = category.ID_CATEGORY
+      LEFT JOIN product ON product_details.ID_PRODUCT = product.ID_PRODUCT
+      LEFT JOIN brand ON product.ID_BRAND = brand.ID_BRAND
+      LEFT JOIN category ON product.ID_CATEGORY = category.ID_CATEGORY
       WHERE product_details.ID_PRODUCTDETAILS = ?;
       `,
       [ID_PRODUCTDETAILS]
@@ -128,7 +127,7 @@ const xem_sanpham_id = async (ID_PRODUCTDETAILS, ID_USER) => {
     }
 
     return {
-      EM: "Xem sản phẩm thành công 1",
+      EM: "Xem sản phẩm thành công",
       EC: 1,
       DT: results,
     };

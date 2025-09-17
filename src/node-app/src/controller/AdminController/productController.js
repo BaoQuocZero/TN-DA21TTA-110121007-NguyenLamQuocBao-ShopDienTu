@@ -30,7 +30,7 @@ const tao_new_sanpham = async (req, res) => {
 
 const xemtatca_sanpham = async (req, res) => {
   try {
-    let results = await xem_tatca_sanpham();
+    let results = await xem_tatca_sanpham()
     return res.status(200).json({
       EM: results.EM,
       EC: results.EC,
@@ -370,7 +370,7 @@ const get2LatestProducts = async (req, res) => {
       JOIN product ON product_details.ID_PRODUCT = product.ID_PRODUCT
       JOIN brand ON product.ID_BRAND = brand.ID_BRAND
       JOIN category ON product.ID_CATEGORY = category.ID_CATEGORY
-      WHERE product.ISDELETE != 1
+      WHERE product.ISDELETE != 1 AND category.ID_CATEGORY = 11
       ORDER BY product.CREATEAT DESC
       LIMIT 2
     `);
